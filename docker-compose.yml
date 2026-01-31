@@ -1,0 +1,9 @@
+services:
+  app-sales:
+    build: .
+    ports:
+      - "3000:80"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=production

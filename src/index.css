@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* JKE Solutions Brand Colors - Innovation Cyan & Core Dark */
+  --color-primary: #00bfff;
+  --color-primary-hover: #0099cc;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #334155;
+  --color-secondary-foreground: #ffffff;
+
+  --color-background: #ffffff;
+  --color-foreground: #334155;
+
+  --color-muted: #e2e8f0;
+  --color-accent: #e0f7ff;
+  --color-destructive: #ef4444;
+  --color-success: #22c55e;
+
+  /* JKE Solutions Typography */
+  --font-family-headings: "Montserrat", sans-serif;
+  --font-family-body: "Montserrat", sans-serif;
+}
