@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -8,6 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button, Input, Label } from '@/components/ui';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
+import { TagInput, type TagOption } from '@/components/shared/TagInput';
 
 interface CategoryFilterPanelProps {
   open: boolean;
@@ -24,9 +24,20 @@ export interface FilterValues {
     min: string;
     max: string;
   };
-  users: string[];
+  userIds: string[];
   updatedDate: Date | null;
 }
+
+// Mock users data - in a real app, this would come from an API
+const AVAILABLE_USERS: TagOption[] = [
+  { id: '1', name: 'Maria G.' },
+  { id: '2', name: 'Carlos R.' },
+  { id: '3', name: 'Ana P.' },
+  { id: '4', name: 'Luis M.' },
+  { id: '5', name: 'Sofia T.' },
+  { id: '6', name: 'Pedro H.' },
+  { id: '7', name: 'Laura V.' },
+];
 
 export function CategoryFilterPanel({
   open,
@@ -36,7 +47,7 @@ export function CategoryFilterPanel({
   const [filters, setFilters] = useState<FilterValues>({
     dateRange: { start: null, end: null },
     productCount: { min: '', max: '' },
-    users: ['Maria G.'],
+    userIds: ['1'], // Default to Maria G.
     updatedDate: null,
   });
 
@@ -44,16 +55,9 @@ export function CategoryFilterPanel({
     setFilters({
       dateRange: { start: null, end: null },
       productCount: { min: '', max: '' },
-      users: [],
+      userIds: [],
       updatedDate: null,
     });
-  };
-
-  const handleRemoveUser = (userName: string) => {
-    setFilters(prev => ({
-      ...prev,
-      users: prev.users.filter(u => u !== userName)
-    }));
   };
 
   return (
@@ -117,20 +121,12 @@ export function CategoryFilterPanel({
           {/* Created By (Tags) */}
           <div className="space-y-3">
             <Label className="text-sm font-bold text-slate-700">Creado por</Label>
-            <div className="min-h-[44px] p-1.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-[#0ea5e9] focus-within:border-transparent transition-all">
-              {filters.users.map(user => (
-                <div key={user} className="bg-sky-100 text-sky-700 text-xs font-semibold px-2 py-1 rounded-lg flex items-center gap-1">
-                  {user}
-                  <button onClick={() => handleRemoveUser(user)} className="hover:text-sky-900 focus:outline-none">
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              <input 
-                className="bg-transparent border-none outline-none text-sm text-slate-600 placeholder:text-slate-400 flex-1 min-w-[120px] px-2"
-                placeholder={filters.users.length === 0 ? "Seleccionar usuarios..." : ""}
-              />
-            </div>
+            <TagInput
+              options={AVAILABLE_USERS}
+              value={filters.userIds}
+              onChange={(userIds) => setFilters({...filters, userIds})}
+              placeholder="Seleccionar usuarios..."
+            />
           </div>
 
           {/* Last Update */}
