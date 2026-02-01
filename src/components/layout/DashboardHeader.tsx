@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, Bell, ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
@@ -8,6 +9,7 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+  const { pathname } = useLocation();
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
@@ -43,6 +45,17 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const avatarSeed = user?.email || 'default';
   const avatarUrl = user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`;
 
+  const getPageTitle = (path: string) => {
+    if (path === '/' || path === '/dashboard') return 'DASHBOARD';
+    if (path.startsWith('/categories')) return 'GESTIÓN DE CATEGORÍAS';
+    if (path.startsWith('/inventory')) return 'INVENTARIO';
+    if (path.startsWith('/clients')) return 'CLIENTES';
+    if (path.startsWith('/sales')) return 'VENTAS';
+    if (path.startsWith('/reports')) return 'REPORTES';
+    if (path.startsWith('/settings')) return 'CONFIGURACIÓN';
+    return 'JKE SOLUTIONS';
+  };
+
   return (
     <header className="bg-white border-b border-muted py-3 px-6 flex items-center justify-between sticky top-0 z-10">
       {/* Left: Title & Menu */}
@@ -53,7 +66,9 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="text-foreground font-bold tracking-wider text-sm hidden sm:block">DASHBOARD</h1>
+        <h1 className="text-foreground font-bold tracking-wider text-sm hidden sm:block">
+          {getPageTitle(pathname)}
+        </h1>
       </div>
 
       {/* Center: Search */}

@@ -6,6 +6,9 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
 import DashboardPage from './features/dashboard/DashboardPage';
+import CategoriesPage from './features/categories/CategoriesPage';
+import NewCategoryPage from './features/categories/NewCategoryPage';
+import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
   {
@@ -35,6 +38,14 @@ const router = createBrowserRouter([
           {
             path: '/',
             element: <DashboardPage />
+          },
+          {
+            path: 'categories',
+            element: <CategoriesPage />
+          },
+          {
+            path: 'categories/new',
+            element: <NewCategoryPage />
           }
         ]
       }
@@ -50,6 +61,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
+      <DatePickerStyles />
       <RouterProvider router={router} />
       <Toaster />
     </>
