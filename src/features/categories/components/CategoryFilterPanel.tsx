@@ -20,10 +20,6 @@ export interface FilterValues {
     start: Date | null;
     end: Date | null;
   };
-  productCount: {
-    min: string;
-    max: string;
-  };
   userIds: string[];
   updatedDate: Date | null;
 }
@@ -46,7 +42,6 @@ export function CategoryFilterPanel({
 }: CategoryFilterPanelProps) {
   const [filters, setFilters] = useState<FilterValues>({
     dateRange: { start: null, end: null },
-    productCount: { min: '', max: '' },
     userIds: ['1'], // Default to Maria G.
     updatedDate: null,
   });
@@ -54,7 +49,6 @@ export function CategoryFilterPanel({
   const handleClear = () => {
     setFilters({
       dateRange: { start: null, end: null },
-      productCount: { min: '', max: '' },
       userIds: [],
       updatedDate: null,
     });
@@ -68,53 +62,25 @@ export function CategoryFilterPanel({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          
+
           {/* Date Range */}
           <div className="space-y-3">
             <Label className="text-sm font-bold text-slate-700">Rango de Fecha de Creación</Label>
             <div className="grid grid-cols-2 gap-3">
               <DatePickerInput
                 value={filters.dateRange.start}
-                onChange={(date) => setFilters({...filters, dateRange: {...filters.dateRange, start: date}})}
+                onChange={(date) => setFilters({ ...filters, dateRange: { ...filters.dateRange, start: date } })}
                 maxDate={filters.dateRange.end || undefined}
                 placeholder="mm/dd/yyyy"
                 aria-label="Fecha de inicio"
               />
               <DatePickerInput
                 value={filters.dateRange.end}
-                onChange={(date) => setFilters({...filters, dateRange: {...filters.dateRange, end: date}})}
+                onChange={(date) => setFilters({ ...filters, dateRange: { ...filters.dateRange, end: date } })}
                 minDate={filters.dateRange.start || undefined}
                 placeholder="mm/dd/yyyy"
                 aria-label="Fecha de fin"
               />
-            </div>
-          </div>
-
-          {/* Product Count Range */}
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Cantidad de Productos Asociados</Label>
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">MIN</span>
-                <Input 
-                  type="number" 
-                  className="pl-10 bg-slate-50 border-slate-200 text-slate-600"
-                  placeholder="0"
-                  value={filters.productCount.min}
-                  onChange={(e) => setFilters({...filters, productCount: {...filters.productCount, min: e.target.value}})}
-                />
-              </div>
-              <span className="text-slate-300">-</span>
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">MAX</span>
-                <Input 
-                  type="number" 
-                  className="pl-10 bg-slate-50 border-slate-200 text-slate-600"
-                  placeholder="999"
-                  value={filters.productCount.max}
-                  onChange={(e) => setFilters({...filters, productCount: {...filters.productCount, max: e.target.value}})}
-                />
-              </div>
             </div>
           </div>
 
@@ -124,7 +90,7 @@ export function CategoryFilterPanel({
             <TagInput
               options={AVAILABLE_USERS}
               value={filters.userIds}
-              onChange={(userIds) => setFilters({...filters, userIds})}
+              onChange={(userIds) => setFilters({ ...filters, userIds })}
               placeholder="Seleccionar usuarios..."
             />
           </div>
@@ -134,7 +100,7 @@ export function CategoryFilterPanel({
             <Label className="text-sm font-bold text-slate-700">Última Actualización</Label>
             <DatePickerInput
               value={filters.updatedDate}
-              onChange={(date) => setFilters({...filters, updatedDate: date})}
+              onChange={(date) => setFilters({ ...filters, updatedDate: date })}
               maxDate={new Date()}
               placeholder="mm/dd/yyyy"
               iconPosition="left"
@@ -146,7 +112,7 @@ export function CategoryFilterPanel({
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-slate-100 bg-white space-y-3">
-          <Button 
+          <Button
             className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white py-6 rounded-xl text-base shadow-lg shadow-sky-500/20"
             onClick={() => {
               onApplyFilters(filters);
@@ -155,8 +121,8 @@ export function CategoryFilterPanel({
           >
             ✓ Aplicar Filtros
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-50 py-4"
             onClick={handleClear}
           >

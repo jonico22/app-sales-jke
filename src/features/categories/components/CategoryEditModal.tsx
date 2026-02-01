@@ -11,6 +11,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import type { Category } from '@/services/category.service';
+import { categoryService } from '@/services/category.service';
+import { toast } from 'sonner';
 
 // Schema Definition
 const editCategorySchema = z.object({
@@ -25,13 +28,7 @@ type EditCategoryFormValues = z.infer<typeof editCategorySchema>;
 interface CategoryEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category: {
-    id: number;
-    code: string;
-    name: string;
-    description: string;
-    status: string; // 'active' | 'inactive'
-  } | null;
+  category: Category | null;
   onSave: (data: EditCategoryFormValues) => void;
 }
 
@@ -47,7 +44,7 @@ export function CategoryEditModal({
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<EditCategoryFormValues>({
     resolver: zodResolver(editCategorySchema),
     defaultValues: {
@@ -66,15 +63,30 @@ export function CategoryEditModal({
       reset({
         code: category.code,
         name: category.name,
-        description: category.description,
-        active: category.status === 'active',
+        description: category.description || '',
+        active: category.isActive,
       });
     }
   }, [category, reset]);
 
-  const onSubmit = (data: EditCategoryFormValues) => {
-    onSave(data);
-    onOpenChange(false);
+  const onSubmit = async (data: EditCategoryFormValues) => {
+    if (!category) return;
+
+    try {
+      await categoryService.update(category.id, {
+        code: data.code,
+        name: data.name,
+        description: data.description || undefined,
+        isActive: data.active,
+      });
+
+      toast.success('Categoría actualizada exitosamente');
+      onSave(data);
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      toast.error(error.response?.data?.message || 'Error al actualizar la categoría');
+    }
   };
 
   return (
@@ -172,8 +184,9 @@ export function CategoryEditModal({
             <Button
               type="submit"
               className="bg-primary hover:bg-primary-hover text-white shadow-lg shadow-sky-500/20 px-8"
+              disabled={isSubmitting}
             >
-              Guardar Cambios
+              {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
           </DialogFooter>
         </form>

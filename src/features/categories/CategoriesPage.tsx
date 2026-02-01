@@ -1,23 +1,24 @@
-import { useState } from 'react';
-import { 
-  Plus, 
-  Search, 
-  SlidersHorizontal, 
-  ChevronDown, 
-  Pencil, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight 
+import { useState, useEffect } from 'react';
+import {
+  Plus,
+  Search,
+  SlidersHorizontal,
+  ChevronDown,
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
-import { 
-  Button, 
-  Input, 
-  Badge, 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
+import {
+  Button,
+  Input,
+  Badge,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
   TableCell,
   DropdownMenu,
   DropdownMenuTrigger,
@@ -25,60 +26,140 @@ import {
   DropdownMenuItem
 } from '@/components/ui';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { CategoryEditModal } from './components/CategoryEditModal';
 import { CategoryFilterPanel, type FilterValues } from './components/CategoryFilterPanel';
-
-// Mock Data
-const MOCK_CATEGORIES = [
-  { id: 1, code: 'CAT-001', name: 'Electrónica', description: 'Dispositivos electrónicos, gadgets y accesorios.', products: 142, status: 'active' },
-  { id: 2, code: 'CAT-002', name: 'Hogar y Muebles', description: 'Mobiliario para interiores y decoración de hogar.', products: 85, status: 'active' },
-  { id: 3, code: 'CAT-003', name: 'Juguetería', description: 'Juguetes para todas las edades y juegos de mesa.', products: 0, status: 'inactive' },
-  { id: 4, code: 'CAT-004', name: 'Ropa y Moda', description: 'Vestimenta, calzado y accesorios de temporada.', products: 320, status: 'active' },
-  { id: 5, code: 'CAT-005', name: 'Alimentos', description: 'Productos alimenticios no perecederos y bebidas.', products: 512, status: 'active' },
-];
+import { categoryService, type Category } from '@/services/category.service';
+import { alerts } from '@/utils/alerts';
 
 export default function CategoriesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<typeof MOCK_CATEGORIES[0] | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
-  const handleEditClick = (category: typeof MOCK_CATEGORIES[0]) => {
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const pageLimit = 10;
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      if (searchTerm !== debouncedSearchTerm) {
+        setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset page when status filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
+  const fetchCategories = async () => {
+    try {
+      setIsLoading(true);
+      const params: any = {
+        page: currentPage,
+        limit: pageLimit,
+      };
+
+      if (debouncedSearchTerm) {
+        params.search = debouncedSearchTerm;
+      }
+
+      if (statusFilter !== 'all') {
+        params.isActive = statusFilter === 'active';
+      }
+
+      const response = await categoryService.getAll(params);
+
+      setCategories(response.data.data || []);
+      setTotalPages(response.data.pagination.totalPages);
+      setTotalCategories(response.data.pagination.total);
+      setHasNextPage(response.data.pagination.hasNextPage);
+      setHasPrevPage(response.data.pagination.hasPrevPage);
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      toast.error(error.response?.data?.message || 'Error al cargar las categorías');
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, [currentPage, debouncedSearchTerm, statusFilter]);
+
+  const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
     setIsEditModalOpen(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSaveCategory = (data: any) => {
-    console.log('Saved data:', data);
-    // Here you would typically call an API to update the category
+  const handleSaveCategory = async () => {
     setIsEditModalOpen(false);
+    await fetchCategories(); // Refresh list after save
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    const isConfirmed = await alerts.confirm({
+      title: '¿Estás seguro?',
+      text: '¿Deseas eliminar esta categoría? Esta acción no se puede deshacer.',
+      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#ef4444' // Destructive color from tokens
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await categoryService.delete(id);
+      toast.success('Categoría eliminada exitosamente');
+      await fetchCategories(); // Refresh list
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      toast.error(error.response?.data?.message || 'Error al eliminar la categoría');
+    }
   };
 
   const handleApplyFilters = (filters: FilterValues) => {
     console.log('Applying filters:', filters);
-    // In a real app, you would fetch data or filter MOCK_CATEGORIES based on these values
+    // TODO: Implement server-side filtering when backend supports it
     setIsFilterPanelOpen(false);
   };
 
-  const filteredCategories = MOCK_CATEGORIES.filter(category => {
-    const matchesSearch = 
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      category.code.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      statusFilter === 'all' || 
-      category.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
+  // We now use server-side filtering, so we don't need to filter on the client
+  const filteredCategories = categories; // Alias for compatibility with existing render code
 
   const getStatusLabel = () => {
-    switch(statusFilter) {
+    switch (statusFilter) {
       case 'active': return 'Activos';
       case 'inactive': return 'Inactivos';
       default: return 'Todos los estados';
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (hasPrevPage) {
+      setCurrentPage(prev => prev - 1);
     }
   };
 
@@ -101,14 +182,14 @@ export default function CategoriesPage() {
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input 
-            placeholder="Buscar por nombre o código..." 
+          <Input
+            placeholder="Buscar por nombre o código..."
             className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="flex w-full sm:w-auto gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -130,8 +211,8 @@ export default function CategoriesPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1 sm:flex-none text-secondary border-slate-200 font-normal gap-2 hover:bg-accent/10"
             onClick={() => setIsFilterPanelOpen(true)}
           >
@@ -144,40 +225,52 @@ export default function CategoriesPage() {
       {/* Data Table */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-accent/40">
-            <TableRow className="hover:bg-transparent border-slate-100">
-              <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-secondary">Código</TableHead>
-              <TableHead className="w-[200px] font-bold text-xs uppercase tracking-wider text-secondary">Nombre de la Categoría</TableHead>
-              <TableHead className="font-bold text-xs uppercase tracking-wider text-secondary">Descripción</TableHead>
-              <TableHead className="w-[150px] text-center font-bold text-xs uppercase tracking-wider text-secondary">Productos Asociados</TableHead>
-              <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-secondary">Estado</TableHead>
-              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-secondary">Acciones</TableHead>
+          <TableHeader className="bg-slate-700">
+            <TableRow className="hover:bg-slate-700/90 border-slate-600">
+              <TableHead className="w-[180px] font-bold text-xs uppercase tracking-wider text-slate-100">Código</TableHead>
+              <TableHead className="w-[350px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre de la Categoría</TableHead>
+              <TableHead className="font-bold text-xs uppercase tracking-wider text-slate-100">Descripción</TableHead>
+              <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Estado</TableHead>
+              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-slate-100">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCategories.length > 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-32 text-center">
+                  <div className="flex items-center justify-center gap-2 text-slate-500">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Cargando categorías...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : filteredCategories.length > 0 ? (
               filteredCategories.map((category) => (
                 <TableRow key={category.id} className="hover:bg-accent/10 border-slate-100 transition-colors">
                   <TableCell className="font-semibold text-secondary">{category.code}</TableCell>
                   <TableCell className="font-bold text-secondary">{category.name}</TableCell>
-                  <TableCell className="text-slate-500 max-w-[300px] truncate">{category.description}</TableCell>
-                  <TableCell className="text-center font-semibold text-secondary">{category.products}</TableCell>
+                  <TableCell className="text-slate-500 max-w-[300px] truncate">{category.description || '-'}</TableCell>
                   <TableCell>
-                    <Badge variant={category.status === 'active' ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
-                      {category.status === 'active' ? 'Activo' : 'Inactivo'}
+                    <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
+                      {category.isActive ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-accent/20"
                         onClick={() => handleEditClick(category)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-destructive hover:bg-destructive/10">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-slate-400 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteCategory(category.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -186,8 +279,28 @@ export default function CategoriesPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-slate-500">
-                  No se encontraron resultados
+                <TableCell colSpan={5} className="h-64 text-center">
+                  <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                      <Search className="h-8 w-8 text-slate-300" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                      No se encontraron categorías
+                    </h3>
+                    <p className="text-slate-500 max-w-sm mb-6">
+                      No hay categorías que coincidan con tu búsqueda o los filtros seleccionados.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setStatusFilter('all');
+                      }}
+                      className="border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30"
+                    >
+                      Limpiar filtros
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -197,31 +310,47 @@ export default function CategoriesPage() {
         {/* Pagination */}
         <div className="flex items-center justify-between p-4 border-t border-slate-100">
           <div className="text-sm text-slate-500">
-            Mostrando <span className="font-semibold text-secondary">{filteredCategories.length > 0 ? 1 : 0}-{filteredCategories.length}</span> de <span className="font-semibold text-secondary">{MOCK_CATEGORIES.length}</span> categorías
+            Mostrando <span className="font-semibold text-secondary">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-secondary">{totalCategories}</span> categorías
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 disabled:opacity-50 text-slate-500 border-slate-200" disabled>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 disabled:opacity-50 text-slate-500 border-slate-200"
+              disabled={!hasPrevPage || isLoading}
+              onClick={handlePrevPage}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 text-slate-500 border-slate-200 hover:bg-accent/10 hover:text-secondary">
+            <div className="text-sm text-slate-600 min-w-[80px] text-center">
+              Página {currentPage} de {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 text-slate-500 border-slate-200 hover:bg-accent/10 hover:text-secondary disabled:opacity-50"
+              disabled={!hasNextPage || isLoading}
+              onClick={handleNextPage}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      <CategoryFilterPanel 
-        open={isFilterPanelOpen} 
-        onOpenChange={setIsFilterPanelOpen} 
+      <CategoryFilterPanel
+        open={isFilterPanelOpen}
+        onOpenChange={setIsFilterPanelOpen}
         onApplyFilters={handleApplyFilters}
       />
 
-      <CategoryEditModal 
-        open={isEditModalOpen} 
-        onOpenChange={setIsEditModalOpen} 
-        category={selectedCategory} 
+      <CategoryEditModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        category={selectedCategory}
         onSave={handleSaveCategory}
       />
     </div>
   );
 }
+
