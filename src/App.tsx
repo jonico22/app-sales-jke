@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import DashboardLayout from './components/layout/DashboardLayout';
 import AuthLayout from './features/auth/AuthLayout';
 import LoginPage from './features/auth/LoginPage';
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
+import ResetPasswordPage from './features/auth/ResetPasswordPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
@@ -12,7 +14,7 @@ import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
   {
-    path: '/login',
+    path: '/auth',
     element: <PublicRoute />,
     children: [
       {
@@ -20,8 +22,16 @@ const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           {
-            path: '',
+            path: 'login',
             element: <LoginPage />
+          },
+          {
+            path: 'forgot-password',
+            element: <ForgotPasswordPage />
+          },
+          {
+            path: 'reset-password',
+            element: <ResetPasswordPage />
           }
         ]
       }
@@ -54,7 +64,7 @@ const router = createBrowserRouter([
   // Catch-all
   {
     path: '*',
-    element: <Navigate to="/login" replace />
+    element: <Navigate to="/auth/login" replace />
   }
 ]);
 
