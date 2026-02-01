@@ -140,11 +140,11 @@ export default function ProductsPage() {
         }
     };
 
-    const formatCurrency = (value: number) => {
+    const formatCurrency = (value: string | number) => {
         return new Intl.NumberFormat('es-PE', {
             style: 'currency',
             currency: 'PEN'
-        }).format(value);
+        }).format(Number(value));
     };
 
     return (
@@ -211,7 +211,8 @@ export default function ProductsPage() {
                     <TableHeader className="bg-slate-700">
                         <TableRow className="hover:bg-slate-700/90 border-slate-600">
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Código</TableHead>
-                            <TableHead className="w-[280px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre del Producto</TableHead>
+                            <TableHead className="w-[250px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre del Producto</TableHead>
+                            <TableHead className="w-[150px] font-bold text-xs uppercase tracking-wider text-slate-100">Categoría</TableHead>
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Costo</TableHead>
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Venta</TableHead>
                             <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Stock</TableHead>
@@ -222,7 +223,7 @@ export default function ProductsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-32 text-center">
+                                <TableCell colSpan={8} className="h-32 text-center">
                                     <div className="flex items-center justify-center gap-2 text-slate-500">
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                         <span>Cargando productos...</span>
@@ -232,8 +233,9 @@ export default function ProductsPage() {
                         ) : products.length > 0 ? (
                             products.map((product) => (
                                 <TableRow key={product.id} className="hover:bg-accent/10 border-slate-100 transition-colors">
-                                    <TableCell className="font-semibold text-secondary">{product.code}</TableCell>
+                                    <TableCell className="font-semibold text-secondary">{product.code || '-'}</TableCell>
                                     <TableCell className="font-bold text-secondary">{product.name}</TableCell>
+                                    <TableCell className="text-slate-600">{product.category?.name || '-'}</TableCell>
                                     <TableCell className="text-slate-600">{formatCurrency(product.priceCost)}</TableCell>
                                     <TableCell className="text-slate-600 font-semibold">{formatCurrency(product.price)}</TableCell>
                                     <TableCell>
@@ -274,7 +276,7 @@ export default function ProductsPage() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-64 text-center">
+                                <TableCell colSpan={8} className="h-64 text-center">
                                     <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
                                         <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                                             <Package className="h-8 w-8 text-slate-300" />

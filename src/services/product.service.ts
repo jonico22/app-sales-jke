@@ -1,19 +1,29 @@
 import api from './api.client';
 
+export interface ProductCategory {
+    name: string;
+}
+
 export interface Product {
     id: string;
-    code: string;
+    code?: string;
     name: string;
     description: string | null;
-    price: number;
-    priceCost: number;
+    price: string;
+    priceCost: string;
     stock: number;
     minStock: number;
+    societyId: string;
     categoryId: string;
     imageId: string | null;
     isActive: boolean;
+    isDeleted: boolean;
     createdAt: string;
     updatedAt: string;
+    createdBy: string;
+    updatedBy: string | null;
+    category: ProductCategory | null;
+    image: string | null;
 }
 
 export interface CreateProductRequest {
