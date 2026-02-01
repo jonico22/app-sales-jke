@@ -5,7 +5,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button, Input, Label } from '@/components/ui';
+import { Button, Label } from '@/components/ui';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
 import { TagInput, type TagOption } from '@/components/shared/TagInput';
 
