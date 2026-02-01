@@ -72,6 +72,26 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface MeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: User;
+    role: Role;
+    token: string;
+    expiresAt: string;
+  };
+}
+
+export interface RefreshSessionResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+    expiresAt: string;
+  };
+}
+
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     const response = await api.post<LoginResponse>('/auth/login', credentials);
@@ -79,6 +99,14 @@ export const authService = {
   },
   logout: async (): Promise<void> => {
     await api.post('/auth/logout');
+  },
+  getMe: async (): Promise<MeResponse> => {
+    const response = await api.get<MeResponse>('/auth/me');
+    return response.data;
+  },
+  refreshSession: async (): Promise<RefreshSessionResponse> => {
+    const response = await api.post<RefreshSessionResponse>('/auth/refresh-session');
+    return response.data;
   },
   forgotPassword: async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
     const response = await api.post<ForgotPasswordResponse>('/auth/forgot-password', data);
