@@ -1,5 +1,5 @@
 import { type LabelHTMLAttributes, forwardRef } from 'react';
-import { cn } from './button';
+import { cn } from '@/lib/utils';
 
 const Label = forwardRef<HTMLLabelElement, LabelHTMLAttributes<HTMLLabelElement>>(
   ({ className, ...props }, ref) => (

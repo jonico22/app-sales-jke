@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/lib/utils';
 
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
   { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  { name: 'Categorías', href: '/categories', icon: Tags },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Ventas', href: '/sales', icon: ShoppingCart },
   { name: 'Reportes', href: '/reports', icon: FileText },
