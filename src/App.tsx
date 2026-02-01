@@ -1,10 +1,11 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
+import DashboardLayout from './components/layout/DashboardLayout';
 import AuthLayout from './features/auth/AuthLayout';
 import LoginPage from './features/auth/LoginPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
+import DashboardPage from './features/dashboard/DashboardPage';
 
 const router = createBrowserRouter([
   {
@@ -29,17 +30,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <MainLayout />,
+        element: <DashboardLayout />,
         children: [
           {
             path: '/',
-            element: (
-              <div className="space-y-6">
-                <h1 className="font-headings text-4xl font-bold text-primary">Welcome Back</h1>
-                {/* ... existing dashboard placeholder content ... */}
-                <p>Dashboard Content will go here</p>
-              </div>
-            )
+            element: <DashboardPage />
           }
         ]
       }

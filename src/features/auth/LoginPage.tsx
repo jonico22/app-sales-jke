@@ -27,6 +27,7 @@ export default function LoginPage() {
       login(response.data); // Update global store
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
       navigate('/');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
