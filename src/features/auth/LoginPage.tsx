@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Input, Label, Card } from '@/components/ui';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -12,15 +15,23 @@ const loginSchema = z.object({
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginSchema) => {
-    // Simulate login delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Login data:', data);
-    toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
+    try {
+      const response = await authService.login({ email: data.email, password: data.password });
+      login(response.data); // Update global store
+      toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
+      navigate('/');
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -35,10 +46,10 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Correo Electrónico</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="usuario@jkesolutions.com" 
+          <Input
+            id="email"
+            type="email"
+            placeholder="usuario@jkesolutions.com"
             {...register('email')}
             className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
           />
@@ -49,14 +60,14 @@ export default function LoginPage() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Contraseña</Label>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="••••••••" 
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
             {...register('password')}
-             className={errors.password ? "border-destructive focus-visible:ring-destructive" : ""}
+            className={errors.password ? "border-destructive focus-visible:ring-destructive" : ""}
           />
-           {errors.password && (
+          {errors.password && (
             <span className="text-xs text-destructive font-medium">{errors.password.message}</span>
           )}
         </div>
