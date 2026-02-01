@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu } from 'lucide-react';
+import { Search, Bell, ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -12,12 +12,17 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -69,10 +74,81 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       {/* Right: Actions & Profile */}
       <div className="flex items-center gap-6">
         {/* Notifications */}
-        <button className="relative text-slate-500 hover:text-slate-700 transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border-2 border-white translate-x-1/4 -translate-y-1/4"></span>
-        </button>
+        <div className="relative" ref={notificationRef}>
+          <button 
+            className="relative text-slate-500 hover:text-slate-700 transition-colors pt-1"
+            onClick={() => setShowNotifications(!showNotifications)}
+          >
+            <Bell className="h-6 w-6" />
+            <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white translate-x-1/4 -translate-y-1/4"></span>
+          </button>
+
+          {/* Notification Dropdown */}
+          {showNotifications && (
+            <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+               {/* Header */}
+               <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center justify-between">
+                 <h3 className="font-bold text-slate-800 text-sm">Notificaciones</h3>
+                 <button className="text-[10px] font-bold text-[#0ea5e9] hover:text-sky-700 uppercase tracking-wide">
+                   Marcar todas como leídas
+                 </button>
+               </div>
+
+               {/* List */}
+               <div className="max-h-[300px] overflow-y-auto">
+                 {/* Item 1: Low Stock */}
+                 <div className="px-4 py-3 border-b border-slate-100/60 hover:bg-slate-50 transition-colors cursor-pointer group flex gap-3">
+                   <div className="bg-orange-50 p-2 rounded-full h-fit flex-shrink-0 group-hover:bg-orange-100 transition-colors">
+                     <AlertTriangle className="h-5 w-5 text-orange-500" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <div className="flex justify-between items-start mb-0.5">
+                       <p className="text-sm font-semibold text-slate-800 truncate pr-2">Stock Bajo: Mouse Ergonómico</p>
+                       <span className="h-2 w-2 rounded-full bg-red-500 flex-shrink-0 mt-1.5"></span>
+                     </div>
+                     <p className="text-xs text-slate-500 mb-1.5 line-clamp-2">Quedan solo 3 unidades en inventario.</p>
+                     <p className="text-[10px] text-slate-400 font-medium">Hace 2 min</p>
+                   </div>
+                 </div>
+
+                 {/* Item 2: Sale */}
+                 <div className="px-4 py-3 border-b border-slate-100/60 hover:bg-slate-50 transition-colors cursor-pointer group flex gap-3">
+                   <div className="bg-green-50 p-2 rounded-full h-fit flex-shrink-0 group-hover:bg-green-100 transition-colors">
+                     <CheckCircle2 className="h-5 w-5 text-green-500" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <div className="flex justify-between items-start mb-0.5">
+                       <p className="text-sm font-semibold text-slate-800 truncate pr-2">Venta Realizada: Ticket #1025</p>
+                     </div>
+                     <p className="text-xs text-slate-500 mb-1.5 line-clamp-2">Venta confirmada por $1,250.00.</p>
+                     <p className="text-[10px] text-slate-400 font-medium">Hace 15 min</p>
+                   </div>
+                 </div>
+
+                 {/* Item 3: Info */}
+                 <div className="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group flex gap-3">
+                   <div className="bg-blue-50 p-2 rounded-full h-fit flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                     <Info className="h-5 w-5 text-blue-500" />
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <div className="flex justify-between items-start mb-0.5">
+                       <p className="text-sm font-semibold text-slate-800 truncate pr-2">Reporte Mensual Listo</p>
+                     </div>
+                     <p className="text-xs text-slate-500 mb-1.5 line-clamp-2">Tu reporte de ventas está disponible.</p>
+                     <p className="text-[10px] text-slate-400 font-medium">Hace 3 horas</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Footer */}
+               <div className="px-4 py-3 bg-slate-50/50 text-center border-t border-slate-100">
+                 <button className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                   Ver todas las notificaciones
+                 </button>
+               </div>
+            </div>
+          )}
+        </div>
 
         {/* Divider */}
         <div className="h-8 w-px bg-slate-200"></div>
