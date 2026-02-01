@@ -53,10 +53,28 @@ export interface DeleteCategoryResponse {
     message: string;
 }
 
+export interface CategorySelectOption {
+    id: string;
+    name: string;
+    code: string;
+}
+
+export interface CategoriesSelectResponse {
+    success: boolean;
+    message: string;
+    data: CategorySelectOption[];
+}
+
 export const categoryService = {
     // Get all categories
     getAll: async (params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<CategoriesResponse> => {
         const response = await api.get<CategoriesResponse>('/sales/categories', { params });
+        return response.data;
+    },
+
+    // Get categories for select dropdowns (lightweight)
+    getForSelect: async (): Promise<CategoriesSelectResponse> => {
+        const response = await api.get<CategoriesSelectResponse>('/sales/categories/select');
         return response.data;
     },
 

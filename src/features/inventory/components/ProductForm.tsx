@@ -1,52 +1,93 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Camera, 
-  Plus, 
-  Package, 
-  Bell, 
-  DollarSign, 
+import {
+  Camera,
+  Plus,
+  Package,
+  Bell,
+  DollarSign,
   Save,
   Wand2
 } from 'lucide-react';
 import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
-import { PRODUCT_CATEGORIES } from '@/lib/constants';
 import { generateSku } from '@/lib/utils';
+import { productService } from '@/services/product.service';
+import { categoryService, type CategorySelectOption } from '@/services/category.service';
+import { toast } from 'sonner';
 
 const productSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
-  category: z.string().min(1, { message: "La categoría es obligatoria" }),
+  categoryId: z.string().min(1, { message: "La categoría es obligatoria" }),
   sku: z.string().min(1, { message: "El SKU es obligatorio" }),
-  stockInitial: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
-  stockMin: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
-  pricePurchase: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
-  priceSale: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
+  stock: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
+  minStock: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
+  priceCost: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
+  price: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
   description: z.string().optional(),
-  active: z.boolean().default(true),
+  isActive: z.boolean().default(true),
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductFormValues = z.output<typeof productSchema>;
 
 export default function ProductForm() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategorySelectOption[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
-    resolver: zodResolver(productSchema),
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryService.getForSelect();
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast.error('Error al cargar las categorías');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const { register, handleSubmit, control, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema) as any,
     defaultValues: {
-      active: true,
-      stockInitial: 0,
-      stockMin: 0,
-      pricePurchase: 0.00,
-      priceSale: 0.00
+      name: '',
+      categoryId: '',
+      sku: '',
+      description: '',
+      isActive: true,
+      stock: 0,
+      minStock: 0,
+      priceCost: 0,
+      price: 0
     }
   });
 
-  const onSubmit = (data: ProductFormValues) => {
-    console.log('Product Data:', data);
-    // Submit logic here
+  const onSubmit = async (data: ProductFormValues) => {
+    try {
+      await productService.create({
+        name: data.name,
+        description: data.description || undefined,
+        price: data.price,
+        priceCost: data.priceCost,
+        stock: data.stock,
+        minStock: data.minStock,
+        categoryId: data.categoryId,
+        isActive: data.isActive,
+        code: data.sku
+      });
+      toast.success('Producto guardado exitosamente');
+      reset();
+      setPreviewImage(null);
+    } catch (error: any) {
+      console.error('Error saving product:', error);
+      toast.error(error.response?.data?.message || 'Error al guardar el producto');
+    }
   };
 
   const handleGenerateSku = () => {
@@ -67,7 +108,7 @@ export default function ProductForm() {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:p-8">
-      
+
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-sky-50 p-2.5 rounded-lg">
@@ -86,7 +127,7 @@ export default function ProductForm() {
         {/* Image Upload */}
         <div className="space-y-2">
           <Label>IMAGEN (OPCIONAL)</Label>
-          <div 
+          <div
             className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 p-4 flex items-center justify-center gap-4 hover:bg-slate-50 transition-colors cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -103,10 +144,10 @@ export default function ProductForm() {
               </span>
               <p className="text-xs text-slate-400 mt-1">PNG, JPG hasta 5MB</p>
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
               accept="image/*"
               onChange={handleImageUpload}
             />
@@ -116,9 +157,9 @@ export default function ProductForm() {
         {/* Product Name */}
         <div className="space-y-2">
           <Label htmlFor="name">NOMBRE DEL PRODUCTO</Label>
-          <Input 
-            id="name" 
-            placeholder="Ej. Monitor UltraWide 34&quot;" 
+          <Input
+            id="name"
+            placeholder="Ej. Monitor UltraWide 34&quot;"
             {...register('name')}
             className={errors.name ? "border-destructive bg-red-50" : "bg-white"}
           />
@@ -127,19 +168,19 @@ export default function ProductForm() {
 
         {/* Category & Action */}
         <div className="space-y-2">
-          <Label htmlFor="category">CATEGORÍA</Label>
+          <Label htmlFor="categoryId">CATEGORÍA</Label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <select 
-                id="category"
-                {...register('category')}
-                className="w-full h-10 px-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent appearance-none text-slate-600"
+              <select
+                id="categoryId"
+                {...register('categoryId')}
+                disabled={isLoadingCategories}
+                className="w-full h-10 px-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent appearance-none text-slate-600 disabled:bg-slate-50 disabled:cursor-not-allowed"
               >
-
-                <option value="">Seleccionar...</option>
-                {PRODUCT_CATEGORIES.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.label}
+                <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
+                {categories.map((cat) => (
+                  <option key={cat.code} value={cat.code}>
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -151,22 +192,22 @@ export default function ProductForm() {
               <Plus className="h-5 w-5 text-white" />
             </Button>
           </div>
-          {errors.category && <span className="text-xs text-destructive">{errors.category.message}</span>}
+          {errors.categoryId && <span className="text-xs text-destructive">{errors.categoryId.message}</span>}
         </div>
 
         {/* SKU */}
         <div className="space-y-2">
           <Label htmlFor="sku">SKU / CÓDIGO</Label>
           <div className="flex gap-2">
-            <Input 
-              id="sku" 
-              placeholder="Ej. JKE-2024-001" 
+            <Input
+              id="sku"
+              placeholder="Ej. JKE-2024-001"
               {...register('sku')}
               className={errors.sku ? "border-destructive bg-red-50" : "bg-white"}
             />
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               size="icon"
               onClick={handleGenerateSku}
               title="Generar SKU Aleatorio"
@@ -180,28 +221,28 @@ export default function ProductForm() {
         {/* Stock Row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="stockInitial">STOCK INICIAL</Label>
+            <Label htmlFor="stock">STOCK INICIAL</Label>
             <div className="relative">
               <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                id="stockInitial" 
-                type="number" 
-                className="pl-9 bg-white" 
+              <Input
+                id="stock"
+                type="number"
+                className="pl-9 bg-white"
                 placeholder="0"
-                {...register('stockInitial')} 
+                {...register('stock')}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="stockMin">STOCK MÍNIMO</Label>
+            <Label htmlFor="minStock">STOCK MÍNIMO</Label>
             <div className="relative">
               <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                id="stockMin" 
-                type="number" 
-                className="pl-9 bg-white" 
+              <Input
+                id="minStock"
+                type="number"
+                className="pl-9 bg-white"
                 placeholder="0"
-                {...register('stockMin')} 
+                {...register('minStock')}
               />
             </div>
           </div>
@@ -210,30 +251,30 @@ export default function ProductForm() {
         {/* Price Row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="pricePurchase">PRECIO COMPRA</Label>
+            <Label htmlFor="priceCost">PRECIO COSTO</Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                id="pricePurchase" 
-                type="number" 
-                step="0.01" 
-                className="pl-9 bg-white" 
+              <Input
+                id="priceCost"
+                type="number"
+                step="0.01"
+                className="pl-9 bg-white"
                 placeholder="0.00"
-                {...register('pricePurchase')} 
+                {...register('priceCost')}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="priceSale">PRECIO VENTA</Label>
+            <Label htmlFor="price">PRECIO VENTA</Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                id="priceSale" 
-                type="number" 
-                step="0.01" 
-                className="pl-9 bg-white" 
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                className="pl-9 bg-white"
                 placeholder="0.00"
-                {...register('priceSale')} 
+                {...register('price')}
               />
             </div>
           </div>
@@ -242,9 +283,9 @@ export default function ProductForm() {
         {/* Description */}
         <div className="space-y-2">
           <Label htmlFor="description">DESCRIPCIÓN (OPCIONAL)</Label>
-          <Textarea 
-            id="description" 
-            placeholder="Características detalladas del producto..." 
+          <Textarea
+            id="description"
+            placeholder="Características detalladas del producto..."
             className="bg-white min-h-[100px] resize-none"
             {...register('description')}
           />
@@ -257,11 +298,11 @@ export default function ProductForm() {
             <p className="text-[10px] text-slate-400">Habilitar visibilidad en catálogo</p>
           </div>
           <Controller
-            name="active"
+            name="isActive"
             control={control}
             render={({ field: { value, ...field } }) => (
-              <Switch 
-                id="active" 
+              <Switch
+                id="isActive"
                 checked={value}
                 {...field}
               />
@@ -270,11 +311,12 @@ export default function ProductForm() {
         </div>
 
         {/* Submit */}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
+          disabled={isSubmitting}
           className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white py-6 rounded-xl text-base font-bold shadow-lg shadow-sky-500/20 mt-4"
         >
-          <Save className="mr-2 h-5 w-5" /> Guardar Productos
+          <Save className="mr-2 h-5 w-5" /> {isSubmitting ? 'Guardando...' : 'Guardar Producto'}
         </Button>
 
       </form>

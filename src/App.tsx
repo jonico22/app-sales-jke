@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui';
 import DashboardPage from './features/dashboard/DashboardPage';
 import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
+import ProductsPage from './features/inventory/ProductsPage';
 import NewInventoryPage from './features/inventory/NewInventoryPage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
           {
             path: 'categories/new',
             element: <NewCategoryPage />
+          },
+          {
+            path: 'inventory',
+            element: <ProductsPage />
           },
           {
             path: 'inventory/new',
