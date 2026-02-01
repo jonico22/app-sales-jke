@@ -48,7 +48,7 @@ export const authService = {
     const response = await api.post<LoginResponse>('/auth/login', credentials);
     return response.data;
   },
-  logout: () => {
-    // Backend logout handling can go here if needed
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
   },
 };

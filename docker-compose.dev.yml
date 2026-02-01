@@ -1,0 +1,25 @@
+version: '3.8'
+
+# Development docker-compose file
+# Usage: docker-compose -f docker-compose.dev.yml up
+
+services:
+  app-sales:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:3000/api}
+    container_name: app-sales-jke-dev
+    ports:
+      - "5173:5173" # Vite dev server port
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.app.json:/app/tsconfig.app.json
+    environment:
+      - NODE_ENV=development
+    command: npm run dev

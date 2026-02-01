@@ -7,7 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:dev:build": "docker-compose -f docker-compose.dev.yml up --build",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:prod": "docker-compose up -d",
+    "docker:prod:build": "docker-compose up -d --build",
+    "docker:prod:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:stop": "docker-compose stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
