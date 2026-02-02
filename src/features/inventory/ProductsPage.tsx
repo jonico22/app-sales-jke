@@ -31,12 +31,28 @@ import { toast } from 'sonner';
 import { productService, type Product } from '@/services/product.service';
 import { alerts } from '@/utils/alerts';
 import { ProductEditPanel } from './components/ProductEditPanel';
+import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+    const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+    const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
+        createdBy: undefined,
+        createdAtFrom: null,
+        createdAtTo: null,
+        updatedAtFrom: null,
+        updatedAtTo: null,
+        priceFrom: '',
+        priceTo: '',
+        priceCostFrom: '',
+        priceCostTo: '',
+        stockFrom: '',
+        stockTo: '',
+        lowStock: false,
+    });
 
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -91,6 +107,36 @@ export default function ProductsPage() {
                 params.isActive = statusFilter === 'active';
             }
 
+            // Add advanced filters
+            if (advancedFilters.createdBy) {
+                params.createdBy = advancedFilters.createdBy;
+            }
+            if (advancedFilters.createdAtFrom) {
+                const date = advancedFilters.createdAtFrom;
+                params.createdAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.createdAtTo) {
+                const date = advancedFilters.createdAtTo;
+                params.createdAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.updatedAtFrom) {
+                const date = advancedFilters.updatedAtFrom;
+                params.updatedAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.updatedAtTo) {
+                const date = advancedFilters.updatedAtTo;
+                params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            // New Filters
+            if (advancedFilters.priceFrom) params.priceFrom = Number(advancedFilters.priceFrom);
+            if (advancedFilters.priceTo) params.priceTo = Number(advancedFilters.priceTo);
+            if (advancedFilters.priceCostFrom) params.priceCostFrom = Number(advancedFilters.priceCostFrom);
+            if (advancedFilters.priceCostTo) params.priceCostTo = Number(advancedFilters.priceCostTo);
+            if (advancedFilters.stockFrom) params.stockFrom = Number(advancedFilters.stockFrom);
+            if (advancedFilters.stockTo) params.stockTo = Number(advancedFilters.stockTo);
+            if (advancedFilters.lowStock) params.lowStock = true;
+
             const response = await productService.getAll(params);
 
             setProducts(response.data.data || []);
@@ -110,7 +156,7 @@ export default function ProductsPage() {
 
     useEffect(() => {
         fetchProducts();
-    }, [currentPage, debouncedSearchTerm, statusFilter]);
+    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
 
     const handleDeleteProduct = async (id: string) => {
         const isConfirmed = await alerts.confirm({
@@ -158,6 +204,12 @@ export default function ProductsPage() {
             style: 'currency',
             currency: 'PEN'
         }).format(Number(value));
+    };
+
+    const handleApplyFilters = (filters: FilterValues) => {
+        setAdvancedFilters(filters);
+        setCurrentPage(1); // Reset to first page when applying filters
+        setIsFilterPanelOpen(false);
     };
 
     return (
@@ -211,6 +263,7 @@ export default function ProductsPage() {
                     <Button
                         variant="outline"
                         className="flex-1 sm:flex-none text-secondary border-slate-200 font-normal gap-2 hover:bg-accent/10"
+                        onClick={() => setIsFilterPanelOpen(true)}
                     >
                         <SlidersHorizontal className="h-4 w-4" />
                         Más Filtros
@@ -308,6 +361,20 @@ export default function ProductsPage() {
                                             onClick={() => {
                                                 setSearchTerm('');
                                                 setStatusFilter('all');
+                                                setAdvancedFilters({
+                                                    createdBy: undefined,
+                                                    createdAtFrom: null,
+                                                    createdAtTo: null,
+                                                    updatedAtFrom: null,
+                                                    updatedAtTo: null,
+                                                    priceFrom: '',
+                                                    priceTo: '',
+                                                    priceCostFrom: '',
+                                                    priceCostTo: '',
+                                                    stockFrom: '',
+                                                    stockTo: '',
+                                                    lowStock: false,
+                                                });
                                             }}
                                             className="border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30"
                                         >
@@ -357,6 +424,12 @@ export default function ProductsPage() {
                 onOpenChange={setEditPanelOpen}
                 productId={selectedProductId}
                 onSuccess={fetchProducts}
+            />
+
+            <ProductFilterPanel
+                open={isFilterPanelOpen}
+                onOpenChange={setIsFilterPanelOpen}
+                onApplyFilters={handleApplyFilters}
             />
         </div>
     );

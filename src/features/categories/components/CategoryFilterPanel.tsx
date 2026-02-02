@@ -16,12 +16,11 @@ interface CategoryFilterPanelProps {
 }
 
 export interface FilterValues {
-  dateRange: {
-    start: Date | null;
-    end: Date | null;
-  };
-  userIds: string[];
-  updatedDate: Date | null;
+  createdBy?: string;
+  createdAtFrom: Date | null;
+  createdAtTo: Date | null;
+  updatedAtFrom: Date | null;
+  updatedAtTo: Date | null;
 }
 
 // Mock users data - in a real app, this would come from an API
@@ -41,17 +40,24 @@ export function CategoryFilterPanel({
   onApplyFilters,
 }: CategoryFilterPanelProps) {
   const [filters, setFilters] = useState<FilterValues>({
-    dateRange: { start: null, end: null },
-    userIds: ['1'], // Default to Maria G.
-    updatedDate: null,
+    createdBy: undefined,
+    createdAtFrom: null,
+    createdAtTo: null,
+    updatedAtFrom: null,
+    updatedAtTo: null,
   });
 
   const handleClear = () => {
-    setFilters({
-      dateRange: { start: null, end: null },
-      userIds: [],
-      updatedDate: null,
-    });
+    const emptyFilters = {
+      createdBy: undefined,
+      createdAtFrom: null,
+      createdAtTo: null,
+      updatedAtFrom: null,
+      updatedAtTo: null,
+    };
+    setFilters(emptyFilters);
+    onApplyFilters(emptyFilters);
+    onOpenChange(false);
   };
 
   return (
@@ -63,49 +69,58 @@ export function CategoryFilterPanel({
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
-          {/* Date Range */}
+          {/* Created By */}
+          <div className="space-y-3">
+            <Label className="text-sm font-bold text-slate-700">Creado por (UUID)</Label>
+            <TagInput
+              options={AVAILABLE_USERS}
+              value={filters.createdBy ? [filters.createdBy] : []}
+              onChange={(userIds) => setFilters({ ...filters, createdBy: userIds[0] })}
+              placeholder="Seleccionar usuario..."
+              maxTags={1}
+            />
+          </div>
+
+          {/* Creation Date Range */}
           <div className="space-y-3">
             <Label className="text-sm font-bold text-slate-700">Rango de Fecha de Creación</Label>
             <div className="grid grid-cols-2 gap-3">
               <DatePickerInput
-                value={filters.dateRange.start}
-                onChange={(date) => setFilters({ ...filters, dateRange: { ...filters.dateRange, start: date } })}
-                maxDate={filters.dateRange.end || undefined}
-                placeholder="mm/dd/yyyy"
-                aria-label="Fecha de inicio"
+                value={filters.createdAtFrom}
+                onChange={(date) => setFilters({ ...filters, createdAtFrom: date })}
+                maxDate={filters.createdAtTo || undefined}
+                placeholder="dd/mm/aaaa"
+                aria-label="Fecha inicio creación"
               />
               <DatePickerInput
-                value={filters.dateRange.end}
-                onChange={(date) => setFilters({ ...filters, dateRange: { ...filters.dateRange, end: date } })}
-                minDate={filters.dateRange.start || undefined}
-                placeholder="mm/dd/yyyy"
-                aria-label="Fecha de fin"
+                value={filters.createdAtTo}
+                onChange={(date) => setFilters({ ...filters, createdAtTo: date })}
+                minDate={filters.createdAtFrom || undefined}
+                placeholder="dd/mm/aaaa"
+                aria-label="Fecha fin creación"
               />
             </div>
           </div>
 
-          {/* Created By (Tags) */}
+          {/* Update Date Range */}
           <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Creado por</Label>
-            <TagInput
-              options={AVAILABLE_USERS}
-              value={filters.userIds}
-              onChange={(userIds) => setFilters({ ...filters, userIds })}
-              placeholder="Seleccionar usuarios..."
-            />
-          </div>
-
-          {/* Last Update */}
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Última Actualización</Label>
-            <DatePickerInput
-              value={filters.updatedDate}
-              onChange={(date) => setFilters({ ...filters, updatedDate: date })}
-              maxDate={new Date()}
-              placeholder="mm/dd/yyyy"
-              iconPosition="left"
-              aria-label="Última actualización"
-            />
+            <Label className="text-sm font-bold text-slate-700">Rango de Fecha de Actualización</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <DatePickerInput
+                value={filters.updatedAtFrom}
+                onChange={(date) => setFilters({ ...filters, updatedAtFrom: date })}
+                maxDate={filters.updatedAtTo || undefined}
+                placeholder="dd/mm/aaaa"
+                aria-label="Fecha inicio actualización"
+              />
+              <DatePickerInput
+                value={filters.updatedAtTo}
+                onChange={(date) => setFilters({ ...filters, updatedAtTo: date })}
+                minDate={filters.updatedAtFrom || undefined}
+                placeholder="dd/mm/aaaa"
+                aria-label="Fecha fin actualización"
+              />
+            </div>
           </div>
 
         </div>

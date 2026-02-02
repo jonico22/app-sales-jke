@@ -84,7 +84,25 @@ export interface DeleteProductResponse {
 
 export const productService = {
     // Get all products
-    getAll: async (params?: { page?: number; limit?: number; search?: string; isActive?: boolean; categoryId?: string }): Promise<ProductsResponse> => {
+    getAll: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        isActive?: boolean;
+        categoryId?: string;
+        createdBy?: string;
+        createdAtFrom?: string;
+        createdAtTo?: string;
+        updatedAtFrom?: string;
+        updatedAtTo?: string;
+        priceFrom?: number;
+        priceTo?: number;
+        priceCostFrom?: number;
+        priceCostTo?: number;
+        stockFrom?: number;
+        stockTo?: number;
+        lowStock?: boolean;
+    }): Promise<ProductsResponse> => {
         const response = await api.get<ProductsResponse>('/sales/products', { params });
         return response.data;
     },

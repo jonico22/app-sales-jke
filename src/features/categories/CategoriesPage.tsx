@@ -40,6 +40,13 @@ export default function CategoriesPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
+    createdBy: undefined,
+    createdAtFrom: null,
+    createdAtTo: null,
+    updatedAtFrom: null,
+    updatedAtTo: null,
+  });
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -84,6 +91,27 @@ export default function CategoriesPage() {
         params.isActive = statusFilter === 'active';
       }
 
+      // Add advanced filters
+      if (advancedFilters.createdBy) {
+        params.createdBy = advancedFilters.createdBy;
+      }
+      if (advancedFilters.createdAtFrom) {
+        const date = advancedFilters.createdAtFrom;
+        params.createdAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+      if (advancedFilters.createdAtTo) {
+        const date = advancedFilters.createdAtTo;
+        params.createdAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+      if (advancedFilters.updatedAtFrom) {
+        const date = advancedFilters.updatedAtFrom;
+        params.updatedAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+      if (advancedFilters.updatedAtTo) {
+        const date = advancedFilters.updatedAtTo;
+        params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+
       const response = await categoryService.getAll(params);
 
       setCategories(response.data.data || []);
@@ -102,7 +130,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, [currentPage, debouncedSearchTerm, statusFilter]);
+  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
 
   const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
@@ -135,8 +163,8 @@ export default function CategoriesPage() {
   };
 
   const handleApplyFilters = (filters: FilterValues) => {
-    console.log('Applying filters:', filters);
-    // TODO: Implement server-side filtering when backend supports it
+    setAdvancedFilters(filters);
+    setCurrentPage(1); // Reset to first page when applying filters
     setIsFilterPanelOpen(false);
   };
 
@@ -299,6 +327,13 @@ export default function CategoriesPage() {
                       onClick={() => {
                         setSearchTerm('');
                         setStatusFilter('all');
+                        setAdvancedFilters({
+                          createdBy: undefined,
+                          createdAtFrom: null,
+                          createdAtTo: null,
+                          updatedAtFrom: null,
+                          updatedAtTo: null,
+                        });
                       }}
                       className="border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30"
                     >
