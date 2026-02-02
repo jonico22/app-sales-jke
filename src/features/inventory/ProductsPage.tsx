@@ -98,7 +98,7 @@ export default function ProductsPage() {
             setTotalProducts(response.data.pagination.total);
             setHasNextPage(response.data.pagination.hasNextPage);
             setHasPrevPage(response.data.pagination.hasPrevPage);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Error fetching products:', error);
             toast.error(error.response?.data?.message || 'Error al cargar los productos');
@@ -126,7 +126,7 @@ export default function ProductsPage() {
             await productService.delete(id);
             toast.success('Producto eliminado exitosamente');
             await fetchProducts();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Error deleting product:', error);
             toast.error(error.response?.data?.message || 'Error al eliminar el producto');
@@ -226,9 +226,9 @@ export default function ProductsPage() {
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Código</TableHead>
                             <TableHead className="w-[250px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre del Producto</TableHead>
                             <TableHead className="w-[150px] font-bold text-xs uppercase tracking-wider text-slate-100">Categoría</TableHead>
-                            <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Costo</TableHead>
-                            <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Venta</TableHead>
+                            <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Stock Mínimo</TableHead>
                             <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Stock</TableHead>
+                            <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Venta</TableHead>
                             <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Estado</TableHead>
                             <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-slate-100">Acciones</TableHead>
                         </TableRow>
@@ -249,8 +249,7 @@ export default function ProductsPage() {
                                     <TableCell className="font-semibold text-secondary">{product.code || '-'}</TableCell>
                                     <TableCell className="font-bold text-secondary">{product.name}</TableCell>
                                     <TableCell className="text-slate-600">{product.category?.name || '-'}</TableCell>
-                                    <TableCell className="text-slate-600">{formatCurrency(product.priceCost)}</TableCell>
-                                    <TableCell className="text-slate-600 font-semibold">{formatCurrency(product.price)}</TableCell>
+                                    <TableCell className="text-slate-600 text-center font-medium">{product.minStock}</TableCell>
                                     <TableCell>
                                         <span className={`font-semibold ${product.stock <= product.minStock ? 'text-destructive' : 'text-slate-700'}`}>
                                             {product.stock}
@@ -259,6 +258,7 @@ export default function ProductsPage() {
                                             <span className="ml-1 text-xs text-destructive">(Bajo)</span>
                                         )}
                                     </TableCell>
+                                    <TableCell className="text-slate-600 font-semibold">{formatCurrency(product.price)}</TableCell>
                                     <TableCell>
                                         <Badge variant={product.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
                                             {product.isActive ? 'Activo' : 'Inactivo'}
@@ -345,7 +345,7 @@ export default function ProductsPage() {
                         </Button>
                     </div>
                 </div>
-        </div>
+            </div>
 
             {/* Edit Panel */}
             <ProductEditPanel
