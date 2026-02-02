@@ -261,13 +261,7 @@ export default function ProductsPage() {
                                     </TableCell>
                                     <TableCell className="text-slate-600 font-semibold">{formatCurrency(product.price)}</TableCell>
                                     <TableCell className="text-slate-600 text-sm">
-                                        {new Date(product.createdAt).toLocaleString('es-PE', {
-                                            year: 'numeric',
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {product.createdAt}
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={product.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
