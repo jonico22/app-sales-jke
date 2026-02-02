@@ -229,6 +229,7 @@ export default function ProductsPage() {
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Stock Mínimo</TableHead>
                             <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Stock</TableHead>
                             <TableHead className="w-[120px] font-bold text-xs uppercase tracking-wider text-slate-100">Precio Venta</TableHead>
+                            <TableHead className="w-[140px] font-bold text-xs uppercase tracking-wider text-slate-100">Fecha Creación</TableHead>
                             <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Estado</TableHead>
                             <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-slate-100">Acciones</TableHead>
                         </TableRow>
@@ -236,7 +237,7 @@ export default function ProductsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="h-32 text-center">
+                                <TableCell colSpan={9} className="h-32 text-center">
                                     <div className="flex items-center justify-center gap-2 text-slate-500">
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                         <span>Cargando productos...</span>
@@ -259,6 +260,15 @@ export default function ProductsPage() {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-slate-600 font-semibold">{formatCurrency(product.price)}</TableCell>
+                                    <TableCell className="text-slate-600 text-sm">
+                                        {new Date(product.createdAt).toLocaleString('es-PE', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant={product.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
                                             {product.isActive ? 'Activo' : 'Inactivo'}
@@ -288,7 +298,7 @@ export default function ProductsPage() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={8} className="h-64 text-center">
+                                <TableCell colSpan={9} className="h-64 text-center">
                                     <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
                                         <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                                             <Package className="h-8 w-8 text-slate-300" />

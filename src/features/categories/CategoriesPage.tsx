@@ -230,6 +230,7 @@ export default function CategoriesPage() {
               <TableHead className="w-[180px] font-bold text-xs uppercase tracking-wider text-slate-100">Código</TableHead>
               <TableHead className="w-[350px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre de la Categoría</TableHead>
               <TableHead className="font-bold text-xs uppercase tracking-wider text-slate-100">Descripción</TableHead>
+              <TableHead className="w-[140px] font-bold text-xs uppercase tracking-wider text-slate-100">Fecha Creación</TableHead>
               <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Estado</TableHead>
               <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-slate-100">Acciones</TableHead>
             </TableRow>
@@ -237,7 +238,7 @@ export default function CategoriesPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center">
+                <TableCell colSpan={6} className="h-32 text-center">
                   <div className="flex items-center justify-center gap-2 text-slate-500">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Cargando categorías...</span>
@@ -250,6 +251,15 @@ export default function CategoriesPage() {
                   <TableCell className="font-semibold text-secondary">{category.code}</TableCell>
                   <TableCell className="font-bold text-secondary">{category.name}</TableCell>
                   <TableCell className="text-slate-500 max-w-[300px] truncate">{category.description || '-'}</TableCell>
+                  <TableCell className="text-slate-600 text-sm">
+                    {new Date(category.createdAt).toLocaleString('es-PE', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
                       {category.isActive ? 'Activo' : 'Inactivo'}
@@ -279,7 +289,7 @@ export default function CategoriesPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-64 text-center">
+                <TableCell colSpan={6} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                       <Search className="h-8 w-8 text-slate-300" />
