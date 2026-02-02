@@ -54,6 +54,7 @@ export default function ProductForm() {
   }, []);
 
   const { register, handleSubmit, control, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
       name: '',
@@ -84,6 +85,7 @@ export default function ProductForm() {
       toast.success('Producto guardado exitosamente');
       reset();
       setPreviewImage(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error saving product:', error);
       toast.error(error.response?.data?.message || 'Error al guardar el producto');
@@ -179,7 +181,7 @@ export default function ProductForm() {
               >
                 <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
                 {categories.map((cat) => (
-                  <option key={cat.code} value={cat.code}>
+                  <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>
                 ))}

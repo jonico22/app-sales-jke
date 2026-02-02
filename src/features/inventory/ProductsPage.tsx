@@ -30,6 +30,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { productService, type Product } from '@/services/product.service';
 import { alerts } from '@/utils/alerts';
+import { ProductEditPanel } from './components/ProductEditPanel';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -46,6 +47,15 @@ export default function ProductsPage() {
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const pageLimit = 10;
+
+    // Edit panel state
+    const [editPanelOpen, setEditPanelOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+    const handleEditProduct = (productId: string) => {
+        setSelectedProductId(productId);
+        setEditPanelOpen(true);
+    };
 
     // Debounce search term
     useEffect(() => {
@@ -67,6 +77,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
         try {
             setIsLoading(true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const params: any = {
                 page: currentPage,
                 limit: pageLimit,
@@ -87,6 +98,7 @@ export default function ProductsPage() {
             setTotalProducts(response.data.pagination.total);
             setHasNextPage(response.data.pagination.hasNextPage);
             setHasPrevPage(response.data.pagination.hasPrevPage);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Error fetching products:', error);
             toast.error(error.response?.data?.message || 'Error al cargar los productos');
@@ -114,6 +126,7 @@ export default function ProductsPage() {
             await productService.delete(id);
             toast.success('Producto eliminado exitosamente');
             await fetchProducts();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Error deleting product:', error);
             toast.error(error.response?.data?.message || 'Error al eliminar el producto');
@@ -253,15 +266,14 @@ export default function ProductsPage() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <Link to={`/inventory/${product.id}/edit`}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-accent/20"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-accent/20"
+                                                onClick={() => handleEditProduct(product.id)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -333,7 +345,15 @@ export default function ProductsPage() {
                         </Button>
                     </div>
                 </div>
-            </div>
+        </div>
+
+            {/* Edit Panel */}
+            <ProductEditPanel
+                open={editPanelOpen}
+                onOpenChange={setEditPanelOpen}
+                productId={selectedProductId}
+                onSuccess={fetchProducts}
+            />
         </div>
     );
 }
