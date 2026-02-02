@@ -38,10 +38,10 @@ export const DatePickerInput = React.forwardRef<HTMLDivElement, DatePickerInputP
     {
       value,
       onChange,
-      placeholder = 'mm/dd/yyyy',
+      placeholder = 'dd/mm/yyyy',
       minDate,
       maxDate,
-      dateFormat = 'MM/dd/yyyy',
+      dateFormat = 'dd/MM/yyyy',
       disabled = false,
       className,
       iconPosition = 'right',

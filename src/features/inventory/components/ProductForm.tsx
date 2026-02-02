@@ -29,29 +29,39 @@ const productSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// Separate component for the edit modal integration
+import { CategoryEditModal } from '../../categories/components/CategoryEditModal';
+
 type ProductFormValues = z.output<typeof productSchema>;
 
 export default function ProductForm() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategorySelectOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch categories on mount
+  const fetchCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      const response = await categoryService.getForSelect();
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error('Error al cargar las categorías');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getForSelect();
-        setCategories(response.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast.error('Error al cargar las categorías');
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    };
     fetchCategories();
   }, []);
+
+  const handleCategorySaved = async () => {
+    await fetchCategories();
+  };
 
   const { register, handleSubmit, control, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,7 +200,12 @@ export default function ProductForm() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
               </div>
             </div>
-            <Button type="button" size="icon" className="bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shrink-0">
+            <Button
+              type="button"
+              size="icon"
+              className="bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shrink-0"
+              onClick={() => setIsCategoryModalOpen(true)}
+            >
               <Plus className="h-5 w-5 text-white" />
             </Button>
           </div>
@@ -323,6 +338,13 @@ export default function ProductForm() {
         </Button>
 
       </form>
+
+      <CategoryEditModal
+        open={isCategoryModalOpen}
+        onOpenChange={setIsCategoryModalOpen}
+        category={null} // null indicates creation mode
+        onSave={handleCategorySaved}
+      />
     </div>
   );
 }
