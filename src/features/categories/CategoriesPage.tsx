@@ -252,13 +252,7 @@ export default function CategoriesPage() {
                   <TableCell className="font-bold text-secondary">{category.name}</TableCell>
                   <TableCell className="text-slate-500 max-w-[300px] truncate">{category.description || '-'}</TableCell>
                   <TableCell className="text-slate-600 text-sm">
-                    {new Date(category.createdAt).toLocaleString('es-PE', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {category.createdAt}
                   </TableCell>
                   <TableCell>
                     <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
