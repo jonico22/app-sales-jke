@@ -367,10 +367,11 @@ export function ProductEditPanel({
             <Controller
               name="isActive"
               control={control}
-              render={({ field: { value, ...field } }) => (
+              render={({ field: { value, onChange, ...field } }) => (
                 <Switch
                   id="edit-isActive"
                   checked={value}
+                  onChange={(e) => onChange(e.target.checked)}
                   {...field}
                 />
               )}
