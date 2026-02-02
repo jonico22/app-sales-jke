@@ -1,7 +1,9 @@
 import api from './api.client';
 
 export interface ProductCategory {
+    id: string;
     name: string;
+    code: string;
 }
 
 export interface Product {

@@ -85,7 +85,7 @@ export default function ProductForm() {
       toast.success('Producto guardado exitosamente');
       reset();
       setPreviewImage(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error saving product:', error);
       toast.error(error.response?.data?.message || 'Error al guardar el producto');
@@ -181,7 +181,7 @@ export default function ProductForm() {
               >
                 <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <option key={cat.code} value={cat.code}>
                     {cat.name}
                   </option>
                 ))}

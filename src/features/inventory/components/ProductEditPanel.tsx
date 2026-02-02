@@ -95,10 +95,10 @@ export function ProductEditPanel({
       try {
         const response = await productService.getById(productId);
         const product: Product = response.data;
-        
+        console.log(product);
         reset({
           name: product.name,
-          categoryId: product.categoryId,
+          categoryId: product.category?.code || '',
           sku: product.code || '',
           description: product.description || '',
           isActive: product.isActive,
@@ -125,7 +125,7 @@ export function ProductEditPanel({
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!productId) return;
-    
+    console.log(data);
     try {
       await productService.update(productId, {
         name: data.name,
@@ -140,7 +140,7 @@ export function ProductEditPanel({
       toast.success('Producto actualizado exitosamente');
       onOpenChange(false);
       onSuccess?.();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error updating product:', error);
       toast.error(error.response?.data?.message || 'Error al actualizar el producto');
@@ -250,7 +250,7 @@ export function ProductEditPanel({
               >
                 <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <option key={cat.code} value={cat.code}>
                     {cat.name}
                   </option>
                 ))}
