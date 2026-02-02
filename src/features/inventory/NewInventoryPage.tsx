@@ -9,7 +9,7 @@ export default function NewInventoryPage() {
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* Page Header */}
       <div className="flex items-start gap-4">
-        <Link to="/inventory/products">
+        <Link to="/inventory">
           <Button variant="outline" className="h-10 w-10 p-0 flex items-center justify-center border-slate-200 shadow-sm transition-transform active:scale-95">
             <ChevronLeft className="h-5 w-5 text-slate-600" />
           </Button>
