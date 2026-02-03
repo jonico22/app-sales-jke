@@ -82,6 +82,17 @@ export interface DeleteProductResponse {
     message: string;
 }
 
+export interface UserSelectOption {
+    id: string;
+    name: string;
+}
+
+export interface UpdatedByUsersResponse {
+    success: boolean;
+    message: string;
+    data: UserSelectOption[];
+}
+
 export const productService = {
     // Get all products
     getAll: async (params?: {
@@ -128,6 +139,12 @@ export const productService = {
     // Delete product
     delete: async (id: string): Promise<DeleteProductResponse> => {
         const response = await api.delete<DeleteProductResponse>(`/sales/products/${id}`);
+        return response.data;
+    },
+
+    // Get users who created products
+    getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
+        const response = await api.get<UpdatedByUsersResponse>('/sales/products/created-by-users');
         return response.data;
     },
 };

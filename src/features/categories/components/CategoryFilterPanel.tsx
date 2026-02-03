@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -8,6 +8,8 @@ import {
 import { Button, Label } from '@/components/ui';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
 import { TagInput, type TagOption } from '@/components/shared/TagInput';
+import { categoryService } from '@/services/category.service';
+import { toast } from 'sonner';
 
 interface CategoryFilterPanelProps {
   open: boolean;
@@ -23,16 +25,7 @@ export interface FilterValues {
   updatedAtTo: Date | null;
 }
 
-// Mock users data - in a real app, this would come from an API
-const AVAILABLE_USERS: TagOption[] = [
-  { id: '1', name: 'Maria G.' },
-  { id: '2', name: 'Carlos R.' },
-  { id: '3', name: 'Ana P.' },
-  { id: '4', name: 'Luis M.' },
-  { id: '5', name: 'Sofia T.' },
-  { id: '6', name: 'Pedro H.' },
-  { id: '7', name: 'Laura V.' },
-];
+
 
 export function CategoryFilterPanel({
   open,
@@ -46,6 +39,28 @@ export function CategoryFilterPanel({
     updatedAtFrom: null,
     updatedAtTo: null,
   });
+  const [availableUsers, setAvailableUsers] = useState<TagOption[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await categoryService.getCreatedByUsers();
+        if (response.success && response.data) {
+          setAvailableUsers(response.data.map(user => ({
+            id: user.id,
+            name: user.name
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Error al cargar lista de usuarios');
+      }
+    };
+
+    if (open) {
+      fetchUsers();
+    }
+  }, [open]);
 
   const handleClear = () => {
     const emptyFilters = {
@@ -73,7 +88,7 @@ export function CategoryFilterPanel({
           <div className="space-y-3">
             <Label className="text-sm font-bold text-slate-700">Creado por (UUID)</Label>
             <TagInput
-              options={AVAILABLE_USERS}
+              options={availableUsers}
               value={filters.createdBy ? [filters.createdBy] : []}
               onChange={(userIds) => setFilters({ ...filters, createdBy: userIds[0] })}
               placeholder="Seleccionar usuario..."

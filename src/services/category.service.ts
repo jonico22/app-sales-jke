@@ -65,6 +65,17 @@ export interface CategoriesSelectResponse {
     data: CategorySelectOption[];
 }
 
+export interface UserSelectOption {
+    id: string;
+    name: string;
+}
+
+export interface UpdatedByUsersResponse {
+    success: boolean;
+    message: string;
+    data: UserSelectOption[];
+}
+
 export const categoryService = {
     // Get all categories
     getAll: async (params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<CategoriesResponse> => {
@@ -99,6 +110,12 @@ export const categoryService = {
     // Delete category
     delete: async (id: string): Promise<DeleteCategoryResponse> => {
         const response = await api.delete<DeleteCategoryResponse>(`/sales/categories/${id}`);
+        return response.data;
+    },
+
+    // Get users who updated categories
+    getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
+        const response = await api.get<UpdatedByUsersResponse>('/sales/categories/created-by-users');
         return response.data;
     },
 };
