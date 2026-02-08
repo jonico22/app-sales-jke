@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Label, Card } from '@/components/ui';
 import { authService } from '@/services/auth.service';
+import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 
 const loginSchema = z.object({
@@ -28,9 +29,10 @@ export default function LoginPage() {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
       login(response.data); // Update global store
+      await societyService.getCurrent();
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
       navigate('/');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
