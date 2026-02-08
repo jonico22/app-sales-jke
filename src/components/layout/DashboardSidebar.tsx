@@ -1,13 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, MapPin } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/lib/utils';
 
 // Define navigation items
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-  { name: 'Inventario', href: '/inventory', icon: ClipboardList },
   { name: 'Categorías', href: '/categories', icon: Tags },
+  { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Ventas', href: '/sales', icon: ShoppingCart },
   { name: 'Reportes', href: '/reports', icon: FileText },
@@ -19,11 +20,14 @@ interface DashboardSidebarProps {
   onClose: () => void;
   isCollapsed: boolean;
   toggleCollapse: () => void;
+  showUserInfo?: boolean;
 }
 
-export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleCollapse }: DashboardSidebarProps) {
+export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleCollapse, showUserInfo = false }: DashboardSidebarProps) {
   const { pathname } = useLocation();
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const role = useAuthStore((state) => state.role);
 
   return (
     <>
@@ -95,6 +99,39 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
             );
           })}
         </nav>
+
+        {/* User Info Section */}
+        {showUserInfo && user && (
+          <div className={cn(
+            "p-4 border-t border-slate-100",
+            isCollapsed ? "flex justify-center" : ""
+          )}>
+            <div className={cn(
+              "flex items-center gap-3",
+              isCollapsed ? "justify-center" : ""
+            )}>
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-sm">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              
+              {/* User Details */}
+              <div className={cn(
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+              )}>
+                <p className="text-sm font-semibold text-slate-700 truncate max-w-[140px]">
+                  {user.name || 'Usuario'}
+                </p>
+                <p className="text-xs text-slate-400 truncate max-w-[140px]">
+                  {role?.name || 'Sin rol'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Section (Logout) */}
         <div className="p-4 border-t border-slate-100">

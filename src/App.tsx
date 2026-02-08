@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import DashboardLayout from './components/layout/DashboardLayout';
+import POSLayout from './components/layout/POSLayout';
 import AuthLayout from './features/auth/AuthLayout';
 import LoginPage from './features/auth/LoginPage';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
@@ -12,6 +13,7 @@ import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
 import ProductsPage from './features/inventory/ProductsPage';
 import NewInventoryPage from './features/inventory/NewInventoryPage';
+import POSPage from './features/pos/POSPage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -66,6 +68,16 @@ const router = createBrowserRouter([
           {
             path: 'inventory/new',
             element: <NewInventoryPage />
+          }
+        ]
+      },
+      {
+        path: 'pos',
+        element: <POSLayout />,
+        children: [
+          {
+            path: '',
+            element: <POSPage />
           }
         ]
       }
