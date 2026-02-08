@@ -25,10 +25,12 @@ export interface Society {
     salesNotificationFrequency: string;
     backupFrequency: string;
     dataRetentionDays: number | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uiConfig: any | null;
     mainCurrency: MainCurrency;
     taxes: Tax[];
     logo: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     legalEntity: any | null;
     subscriptionId: string;
 }
