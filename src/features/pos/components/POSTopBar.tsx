@@ -1,0 +1,83 @@
+import { useState, useEffect } from 'react';
+import { Store, Banknote } from 'lucide-react';
+import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
+import { currencyService, type Currency } from '@/services/currency.service';
+
+export function POSTopBar() {
+    const [branches, setBranches] = useState<BranchOffice[]>([]);
+    const [currencies, setCurrencies] = useState<Currency[]>([]);
+    const [selectedBranch, setSelectedBranch] = useState<string>('');
+    const [selectedCurrency, setSelectedCurrency] = useState<string>('');
+
+    useEffect(() => {
+        // Fetch branches
+        branchOfficeService.getForSelect().then(response => {
+            if (response.success && response.data) {
+                // Adjust based on actual response structure. assuming data.data based on earlier pattern or just data
+                const data = (response.data as any).data || response.data;
+                if (Array.isArray(data)) {
+                    setBranches(data);
+                    if (data.length > 0) setSelectedBranch(data[0].id);
+                }
+            }
+        }).catch(console.error);
+
+        // Fetch currencies
+        currencyService.getForSelect().then(response => {
+            if (response.success && response.data) {
+                const data = (response.data as any).data || response.data;
+                if (Array.isArray(data)) {
+                    setCurrencies(data);
+                    if (data.length > 0) setSelectedCurrency(data[0].id);
+                }
+            }
+        }).catch(console.error);
+    }, []);
+
+    // Fallback/Mock if empty (to match design immediately)
+    const displayBranches = branches.length > 0 ? branches : [{ id: '1', name: 'Sede Principal' }];
+    const displayCurrencies = currencies.length > 0 ? currencies : [{ id: '1', name: 'PEN', symbol: 'S/' }];
+
+
+    return (
+        <div className="flex gap-3 mb-6 md:hidden">
+            {/* Branch Selector */}
+            <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-500 pointer-events-none">
+                    <Store className="w-4 h-4" />
+                </div>
+                <select
+                    className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[160px]"
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                >
+                    {displayBranches.map(branch => (
+                        <option key={branch.id} value={branch.id}>{branch.name}</option>
+                    ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
+            </div>
+
+            {/* Currency Selector */}
+            <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-500 pointer-events-none">
+                    <Banknote className="w-4 h-4" />
+                </div>
+                <select
+                    className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[100px]"
+                    value={selectedCurrency}
+                    onChange={(e) => setSelectedCurrency(e.target.value)}
+                >
+                    {displayCurrencies.map(currency => (
+                        <option key={currency.id} value={currency.id}>{currency.name || (currency as any).code || 'PEN'}</option>
+                    ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </div>
+            </div>
+        </div>
+    );
+}

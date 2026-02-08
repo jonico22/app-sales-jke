@@ -124,6 +124,11 @@ export const productService = {
         return response.data;
     },
 
+    getForSelect: async (): Promise<ProductsResponse> => {
+        const response = await api.get<ProductsResponse>('/sales/products/select');
+        return response.data;
+    },
+
     // Create new product
     create: async (data: CreateProductRequest): Promise<ProductResponse> => {
         const response = await api.post<ProductResponse>('/sales/products', data);

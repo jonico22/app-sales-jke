@@ -65,6 +65,7 @@ export interface BranchOfficeSelectOption {
     id: string;
     name: string;
     code: string;
+    isActive: boolean;
 }
 
 export interface BranchOfficesSelectResponse {

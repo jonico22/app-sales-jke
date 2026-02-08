@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Building2, Coins, Bell, ChevronDown } from 'lucide-react';
-import { useSocietyStore } from '@/store/society.store';
+import { Store, Bell, ChevronDown, Check } from 'lucide-react';
 import { useBranchStore } from '@/store/branch.store';
 import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
+import { CurrencySelector } from './CurrencySelector';
 
 interface POSHeaderProps {
   title?: string;
@@ -10,29 +10,29 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderProps) {
-  const society = useSocietyStore((state) => state.society);
   const { branches, selectedBranch, setBranches, selectBranch } = useBranchStore();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Fetch branches on mount
+  // Fetch branches and currencies on mount
   useEffect(() => {
-    const fetchBranches = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await branchOfficeService.getForSelect();
-        setBranches(response.data || []);
-        // Auto-select first branch if none selected
-        if (!selectedBranch && response.data?.length > 0) {
-          selectBranch(response.data[0]);
+        // Fetch Branches
+        if (branches.length === 0) {
+          const branchResponse = await branchOfficeService.getForSelect();
+          setBranches(branchResponse.data || []);
+          if (!selectedBranch && branchResponse.data?.length > 0) {
+            selectBranch(branchResponse.data[0]);
+          }
         }
       } catch (error) {
-        console.error('Error fetching branches:', error);
+        console.error('Error fetching initial data:', error);
       }
     };
 
-    if (branches.length === 0) {
-      fetchBranches();
-    }
+    fetchInitialData();
   }, [branches.length, selectedBranch, setBranches, selectBranch]);
 
   // Update time every minute
@@ -40,7 +40,6 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -62,14 +61,13 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
 
   const handleSelectBranch = (branch: BranchOfficeSelectOption) => {
     selectBranch(branch);
-    setIsDropdownOpen(false);
+    setIsBranchDropdownOpen(false);
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-6 relative z-50">
       {/* Left Section - Title */}
       <div className="flex items-center gap-4">
-        {/* Mobile menu button */}
         {onMenuClick && (
           <button
             onClick={onMenuClick}
@@ -80,80 +78,88 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
             </svg>
           </button>
         )}
-
-        <h1 className="text-lg font-bold text-slate-800">{title}</h1>
+        <h1 className="text-xl font-bold text-slate-700">{title}</h1>
       </div>
 
       {/* Center Section - Branch & Currency */}
-      <div className="hidden md:flex items-center gap-6">
+      <div className="hidden md:flex items-center gap-4">
         {/* Branch Selector */}
         <div className="relative">
           <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+            onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
+            className="flex items-center gap-3 px-4 py-2 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors bg-white shadow-sm"
           >
-            <Building2 className="h-4 w-4 text-slate-400" />
+            <div className="bg-sky-100 p-1.5 rounded-lg">
+              <Store className="h-4 w-4 text-sky-600" />
+            </div>
             <div className="text-left">
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Sucursal</p>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-0.5">SUCURSAL</p>
+              <p className="text-sm font-bold text-slate-700 leading-none">
                 {selectedBranch?.name || 'Seleccionar...'}
               </p>
             </div>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isBranchDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Dropdown */}
-          {isDropdownOpen && (
+          {isBranchDropdownOpen && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsDropdownOpen(false)}
-              />
-              <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-slate-100 z-20 py-1">
-                {branches.map((branch) => (
+              <div className="fixed inset-0 z-10" onClick={() => setIsBranchDropdownOpen(false)} />
+              <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="p-2 space-y-1">
+                  {branches.map((branch) => (
+                    <button
+                      key={branch.id}
+                      onClick={() => handleSelectBranch(branch)}
+                      className={`w-full px-4 py-3 flex items-start gap-3 rounded-lg transition-colors group ${selectedBranch?.id === branch.id ? 'bg-sky-50' : 'hover:bg-slate-50'
+                        }`}
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded-lg ${selectedBranch?.id === branch.id ? 'bg-sky-100 text-sky-600' : 'bg-slate-100 text-slate-400 group-hover:text-slate-600'}`}>
+                        <Store className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center justify-between">
+                          <p className={`text-sm font-semibold ${selectedBranch?.id === branch.id ? 'text-sky-700' : 'text-slate-700'}`}>
+                            {branch.name}
+                          </p>
+                          {selectedBranch?.id === branch.id && (
+                            <Check className="h-4 w-4 text-sky-600" />
+                          )}
+                        </div>
+                        <p className={`text-xs font-medium mt-0.5 ${branch.isActive ? 'text-green-500' : 'text-slate-400'}`}>
+                          {branch.isActive ? 'Caja Abierta' : 'Caja Cerrada'}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div className="p-2 border-t border-slate-100">
                   <button
-                    key={branch.id}
-                    onClick={() => handleSelectBranch(branch)}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-50 ${
-                      selectedBranch?.id === branch.id ? 'bg-sky-50 text-sky-600' : 'text-slate-700'
-                    }`}
+                    disabled
+                    className="w-full text-center text-xs font-bold text-sky-300 py-3 uppercase tracking-wide cursor-not-allowed flex items-center justify-center gap-2 border-t border-slate-100 mt-1 hover:bg-slate-50 transition-colors"
                   >
-                    {branch.name}
+                    Gestionar Sucursales
+                    <ChevronDown className="h-3 w-3 -rotate-90" />
                   </button>
-                ))}
-                {branches.length === 0 && (
-                  <p className="px-4 py-2 text-sm text-slate-400">Sin sucursales</p>
-                )}
+                </div>
               </div>
             </>
           )}
         </div>
 
-        {/* Currency Info */}
-        {society?.mainCurrency && (
-          <div className="flex items-center gap-2 px-3 py-2">
-            <Coins className="h-4 w-4 text-slate-400" />
-            <div className="text-left">
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Moneda</p>
-              <p className="text-sm font-semibold text-slate-700">
-                {society.mainCurrency.name} ({society.mainCurrency.code})
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Currency Selector */}
+        <CurrencySelector />
       </div>
 
       {/* Right Section - Date/Time & Notifications */}
       <div className="flex items-center gap-4">
-        {/* Date & Time */}
         <div className="hidden sm:block text-right">
-          <p className="text-sm font-semibold text-slate-700">{formatDate(currentTime)}</p>
-          <p className="text-xs text-slate-400">{formatTime(currentTime)}</p>
+          <p className="text-sm font-bold text-slate-700">{formatDate(currentTime)}</p>
+          <p className="text-xs font-medium text-slate-400">{formatTime(currentTime)}</p>
         </div>
 
-        {/* Notifications */}
         <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors relative">
           <Bell className="h-5 w-5" />
+          <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
         </button>
       </div>
     </header>
