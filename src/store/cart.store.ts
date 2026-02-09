@@ -19,6 +19,15 @@ interface CartState {
     setDiscount: (discount: number) => void;
     orderNotes: string;
     setOrderNotes: (notes: string) => void;
+    currentOrderId: string | null;
+    currentOrderCode: string | null;
+    currentOrderTotal: number;
+    setCurrentOrder: (orderId: string, orderCode: string, total: number) => void;
+    clearCurrentOrder: () => void;
+    branchId: string;
+    setBranchId: (id: string) => void;
+    currencyId: string;
+    setCurrencyId: (id: string) => void;
 
     // Computed (handled via getters/selectors in component or derived state if needed, 
     // but simple getters here for convenience if we wanted, though Zustand recommends selectors)
@@ -33,6 +42,15 @@ export const useCartStore = create<CartState>()(
 
             setDiscount: (discount: number) => set({ discount }),
             setOrderNotes: (notes: string) => set({ orderNotes: notes }),
+            currentOrderId: null,
+            currentOrderCode: null,
+            currentOrderTotal: 0,
+            setCurrentOrder: (orderId: string, orderCode: string, total: number) => set({ currentOrderId: orderId, currentOrderCode: orderCode, currentOrderTotal: total }),
+            clearCurrentOrder: () => set({ currentOrderId: null, currentOrderCode: null, currentOrderTotal: 0 }),
+            branchId: '1', // Default
+            setBranchId: (id: string) => set({ branchId: id }),
+            currencyId: '1', // Default
+            setCurrencyId: (id: string) => set({ currencyId: id }),
 
 
             addItem: (product: Product, quantity = 1) => {

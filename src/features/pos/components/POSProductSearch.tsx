@@ -9,6 +9,7 @@ interface POSProductSearchProps {
     onAdvancedSearch?: () => void;
     selectedProduct: Product | null;
     onSelectProduct?: (product: Product | null) => void;
+    refreshTrigger?: number;
 }
 
 export function POSProductSearch({
@@ -16,7 +17,8 @@ export function POSProductSearch({
     setSearchQuery,
     onAdvancedSearch,
     selectedProduct,
-    onSelectProduct
+    onSelectProduct,
+    refreshTrigger = 0
 }: POSProductSearchProps) {
     const [products, setProducts] = useState<Product[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -40,7 +42,7 @@ export function POSProductSearch({
             }
         };
         fetchProducts();
-    }, []);
+    }, [refreshTrigger]);
 
     // Filter products when search query changes
     useEffect(() => {

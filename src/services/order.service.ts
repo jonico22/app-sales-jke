@@ -1,4 +1,5 @@
 import api from './api.client';
+import type { OrderPayment } from './order-payment.service';
 
 export interface OrderItem {
     id: string; // Likely exists in response
@@ -20,38 +21,78 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
 export interface Order {
     id: string;
-    code: string;
-    partnerId: string; // Renamed from clientId
+    orderCode: string;
+    orderDate: string; // Added
+    totalAmount: string; // Changed from total: number
+    status: OrderStatus;
+    discount: string; // Added, string in JSON
+    notes: string | null;
+    paymentDate: string | null;
+    comment: string | null;
+    cancellationReason: string | null;
+    subtotal: string;
+    taxAmount: string;
+
+    partnerId: string;
     branchId: string;
     societyId: string;
     currencyId: string;
-    exchangeRate: number;
-    total: number;
-    status: OrderStatus;
-    date: string;
-    isActive: boolean;
-    isDeleted: boolean;
+    exchangeRate: string; // Changed to string based on JSON "1"
+
+    isActive: boolean; // Not in JSON but likely implicit or missing? Keeping for now or making optional if issues arise. JSON doesn't show it.
+    isDeleted: boolean; // Not in JSON
+
     createdAt: string;
     updatedAt: string;
     createdBy: string;
     updatedBy: string | null;
-    items: OrderItem[];
+
+    // Relations included in response
+    items?: OrderItem[]; // Legacy/alternative property name
+    orderItems?: OrderItem[]; // Actual property name from API
+    OrderPayment?: OrderPayment[];
+    // The response has _count.
+    _count?: {
+        orderItems: number;
+    };
+
+    partner?: {
+        id: string;
+        companyName: string | null;
+        firstName: string | null;
+        lastName: string | null;
+        documentNumber: string | null;
+        email: string | null;
+    };
+
+    currency?: {
+        code: string;
+        symbol: string;
+    };
 }
+// Keeping Create/Update interfaces mostly as is unless they also need massive changes, 
+// but usually request/response differs. The user only showed Response.
 
 export interface CreateOrderItemRequest {
     productId: string;
     quantity: number;
-    unitPrice: number;
+    unitPrice: number; // Changed from unitPrice
+    total: number; // Added
 }
 
 export interface CreateOrderRequest {
-    societyId: string;
-    partnerId: string;
+    societyId?: string;
+    partnerId: string; // Changed from partnerId
     branchId: string;
     currencyId: string;
     exchangeRate: number;
-    orderItems: CreateOrderItemRequest[];
+    orderItems: CreateOrderItemRequest[]; // Changed from orderItems
+    subtotal: number;
+    taxAmount: number;
+    total: number;
     status?: OrderStatus;
+    discount?: number;
+    notes?: string;
 }
 
 export interface UpdateOrderRequest {
@@ -63,6 +104,9 @@ export interface UpdateOrderRequest {
     date?: string;
     orderItems?: CreateOrderItemRequest[];
     isActive?: boolean;
+    cancellationReason?: string;
+    notes?: string;
+    comment?: string;
 }
 
 export interface OrderResponse {

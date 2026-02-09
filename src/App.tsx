@@ -14,6 +14,8 @@ import NewCategoryPage from './features/categories/NewCategoryPage';
 import ProductsPage from './features/inventory/ProductsPage';
 import NewInventoryPage from './features/inventory/NewInventoryPage';
 import POSPage from './features/pos/POSPage';
+import PendingOrdersPage from './features/orders/PendingOrdersPage';
+import SalesHistoryPage from './features/orders/SalesHistoryPage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -68,6 +70,14 @@ const router = createBrowserRouter([
           {
             path: 'inventory/new',
             element: <NewInventoryPage />
+          },
+          {
+            path: 'orders/pending',
+            element: <PendingOrdersPage />
+          },
+          {
+            path: 'orders/history',
+            element: <SalesHistoryPage />
           }
         ]
       },

@@ -32,7 +32,7 @@ export function POSClientSelector({
                 // If no client is selected (or only mock default), try to find "Público General"
                 if (!selectedClient || selectedClient.id === 'public') {
                     // Try to find by exact name match or just take the first one if available
-                    const defaultClient = clientList.find(c => c.name === 'Público General') || clientList[0];
+                    const defaultClient = clientList.find(c => c.name === 'PÚBLICO GENERAL') || clientList[0];
                     if (defaultClient) {
                         onSelectClient(defaultClient);
                     }

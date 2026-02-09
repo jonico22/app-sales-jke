@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react';
 import { Store, Banknote } from 'lucide-react';
 import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { currencyService, type Currency } from '@/services/currency.service';
+import { useCartStore } from '@/store/cart.store';
 
 export function POSTopBar() {
     const [branches, setBranches] = useState<BranchOffice[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
-    const [selectedBranch, setSelectedBranch] = useState<string>('');
-    const [selectedCurrency, setSelectedCurrency] = useState<string>('');
+    const { branchId, setBranchId, currencyId, setCurrencyId } = useCartStore();
+
+    // No local state for selectedBranch/Currency, use store
+    const selectedBranch = branchId;
+    const selectedCurrency = currencyId;
 
     useEffect(() => {
         // Fetch branches
@@ -17,7 +21,7 @@ export function POSTopBar() {
                 const data = (response.data as any).data || response.data;
                 if (Array.isArray(data)) {
                     setBranches(data);
-                    if (data.length > 0) setSelectedBranch(data[0].id);
+                    if (data.length > 0 && selectedBranch === '1') setBranchId(data[0].id);
                 }
             }
         }).catch(console.error);
@@ -28,7 +32,7 @@ export function POSTopBar() {
                 const data = (response.data as any).data || response.data;
                 if (Array.isArray(data)) {
                     setCurrencies(data);
-                    if (data.length > 0) setSelectedCurrency(data[0].id);
+                    if (data.length > 0 && selectedCurrency === '1') setCurrencyId(data[0].id);
                 }
             }
         }).catch(console.error);
@@ -49,7 +53,7 @@ export function POSTopBar() {
                 <select
                     className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[160px]"
                     value={selectedBranch}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    onChange={(e) => setBranchId(e.target.value)}
                 >
                     {displayBranches.map(branch => (
                         <option key={branch.id} value={branch.id}>{branch.name}</option>
@@ -68,7 +72,7 @@ export function POSTopBar() {
                 <select
                     className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[100px]"
                     value={selectedCurrency}
-                    onChange={(e) => setSelectedCurrency(e.target.value)}
+                    onChange={(e) => setCurrencyId(e.target.value)}
                 >
                     {displayCurrencies.map(currency => (
                         <option key={currency.id} value={currency.id}>{currency.name || (currency as any).code || 'PEN'}</option>

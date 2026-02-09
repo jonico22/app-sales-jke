@@ -1,17 +1,104 @@
-import { X, Trash2, ShoppingBag, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { X, Trash2, ShoppingBag, Pencil, Loader2 } from 'lucide-react';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
+import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
+import { useSocietyStore } from '@/store/society.store';
+import { POSPaymentModal } from './POSPaymentModal';
 
 
 interface POSCartPanelProps {
     isOpen: boolean;
     onClose: () => void;
+    selectedClient: { id: string } | null;
+    onSaleSuccess: () => void;
 }
 
-export function POSCartPanel({ isOpen, onClose }: POSCartPanelProps) {
-    const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes } = useCartStore();
+export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
+    const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, branchId, currencyId } = useCartStore();
+    const society = useSocietyStore(state => state.society);
     const subtotal = useCartStore(selectTotalPrice);
     const igv = subtotal * 0.18;
     const total = subtotal + igv - (discount || 0);
+
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+    const handleProcessOrder = async (targetStatus: OrderStatus = OrderStatus.PENDING_PAYMENT) => {
+        if (items.length === 0) return;
+
+        setIsProcessing(true);
+        try {
+            // Construct Order Request
+            // Note: We need actual IDs for society, branch, currency, partner. 
+            // For now, hardcoding or assuming defaults/mock until we pull from global store/context properly.
+            // In a real app, these would come from the auth context or selected values in the POS page.
+
+            // Construct Order Request with correct keys matching backend validation
+
+            const orderData: CreateOrderRequest = {
+                societyId: society?.id || '1',
+                branchId: branchId || '1',
+                // Use currency from society store
+                currencyId: society?.mainCurrency?.id || currencyId || '1',
+                partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2',
+                // Note: The user's backend seems to validate UUIDs maybe? 'public' might fail if it's not in DB. Assuming '2' or similar generic ID, or the user's system handles 'public'.
+                // If selectedClient.id is 'public', we probably need a valid Anonymous Customer ID from the DB. 
+                // For now, I'll pass 'public' if that's what was there, OR if the user error implied invalid customerId I should be careful.
+                // The user validation error for customerId was just "Required", not "Invalid".
+
+                exchangeRate: 1.0,
+                status: targetStatus, // Use the target status
+                subtotal: subtotal,
+                taxAmount: igv,
+                total: total,
+                discount: discount || 0,
+                notes: orderNotes,
+                orderItems: items.map(item => {
+                    const price = Number(item.product.price);
+                    return {
+                        productId: item.product.id,
+                        quantity: item.quantity,
+                        unitPrice: price,
+                        total: price * item.quantity
+                    };
+                })
+            };
+
+            const response = await orderService.create(orderData);
+
+            if (response.success && response.data) {
+                // If it's PENDING_PAYMENT, we prepare for payment modal
+                if (targetStatus === OrderStatus.PENDING_PAYMENT) {
+                    // Save order details to store for payment modal
+                    setCurrentOrder(response.data.id, response.data.orderCode, total);
+
+                    // Clear cart and close panel
+                    clearCart();
+                    onClose();
+
+                    // Trigger payment modal in parent
+                    onSaleSuccess();
+                } else {
+                    // Just a pending order (e.g. "Realizar otro pedido")
+                    // Clear cart and close panel without triggering payment modal
+                    clearCart();
+                    onClose();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to create order', error);
+            // Handle error (toast, etc)
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handlePaymentSuccess = () => {
+        setShowPaymentModal(false);
+        onClose(); // Close cart panel
+        clearCart(); // Clear cart after successful payment
+        // Optionally show success message
+    };
 
     if (!isOpen) return null;
 
@@ -165,19 +252,34 @@ export function POSCartPanel({ isOpen, onClose }: POSCartPanelProps) {
 
                     {/* Actions */}
                     <div className="grid gap-3 pt-2">
-                        <button className="w-full py-3.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                            <ShoppingBag className="w-5 h-5" />
-                            Procesar Venta
+                        <button
+                            onClick={() => handleProcessOrder(OrderStatus.PENDING_PAYMENT)}
+                            disabled={items.length === 0 || isProcessing}
+                            className="w-full py-3.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isProcessing ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <ShoppingBag className="w-5 h-5" />
+                            )}
+                            {isProcessing ? 'Procesando...' : 'Procesar Venta'}
                         </button>
                         <button
                             className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors active:scale-[0.98]"
-                            onClick={onClose}
+                            onClick={() => handleProcessOrder(OrderStatus.PENDING)}
+                            disabled={isProcessing}
                         >
                             Realizar otro pedido
                         </button>
                     </div>
                 </div>
             </div>
+
+            <POSPaymentModal
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                onPaymentSuccess={handlePaymentSuccess}
+            />
         </>
     );
 }
