@@ -17,27 +17,27 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <SessionExpiredModal 
-        isOpen={isSessionExpired} 
-        onLogin={handleRedirect} 
+      <SessionExpiredModal
+        isOpen={isSessionExpired}
+        onLogin={handleRedirect}
       />
-      
+
       {/* Sidebar */}
-      <DashboardSidebar 
-        isOpen={isSidebarOpen} 
+      <DashboardSidebar
+        isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isCollapsed}
         toggleCollapse={toggleCollapse}
       />
 
       {/* Main Content Wrapper */}
-      <div 
+      <div
         className={cn(
           "flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out",
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}
       >
-        
+
         {/* Header - Passing toggler */}
         <DashboardHeader onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
@@ -48,7 +48,7 @@ export default function DashboardLayout() {
       </div>
 
       {/* Mobile Navigation Footer */}
-      <MobileNavFooter />
+      <MobileNavFooter onMenuClick={() => setIsSidebarOpen(true)} />
     </div>
   );
 }

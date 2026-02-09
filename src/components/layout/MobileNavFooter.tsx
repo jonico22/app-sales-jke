@@ -2,27 +2,44 @@ import { Link, useLocation } from 'react-router-dom';
 import { LayoutGrid, Package, BarChart3, Menu, Plus } from 'lucide-react';
 
 interface NavItemProps {
-  to: string;
+  to?: string;
   icon: React.ReactNode;
   label: string;
   isActive: boolean;
+  onClick?: () => void;
 }
 
-function NavItem({ to, icon, label, isActive }: NavItemProps) {
-  return (
-    <Link
-      to={to}
-      className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors ${
-        isActive ? 'text-[#0ea5e9]' : 'text-slate-400'
-      }`}
-    >
+function NavItem({ to, icon, label, isActive, onClick }: NavItemProps) {
+  const content = (
+    <>
       {icon}
       <span className="text-[10px] font-medium uppercase tracking-wide">{label}</span>
-    </Link>
+    </>
+  );
+
+  const className = `flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors cursor-pointer ${isActive ? 'text-[#0ea5e9]' : 'text-slate-400'
+    }`;
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={className} onClick={onClick}>
+      {content}
+    </div>
   );
 }
 
-export function MobileNavFooter() {
+interface MobileNavFooterProps {
+  onMenuClick?: () => void;
+}
+
+export function MobileNavFooter({ onMenuClick }: MobileNavFooterProps) {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -46,7 +63,7 @@ export function MobileNavFooter() {
         {/* Center Floating Button */}
         <div className="flex flex-col items-center -mt-6">
           <Link
-            to="/sales/new"
+            to="/pos"
             className="bg-[#0ea5e9] hover:bg-[#0284c7] text-white p-4 rounded-full shadow-lg shadow-cyan-500/30 transition-all active:scale-95"
           >
             <Plus className="h-6 w-6" />
@@ -56,16 +73,16 @@ export function MobileNavFooter() {
 
         {/* Right Items */}
         <NavItem
-          to="/reports"
+          to="/orders/history"
           icon={<BarChart3 className="h-5 w-5" />}
-          label="Reportes"
-          isActive={currentPath.startsWith('/reports')}
+          label="Pedidos"
+          isActive={currentPath.startsWith('/orders')}
         />
         <NavItem
-          to="/settings"
           icon={<Menu className="h-5 w-5" />}
           label="Más"
-          isActive={currentPath.startsWith('/settings')}
+          isActive={false}
+          onClick={onMenuClick}
         />
       </div>
     </nav>
