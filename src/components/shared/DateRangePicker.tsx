@@ -74,7 +74,7 @@ export const DateRangePicker = ({
                 customInput={<CustomInput />}
                 portalId="datepicker-portal"
                 calendarClassName="shadow-xl border-gray-100 rounded-xl font-sans"
-                dayClassName={(date) => "rounded-lg hover:bg-blue-50 hover:text-blue-600"}
+                dayClassName={() => "rounded-lg hover:bg-blue-50 hover:text-blue-600"}
                 monthClassName={() => "font-medium"}
                 popperPlacement="bottom-start"
             />

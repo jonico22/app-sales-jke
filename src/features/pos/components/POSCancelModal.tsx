@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface POSCancelModalProps {
     isOpen: boolean;
@@ -78,8 +78,8 @@ export function POSCancelModal({
                                     key={reason.id}
                                     onClick={() => setSelectedReason(reason.label)}
                                     className={`py-2 px-3 text-xs font-medium border rounded-lg transition-all ${selectedReason === reason.label
-                                            ? 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-200'
-                                            : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                        ? 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-200'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                                         }`}
                                 >
                                     {reason.label}
