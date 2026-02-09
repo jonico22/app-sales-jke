@@ -138,8 +138,8 @@ export default function PendingOrdersPage() {
                 return;
             }
 
-            const fullOrder = fullOrderResponse.data;
-            const orderItems = fullOrder.items || []; // Assuming API returns 'items'
+            //const fullOrder = fullOrderResponse.data;
+            //const orderItems = fullOrder.items || []; // Assuming API returns 'items'
 
             // 2. Load items into Cart Store
             // We need to clear current cart first? Maybe
