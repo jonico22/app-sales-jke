@@ -5,8 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Label, Card } from '@/components/ui';
+import { Button, Input, Label, Card, Checkbox } from '@/components/ui';
 import { authService } from '@/services/auth.service';
+import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 
 const loginSchema = z.object({
@@ -20,17 +21,37 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
+  const [rememberMe, setRememberMe] = useState(false);
+
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
+  });
+
+  // Load saved email on mount
+  useState(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setValue('email', savedEmail);
+      setRememberMe(true);
+    }
   });
 
   const onSubmit = async (data: LoginSchema) => {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
       login(response.data); // Update global store
+      await societyService.getCurrent();
+
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', data.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
       navigate('/');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
@@ -90,6 +111,23 @@ export default function LoginPage() {
           )}
         </div>
 
+
+
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="remember"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <label
+            htmlFor="remember"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600"
+          >
+            Recordar correo
+          </label>
+        </div>
+
         <Button type="submit" variant="primary" className="w-full text-white font-bold" disabled={isSubmitting}>
           {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </Button>
@@ -100,6 +138,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </form>
-    </Card>
+    </Card >
   );
 }

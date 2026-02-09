@@ -1,0 +1,239 @@
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { POSWelcomeHeader } from './components/POSWelcomeHeader';
+import { POSClientSelector } from './components/POSClientSelector';
+import { POSProductSearch } from './components/POSProductSearch';
+import { POSCatalogButton } from './components/POSCatalogButton';
+import { POSQuickActions } from './components/POSQuickActions';
+import { POSFloatingCart } from './components/POSFloatingCart';
+import { POSCartPanel } from './components/POSCartPanel';
+import { POSMobileFooter } from './components/POSMobileFooter';
+import { POSTopBar } from './components/POSTopBar';
+import { POSPaymentModal } from './components/POSPaymentModal';
+import { POSSuccessModal } from './components/POSSuccessModal';
+import { useCartStore } from '@/store/cart.store';
+import { AddClientModal } from './components/AddClientModal'; // Import Modal
+import type { ClientSelectOption } from '@/services/client.service';
+import type { Product } from '@/services/product.service';
+
+export default function POSPage() {
+  const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
+    id: 'public', // Mock ID for default
+    name: 'Público General',
+    documentNumber: '00000000'
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false); // Modal State
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [productsRefreshTrigger, setProductsRefreshTrigger] = useState(0);
+  const { clearCurrentOrder, currentOrderCode, currentOrderTotal } = useCartStore();
+  const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
+
+  const location = useLocation();
+  const addItemToCart = useCartStore(state => state.addItem);
+
+  // Handle "Resume/Clone" order from Pending Orders
+  useEffect(() => {
+    const handleCloneOrder = async () => {
+
+      if (location.state && (location.state as any).cloneFromOrderId) {
+        const orderId = (location.state as any).cloneFromOrderId;
+
+        try {
+          const response = await import('@/services/order.service').then(m => m.orderService.getById(orderId));
+
+
+          if (response.success && response.data && response.data.orderItems) {
+            console.log('[CLONE] Order items found:', response.data.orderItems.length);
+
+            clearCurrentOrder(); // Ensure clean slate
+            console.log('[CLONE] Cart cleared');
+
+            const productService = await import('@/services/product.service').then(m => m.productService);
+
+            for (const item of response.data.orderItems) {
+              try {
+                console.log('[CLONE] Fetching product:', item.productId);
+                const productRes = await productService.getById(item.productId);
+
+                if (productRes.success && productRes.data) {
+                  const product = productRes.data;
+                  console.log('[CLONE] Product fetched:', product.name, 'Quantity:', item.quantity);
+
+                  // Add item quantity times
+                  for (let i = 0; i < item.quantity; i++) {
+                    addItemToCart(product);
+                  }
+                  console.log('[CLONE] Product added to cart');
+                } else {
+                  console.warn('[CLONE] Product fetch failed:', productRes);
+                }
+              } catch (e) {
+                console.error("[CLONE] Failed to load product for clone", item.productId, e);
+              }
+            }
+
+            // Open the cart panel to show the added items
+            if (response.data.orderItems.length > 0) {
+              console.log('[CLONE] Opening cart panel');
+              setIsCartOpen(true);
+            }
+          } else {
+            console.warn('[CLONE] No items found in order or fetch failed');
+          }
+        } catch (error) {
+          console.error('[CLONE] Error cloning order:', error);
+        }
+
+
+        // Clean up state so it doesn't run again on reload
+        window.history.replaceState({}, document.title);
+        console.log('[CLONE] Clone process completed, state cleaned');
+      } else {
+        console.log('[CLONE] No cloneFromOrderId in location state');
+      }
+    };
+
+    handleCloneOrder();
+  }, [location]);
+
+
+  const handleClientRegistered = (newClient: ClientSelectOption) => {
+    setSelectedClient(newClient);
+    setIsAddClientModalOpen(false);
+  };
+
+  const handleProductSelect = (product: Product | null) => {
+    setSelectedProduct(product);
+    if (product) {
+      addItemToCart(product);
+      setIsCartOpen(true); // Open cart when product is added
+      // Clear selected product after adding to cart
+      setTimeout(() => setSelectedProduct(null), 100);
+    }
+  };
+
+  const handleCartOpen = () => {
+    setIsCartOpen(true);
+    // Clear selected product when cart opens
+    setSelectedProduct(null);
+  };
+
+
+
+  return (
+    <div className=" bg-white pb-24 md:pb-6 md:pt-6 p-4 md:p-6">
+      <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
+
+        {/* Top Bar */}
+        <POSTopBar />
+
+        {/* Header Section */}
+        <POSWelcomeHeader />
+
+        {/* Main Card */}
+        <div className="bg-white md:rounded-2xl md:border md:border-slate-100 md:shadow-sm md:p-6 space-y-6">
+          {/* Client Selector */}
+          <POSClientSelector
+            selectedClient={selectedClient}
+            onSelectClient={setSelectedClient}
+            onNewClient={() => setIsAddClientModalOpen(true)}
+          />
+
+          {/* Product Search */}
+          <POSProductSearch
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            onAdvancedSearch={() => { }}
+            selectedProduct={selectedProduct}
+            onSelectProduct={handleProductSelect}
+            refreshTrigger={productsRefreshTrigger}
+          />
+
+          {/* View Catalog Button */}
+          <POSCatalogButton onClick={() => { }} />
+
+          {/* Quick Actions */}
+          <POSQuickActions
+            onHistoryClick={() => { }}
+            onShortcutsClick={() => { }}
+            onHelpClick={() => { }}
+          />
+        </div>
+
+
+
+        {/* Floating Cart Button */}
+        <POSFloatingCart onClick={handleCartOpen} />
+
+        {/* Cart Panel */}
+        <POSCartPanel
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          selectedClient={selectedClient}
+          onSaleSuccess={() => {
+            setIsPaymentModalOpen(true);
+            // Clear selected product when order is created
+            setSelectedProduct(null);
+            // Refresh products explicitly
+            setProductsRefreshTrigger(prev => prev + 1);
+          }}
+        />
+
+        {/* Payment Modal placed here to persist when CartPanel is unmounted/hidden */}
+        <POSPaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaymentSuccess={(paymentMethod: string) => {
+            // Save payment method for success modal
+            setLastPaymentMethod(paymentMethod);
+            // Close payment modal and open success modal
+            setIsPaymentModalOpen(false);
+            setIsSuccessModalOpen(true);
+            // Clear selected product after successful payment
+            setSelectedProduct(null);
+            // Refresh products explicitly
+            setProductsRefreshTrigger(prev => prev + 1);
+          }}
+        />
+
+        {/* Success Modal */}
+        <POSSuccessModal
+          isOpen={isSuccessModalOpen}
+          orderCode={currentOrderCode || ''}
+          clientName={selectedClient?.name || 'Cliente'}
+          paymentMethod={lastPaymentMethod}
+          total={currentOrderTotal}
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            clearCurrentOrder();
+          }}
+          onPrintTicket={() => {
+            // TODO: Implement print ticket functionality
+            console.log('Print ticket');
+          }}
+          onShareWhatsApp={() => {
+            // TODO: Implement WhatsApp share functionality
+            console.log('Share via WhatsApp');
+          }}
+        />
+
+        {/* Mobile Footer */}
+        <POSMobileFooter />
+
+
+
+        {/* Add Client Modal */}
+        <AddClientModal
+          isOpen={isAddClientModalOpen}
+          onClose={() => setIsAddClientModalOpen(false)}
+          onClientRegistered={handleClientRegistered}
+        />
+
+      </div>
+    </div>
+  );
+}

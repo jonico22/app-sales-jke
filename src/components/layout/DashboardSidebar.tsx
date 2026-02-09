@@ -1,15 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 // Define navigation items
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-  { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  { name: 'Dashboard', href: '/', icon: LayoutGrid },
   { name: 'Categorías', href: '/categories', icon: Tags },
+  { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  {
+    name: 'Pedidos',
+    icon: ShoppingCart,
+    children: [
+      { name: 'Pedidos Pendientes', href: '/orders/pending' },
+      { name: 'Histórico de Ventas', href: '/orders/history' }
+    ]
+  },
+  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   { name: 'Clientes', href: '/clients', icon: Users },
-  { name: 'Ventas', href: '/sales', icon: ShoppingCart },
   { name: 'Reportes', href: '/reports', icon: FileText },
   { name: 'Configuración', href: '/settings', icon: Settings },
 ];
@@ -19,16 +28,29 @@ interface DashboardSidebarProps {
   onClose: () => void;
   isCollapsed: boolean;
   toggleCollapse: () => void;
+  showUserInfo?: boolean;
 }
 
-export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleCollapse }: DashboardSidebarProps) {
+export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleCollapse, showUserInfo = false }: DashboardSidebarProps) {
   const { pathname } = useLocation();
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const role = useAuthStore((state) => state.role);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos for now
+
+  const toggleMenu = (name: string) => {
+    if (isCollapsed) return;
+    setExpandedMenus(prev =>
+      prev.includes(name)
+        ? prev.filter(item => item !== name)
+        : [...prev, name]
+    );
+  };
 
   return (
     <>
       {/* Mobile Overlay */}
-      <div 
+      <div
         className={cn(
           "fixed inset-0 bg-black/50 z-20 md:hidden transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -37,7 +59,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
       />
 
       {/* Sidebar Container */}
-      <aside 
+      <aside
         className={cn(
           "fixed top-0 left-0 z-30 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
@@ -45,7 +67,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         )}
       >
         {/* Logo Section */}
-        <div 
+        <div
           className={cn(
             "h-16 flex items-center border-b border-slate-100 cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300",
             isCollapsed ? "justify-center px-0" : "px-6"
@@ -56,7 +78,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
           <div className="bg-[#0ea5e9] p-1.5 rounded-md flex-shrink-0">
             <Package className="h-5 w-5 text-white" />
           </div>
-          <span 
+          <span
             className={cn(
               "font-bold text-slate-700 text-lg tracking-tight ml-3 transition-opacity duration-300",
               isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
@@ -69,16 +91,79 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         {/* Navigation Links */}
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedMenus.includes(item.name);
+            const isActive = pathname === item.href || (hasChildren && item.children?.some(child => pathname === child.href));
+
+            if (hasChildren) {
+              return (
+                <div key={item.name} className="space-y-1">
+                  <button
+                    onClick={() => isCollapsed ? null : toggleMenu(item.name)}
+                    className={cn(
+                      "w-full flex items-center justify-between py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide group",
+                      isCollapsed ? "justify-center px-0" : "px-3",
+                      isActive
+                        ? "text-sky-600"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    )}
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-slate-400")} />
+                      <span className={cn(
+                        "transition-all duration-300 whitespace-nowrap",
+                        isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+                      )}>
+                        {item.name}
+                      </span>
+                    </div>
+                    {!isCollapsed && (
+                      <div className="text-slate-400">
+                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Submenu */}
+                  <div className={cn(
+                    "overflow-hidden transition-all duration-300 ease-in-out",
+                    !isCollapsed && isExpanded ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  )}>
+                    <div className="pl-11 pr-3 space-y-1 py-1">
+                      {item.children?.map((child) => {
+                        const isChildActive = pathname === child.href;
+                        return (
+                          <Link
+                            key={child.href}
+                            to={child.href}
+                            className={cn(
+                              "block py-2 text-sm font-medium transition-colors rounded-lg",
+                              isChildActive
+                                ? "text-sky-600 bg-sky-50 pl-3"
+                                : "text-slate-500 hover:text-slate-900 hover:pl-2"
+                            )}
+                            onClick={() => window.innerWidth < 768 && onClose()}
+                          >
+                            {child.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <Link
-                key={item.href}
-                to={item.href}
+                key={item.href || item.name}
+                to={item.href || '#'}
                 className={cn(
                   "flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide",
                   isCollapsed ? "justify-center px-0" : "px-3",
-                  isActive 
-                    ? "bg-sky-50 text-sky-600" 
+                  isActive
+                    ? "bg-sky-50 text-sky-600"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 )}
                 onClick={() => window.innerWidth < 768 && onClose()} // Close on mobile click
@@ -95,6 +180,39 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
             );
           })}
         </nav>
+
+        {/* User Info Section */}
+        {showUserInfo && user && (
+          <div className={cn(
+            "p-4 border-t border-slate-100",
+            isCollapsed ? "flex justify-center" : ""
+          )}>
+            <div className={cn(
+              "flex items-center gap-3",
+              isCollapsed ? "justify-center" : ""
+            )}>
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-sm">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+
+              {/* User Details */}
+              <div className={cn(
+                "transition-all duration-300 whitespace-nowrap overflow-hidden",
+                isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+              )}>
+                <p className="text-sm font-semibold text-slate-700 truncate max-w-[140px]">
+                  {user.name || 'Usuario'}
+                </p>
+                <p className="text-xs text-slate-400 truncate max-w-[140px]">
+                  {role?.name || 'Sin rol'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Section (Logout) */}
         <div className="p-4 border-t border-slate-100">
