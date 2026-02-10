@@ -42,6 +42,7 @@ export default function SalesHistoryPage() {
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
     const [startDate, endDate] = dateRange;
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'COMPLETED' | 'CANCELLED'>('ALL');
@@ -62,8 +63,8 @@ export default function SalesHistoryPage() {
     // Debounce search term
     useEffect(() => {
         const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
             setCurrentPage(1); // Reset to first page on search
-            fetchOrders(1);
         }, 500);
 
         return () => clearTimeout(timer);
@@ -71,7 +72,7 @@ export default function SalesHistoryPage() {
 
     useEffect(() => {
         fetchOrders(currentPage);
-    }, [currentPage, statusFilter, dateRange, advancedFilters]); // Re-fetch on page, status, date, or advanced filters change
+    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm]); // Re-fetch on page, status, date, or advanced filters change
 
     const fetchOrders = async (page: number = 1) => {
         setIsLoading(true);
@@ -79,7 +80,7 @@ export default function SalesHistoryPage() {
             const queryParams: any = {
                 page,
                 limit: pageLimit,
-                search: searchTerm,
+                search: debouncedSearchTerm,
             };
 
             if (startDate) {

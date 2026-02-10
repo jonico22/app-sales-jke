@@ -49,7 +49,7 @@ export function POSSuccessModal({
                         ¡Venta Realizada con Éxito!
                     </h2>
                     <p className="text-sm text-slate-500">
-                        La boleta <span className="font-bold text-slate-700">#{orderCode}</span> ha sido generada correctamente
+                        La orden <span className="font-bold text-slate-700">#{orderCode}</span> ha sido generada correctamente
                     </p>
                 </div>
 

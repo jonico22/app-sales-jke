@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, Loader2 } from 'lucide-react';
 
 interface POSCancelModalProps {
     isOpen: boolean;
@@ -121,11 +121,14 @@ export function POSCancelModal({
                         className="flex-[1.5] py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-lg shadow-red-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Anulando...
+                            </>
                         ) : (
                             <>
                                 <Trash2 className="w-4 h-4" />
-                                Anular Pedido permanentemente
+                                Anular Pedido
                             </>
                         )}
                     </button>

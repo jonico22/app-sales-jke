@@ -6,7 +6,6 @@ import {
   Camera,
   Package,
   Bell,
-  DollarSign,
   Save,
   Wand2
 } from 'lucide-react';
@@ -15,6 +14,7 @@ import { SlidePanel } from '@/components/shared/SlidePanel';
 import { generateSku } from '@/lib/utils';
 import { productService, type Product } from '@/services/product.service';
 import { categoryService, type CategorySelectOption } from '@/services/category.service';
+import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
 
 const productSchema = z.object({
@@ -44,6 +44,7 @@ export function ProductEditPanel({
   productId,
   onSuccess,
 }: ProductEditPanelProps) {
+  const society = useSocietyStore(state => state.society); // Add hook
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategorySelectOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -320,7 +321,9 @@ export function ProductEditPanel({
             <div className="space-y-2">
               <Label htmlFor="edit-priceCost">PRECIO COSTO</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  {society?.mainCurrency?.symbol || 'S/'}
+                </span>
                 <Input
                   id="edit-priceCost"
                   type="number"
@@ -334,7 +337,9 @@ export function ProductEditPanel({
             <div className="space-y-2">
               <Label htmlFor="edit-price">PRECIO VENTA</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  {society?.mainCurrency?.symbol || 'S/'}
+                </span>
                 <Input
                   id="edit-price"
                   type="number"

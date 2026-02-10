@@ -1,4 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useIdleTimer } from 'react-idle-timer';
 import DashboardLayout from './components/layout/DashboardLayout';
 import POSLayout from './components/layout/POSLayout';
 import AuthLayout from './features/auth/AuthLayout';
@@ -8,6 +10,8 @@ import ResetPasswordPage from './features/auth/ResetPasswordPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
+import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
+import { useAuthStore } from '@/store/auth.store';
 import DashboardPage from './features/dashboard/DashboardPage';
 import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
@@ -101,11 +105,36 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  const { isAuthenticated, logout } = useAuthStore();
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+
+  const handleOnIdle = () => {
+    if (isAuthenticated) {
+      logout();
+      setIsSessionExpired(true);
+    }
+  };
+
+  useIdleTimer({
+    timeout: 1000 * 60 * 20, // 20 minutes
+    onIdle: handleOnIdle,
+    debounce: 500,
+  });
+
+  const handleLoginRedirect = () => {
+    setIsSessionExpired(false);
+    window.location.href = '/auth/login';
+  };
+
   return (
     <>
       <DatePickerStyles />
       <RouterProvider router={router} />
       <Toaster />
+      <SessionExpiredModal
+        isOpen={isSessionExpired}
+        onLogin={handleLoginRedirect}
+      />
     </>
   );
 }
