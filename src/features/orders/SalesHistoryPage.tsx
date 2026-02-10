@@ -24,6 +24,7 @@ import type { OrderPayment } from '@/services/order-payment.service';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
 import { SalesHistoryFilterPanel, type FilterValues } from './components/SalesHistoryFilterPanel';
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
+import { exportToExcel } from '@/utils/excel.utils';
 
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
@@ -38,7 +39,7 @@ export default function SalesHistoryPage() {
     const [totalOrders, setTotalOrders] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPrevPage, setHasPrevPage] = useState(false);
-    const pageLimit = 10;
+    const [pageSize, setPageSize] = useState(10);
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -72,14 +73,14 @@ export default function SalesHistoryPage() {
 
     useEffect(() => {
         fetchOrders(currentPage);
-    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm]); // Re-fetch on page, status, date, or advanced filters change
+    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm, pageSize]); // Re-fetch on page, status, date, or advanced filters change
 
     const fetchOrders = async (page: number = 1) => {
         setIsLoading(true);
         try {
             const queryParams: any = {
                 page,
-                limit: pageLimit,
+                limit: pageSize,
                 search: debouncedSearchTerm,
             };
 
@@ -187,6 +188,53 @@ export default function SalesHistoryPage() {
         setIsDetailModalOpen(true);
     };
 
+    const handleExport = () => {
+        exportToExcel(
+            filteredOrders,
+            [
+                { header: 'ID Venta', key: 'orderCode', width: 15 },
+                {
+                    header: 'Fecha',
+                    key: (order) => order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') : '-',
+                    width: 20
+                },
+                {
+                    header: 'Cliente',
+                    key: (order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
+                    width: 30
+                },
+                { header: 'Total', key: (order) => Number(order.totalAmount).toFixed(2), width: 15 },
+                {
+                    header: 'Método de Pago',
+                    key: (order) => {
+                        const method = order.OrderPayment?.[0]?.paymentMethod;
+                        const methods: Record<string, string> = {
+                            'CASH': 'Efectivo', 'CARD': 'Tarjeta', 'YAPE': 'Yape', 'PLIN': 'Plin',
+                            'TRANSFER': 'Transferencia', 'OTHER': 'Otro'
+                        };
+                        return method ? (methods[method] || method) : '-';
+                    },
+                    width: 15
+                },
+                {
+                    header: 'Estado',
+                    key: (order) => {
+                        const statuses: Record<string, string> = {
+                            [OrderStatus.COMPLETED]: 'Completado',
+                            [OrderStatus.CANCELLED]: 'Anulado',
+                            [OrderStatus.PENDING]: 'Pendiente',
+                            [OrderStatus.PENDING_PAYMENT]: 'Pedido Pendiente'
+                        };
+                        return statuses[order.status] || order.status;
+                    },
+                    width: 15
+                },
+            ],
+            `Reporte_Ventas_${format(new Date(), 'yyyy-MM-dd')}`,
+            'Ventas'
+        );
+    };
+
     const getStatusBadge = (status: string) => {
         const styles = {
             [OrderStatus.COMPLETED]: { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Completado' },
@@ -236,7 +284,10 @@ export default function SalesHistoryPage() {
                     <p className="text-gray-500 text-sm mt-1">Gestione y verifique las transacciones recientes.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm transition-all text-sm font-medium">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm transition-all text-sm font-medium"
+                    >
                         <Download size={18} />
                         <span>Exportar</span>
                     </button>
@@ -380,8 +431,25 @@ export default function SalesHistoryPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/50">
-                    <span className="text-sm text-gray-500">Mostrando <span className="font-medium">{orders.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalOrders)}</span> de <span className="font-medium">{totalOrders}</span> ventas</span>
+                <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50">
+                    <div className="flex items-center gap-4">
+                        <span className="text-sm text-gray-500">
+                            Mostrando <span className="font-medium">{orders.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-medium">{totalOrders}</span> ventas
+                        </span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => {
+                                setPageSize(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
+                        >
+                            <option value="10">10 por página</option>
+                            <option value="20">20 por página</option>
+                            <option value="40">40 por página</option>
+                            <option value="60">60 por página</option>
+                        </select>
+                    </div>
                     <div className="flex gap-2">
                         <button
                             disabled={!hasPrevPage || isLoading}
