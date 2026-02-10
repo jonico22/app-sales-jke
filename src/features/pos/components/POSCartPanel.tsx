@@ -4,6 +4,8 @@ import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
 import { POSPaymentModal } from './POSPaymentModal';
+import { POSAlertModal } from './POSAlertModal';
+import { parseBackendError } from '@/utils/error.utils';
 
 
 interface POSCartPanelProps {
@@ -21,13 +23,14 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
     const igv = totalWithTax - subtotal;
     const total = totalWithTax - (discount || 0);
 
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [processingStatus, setProcessingStatus] = useState<OrderStatus | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleProcessOrder = async (targetStatus: OrderStatus = OrderStatus.PENDING_PAYMENT) => {
         if (items.length === 0) return;
 
-        setIsProcessing(true);
+        setProcessingStatus(targetStatus);
         try {
             // Construct Order Request
             // Note: We need actual IDs for society, branch, currency, partner. 
@@ -88,9 +91,10 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
             }
         } catch (error) {
             console.error('Failed to create order', error);
-            // Handle error (toast, etc)
+            const message = parseBackendError(error);
+            setErrorMessage(message);
         } finally {
-            setIsProcessing(false);
+            setProcessingStatus(null);
         }
     };
 
@@ -253,24 +257,28 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
 
                     {/* Actions */}
                     <div className="grid gap-3 pt-2">
+
                         <button
                             onClick={() => handleProcessOrder(OrderStatus.PENDING_PAYMENT)}
-                            disabled={items.length === 0 || isProcessing}
+                            disabled={items.length === 0 || processingStatus !== null}
                             className="w-full py-3.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isProcessing ? (
+                            {processingStatus === OrderStatus.PENDING_PAYMENT ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <ShoppingBag className="w-5 h-5" />
                             )}
-                            {isProcessing ? 'Procesando...' : 'Registar Venta'}
+                            {processingStatus === OrderStatus.PENDING_PAYMENT ? 'Procesando...' : 'Registar Venta'}
                         </button>
                         <button
-                            className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors active:scale-[0.98]"
                             onClick={() => handleProcessOrder(OrderStatus.PENDING)}
-                            disabled={isProcessing}
+                            disabled={items.length === 0 || processingStatus !== null}
+                            className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Registar Pedido
+                            {processingStatus === OrderStatus.PENDING ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : null}
+                            {processingStatus === OrderStatus.PENDING ? 'Guardando...' : 'Registar Pedido'}
                         </button>
                     </div>
                 </div>
@@ -281,6 +289,15 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 onClose={() => setShowPaymentModal(false)}
                 onPaymentSuccess={handlePaymentSuccess}
             />
+
+            <POSAlertModal
+                isOpen={!!errorMessage}
+                onClose={() => setErrorMessage(null)}
+                title="Error al Registrar"
+                message={errorMessage || ''}
+                type="error"
+            />
+
         </>
     );
 }
