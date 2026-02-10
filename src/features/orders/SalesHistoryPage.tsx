@@ -15,13 +15,15 @@ import {
     ArrowRightLeft,
     HelpCircle,
     ChevronDown,
-    SlidersHorizontal
+    SlidersHorizontal,
+    FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { OrderPayment } from '@/services/order-payment.service';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
 import { SalesHistoryFilterPanel, type FilterValues } from './components/SalesHistoryFilterPanel';
+import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
 
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
@@ -54,6 +56,8 @@ export default function SalesHistoryPage() {
         totalTo: '',
     });
 
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     // Debounce search term
     useEffect(() => {
@@ -177,11 +181,17 @@ export default function SalesHistoryPage() {
     // Local filtering removed in favor of Server Side Pagination
     const filteredOrders = orders;
 
+    const handleViewDetails = (order: Order) => {
+        setSelectedOrder(order);
+        setIsDetailModalOpen(true);
+    };
+
     const getStatusBadge = (status: string) => {
         const styles = {
             [OrderStatus.COMPLETED]: { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Completado' },
             [OrderStatus.CANCELLED]: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500', label: 'Anulado' },
             [OrderStatus.PENDING]: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Pendiente' },
+            [OrderStatus.PENDING_PAYMENT]: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Pedido Pendiente' },
         };
         const config = styles[status as keyof typeof styles] || { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500', label: status };
 
@@ -347,9 +357,18 @@ export default function SalesHistoryPage() {
                                                 {getStatusBadge(order.status)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                                                    <MoreVertical size={18} />
-                                                </button>
+                                                <div className="flex justify-center gap-2">
+                                                    <button
+                                                        onClick={() => handleViewDetails(order)}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="Ver Detalle"
+                                                    >
+                                                        <FileText size={18} />
+                                                    </button>
+                                                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                                        <MoreVertical size={18} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -391,6 +410,12 @@ export default function SalesHistoryPage() {
                     setAdvancedFilters(filters);
                     setCurrentPage(1); // Reset to first page when applying filters
                 }}
+            />
+
+            <SalesHistoryResultModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                order={selectedOrder}
             />
         </div>
     );

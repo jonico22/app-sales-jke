@@ -8,6 +8,8 @@ import { POSPaymentModal } from '../pos/components/POSPaymentModal';
 import { POSSuccessModal } from '../pos/components/POSSuccessModal';
 import { POSCancelModal } from '../pos/components/POSCancelModal';
 import { POSResumeModal } from '../pos/components/POSResumeModal';
+import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
+import { FileText } from 'lucide-react';
 
 // Helper for relative time (e.g. "Hace 15 min")
 function getTimeAgo(dateString: string) {
@@ -68,6 +70,8 @@ export default function PendingOrdersPage() {
     const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
     const [selectedOrderForCancellation, setSelectedOrderForCancellation] = useState<Order | null>(null);
     const [selectedOrderForResume, setSelectedOrderForResume] = useState<Order | null>(null);
+    const [selectedOrderForDetail, setSelectedOrderForDetail] = useState<Order | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
     const [isProcessingCancel, setIsProcessingCancel] = useState(false);
     const [isProcessingResume, setIsProcessingResume] = useState(false);
@@ -111,6 +115,11 @@ export default function PendingOrdersPage() {
     const handleResume = (order: Order) => {
         setSelectedOrderForResume(order);
         setIsResumeModalOpen(true);
+    };
+
+    const handleViewDetail = (order: Order) => {
+        setSelectedOrderForDetail(order);
+        setIsDetailModalOpen(true);
     };
 
 
@@ -364,7 +373,14 @@ export default function PendingOrdersPage() {
                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-sky-200 text-sky-600 hover:bg-sky-50 rounded-lg text-xs font-bold transition-colors"
                                                 >
                                                     <Play className="w-3.5 h-3.5 fill-current" />
-                                                    Remplazar
+                                                    Reemplazar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleViewDetail(order)}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors"
+                                                >
+                                                    <FileText className="w-3.5 h-3.5" />
+                                                    Detalle
                                                 </button>
                                                 <button
                                                     onClick={() => handlePay(order)}
@@ -438,13 +454,19 @@ export default function PendingOrdersPage() {
                 isProcessing={isProcessingCancel}
             />
 
-            {/* Resume Modal */}
             <POSResumeModal
                 isOpen={isResumeModalOpen}
                 onClose={() => setIsResumeModalOpen(false)}
                 onConfirm={handleConfirmResume}
                 isProcessing={isProcessingResume}
                 orderCode={selectedOrderForResume?.orderCode}
+            />
+
+            {/* Detail Modal */}
+            <SalesHistoryResultModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                order={selectedOrderForDetail}
             />
         </div>
     );

@@ -7,7 +7,11 @@ export interface OrderItem {
     productId: string;
     quantity: number;
     unitPrice: number;
-    // Potentially other fields like productName if joined, but keeping minimal for now
+    total?: number; // Added for display
+    product?: {
+        name: string;
+        // ...other product fields
+    };
 }
 
 export const OrderStatus = {
@@ -62,6 +66,7 @@ export interface Order {
         firstName: string | null;
         lastName: string | null;
         documentNumber: string | null;
+        documentType?: string | null; // Added
         email: string | null;
     };
 
