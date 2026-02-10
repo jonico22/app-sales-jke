@@ -62,7 +62,7 @@ export default function ProductsPage() {
     const [totalProducts, setTotalProducts] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPrevPage, setHasPrevPage] = useState(false);
-    const pageLimit = 10;
+    const [pageSize, setPageSize] = useState(10);
 
     // Edit panel state
     const [editPanelOpen, setEditPanelOpen] = useState(false);
@@ -96,7 +96,7 @@ export default function ProductsPage() {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const params: any = {
                 page: currentPage,
-                limit: pageLimit,
+                limit: pageSize,
             };
 
             if (debouncedSearchTerm) {
@@ -156,7 +156,7 @@ export default function ProductsPage() {
 
     useEffect(() => {
         fetchProducts();
-    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
+    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize]);
 
     const handleDeleteProduct = async (id: string) => {
         const isConfirmed = await alerts.confirm({
@@ -389,8 +389,23 @@ export default function ProductsPage() {
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between p-4 border-t border-slate-100">
-                    <div className="text-sm text-slate-500">
-                        Mostrando <span className="font-semibold text-secondary">{products.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalProducts)}</span> de <span className="font-semibold text-secondary">{totalProducts}</span> productos
+                    <div className="flex items-center gap-4">
+                        <div className="text-sm text-slate-500">
+                            Mostrando <span className="font-semibold text-secondary">{products.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalProducts)}</span> de <span className="font-semibold text-secondary">{totalProducts}</span> productos
+                        </div>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => {
+                                setPageSize(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-primary focus:border-primary block p-1.5"
+                        >
+                            <option value="10">10 por página</option>
+                            <option value="20">20 por página</option>
+                            <option value="40">40 por página</option>
+                            <option value="60">60 por página</option>
+                        </select>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button
