@@ -34,6 +34,13 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ token: null, user: null, role: null, isAuthenticated: false });
         localStorage.removeItem('token'); // Clear the manual token if we still use it for interceptors
+
+        // Clear all other stores
+        // We need to import and clear cart, branch, and society stores
+        // This will be done by clearing their localStorage keys
+        localStorage.removeItem('pos-cart-storage');
+        localStorage.removeItem('branch-storage');
+        localStorage.removeItem('society-storage');
       },
     }),
     {

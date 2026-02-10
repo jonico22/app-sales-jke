@@ -76,31 +76,19 @@ export default function PendingOrdersPage() {
     const fetchOrders = async () => {
         setIsLoading(true);
         try {
-            // Fetch both PENDING and PENDING_PAYMENT
-            const [pendingResponse, pendingPaymentResponse] = await Promise.all([
-                orderService.getAll({
-                    status: OrderStatus.PENDING,
-                    limit: 50
-                }),
-                orderService.getAll({
-                    status: OrderStatus.PENDING_PAYMENT,
-                    limit: 50
-                })
-            ]);
+            // Fetch only PENDING_PAYMENT
+            const pendingPaymentResponse = await orderService.getAll({
+                status: OrderStatus.PENDING_PAYMENT,
+                limit: 50,
+                include: 'allItems' // Request items
+            });
 
             let allOrders: Order[] = [];
-
-            if (pendingResponse.success && pendingResponse.data) {
-                const pendingOrders = (pendingResponse.data as any).data || pendingResponse.data;
-                if (Array.isArray(pendingOrders)) {
-                    allOrders = [...allOrders, ...pendingOrders];
-                }
-            }
 
             if (pendingPaymentResponse.success && pendingPaymentResponse.data) {
                 const pendingPaymentOrders = (pendingPaymentResponse.data as any).data || pendingPaymentResponse.data;
                 if (Array.isArray(pendingPaymentOrders)) {
-                    allOrders = [...allOrders, ...pendingPaymentOrders];
+                    allOrders = [...pendingPaymentOrders];
                 }
             }
 
@@ -149,13 +137,6 @@ export default function PendingOrdersPage() {
             // For now, assuming we just need to re-add them. 
             // BUT CartStore might not have a direct "setItems" for raw products. 
             // We usually add products. 
-
-            // IMPORTANT: The `addItem` in store takes a product. 
-            // We might need to fetch products or allow adding from OrderItem.
-            // For this specific 'Resume/Clone' logic, we might need a store action or just manually reconstruct.
-            // Given the complexity of "addItem" (it checks stock, etc.), we should probably iterate and add.
-            // However, we don't have the full Product object here, just OrderItem.
-            // OrderItem usually has productId, quantity, unitPrice.
 
             // WORKAROUND: For now, we set the 'currentOrder' ID to null (new order) but we need to populate items.
             // Since we can't easily reconstruction "Product" objects without fetching them, 
@@ -365,7 +346,7 @@ export default function PendingOrdersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200">
-                                                {order._count?.orderItems || 0} ítems
+                                                {order.totalProducts || 0} productos
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -383,7 +364,7 @@ export default function PendingOrdersPage() {
                                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-sky-200 text-sky-600 hover:bg-sky-50 rounded-lg text-xs font-bold transition-colors"
                                                 >
                                                     <Play className="w-3.5 h-3.5 fill-current" />
-                                                    Retomar
+                                                    Remplazar
                                                 </button>
                                                 <button
                                                     onClick={() => handlePay(order)}

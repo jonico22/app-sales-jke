@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { POSWelcomeHeader } from './components/POSWelcomeHeader';
 import { POSClientSelector } from './components/POSClientSelector';
@@ -31,6 +31,7 @@ export default function POSPage() {
   const [productsRefreshTrigger, setProductsRefreshTrigger] = useState(0);
   const { clearCurrentOrder, currentOrderCode, currentOrderTotal } = useCartStore();
   const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
+  const processingCloneRef = useRef<string | null>(null);
 
   const location = useLocation();
   const addItemToCart = useCartStore(state => state.addItem);
@@ -41,6 +42,13 @@ export default function POSPage() {
 
       if (location.state && (location.state as any).cloneFromOrderId) {
         const orderId = (location.state as any).cloneFromOrderId;
+
+        // Prevent duplicate processing
+        if (processingCloneRef.current === orderId) {
+          console.log('[CLONE] Already processing order:', orderId);
+          return;
+        }
+        processingCloneRef.current = orderId;
 
         try {
           const response = await import('@/services/order.service').then(m => m.orderService.getById(orderId));
@@ -63,10 +71,8 @@ export default function POSPage() {
                   const product = productRes.data;
                   console.log('[CLONE] Product fetched:', product.name, 'Quantity:', item.quantity);
 
-                  // Add item quantity times
-                  for (let i = 0; i < item.quantity; i++) {
-                    addItemToCart(product);
-                  }
+                  // Add item directly with quantity
+                  addItemToCart(product, item.quantity);
                   console.log('[CLONE] Product added to cart');
                 } else {
                   console.warn('[CLONE] Product fetch failed:', productRes);
@@ -92,6 +98,12 @@ export default function POSPage() {
         // Clean up state so it doesn't run again on reload
         window.history.replaceState({}, document.title);
         console.log('[CLONE] Clone process completed, state cleaned');
+
+        // Reset ref after a delay to allow re-cloning if needed (though location state is cleared)
+        setTimeout(() => {
+          processingCloneRef.current = null;
+        }, 1000);
+
       } else {
         console.log('[CLONE] No cloneFromOrderId in location state');
       }
@@ -110,7 +122,6 @@ export default function POSPage() {
     setSelectedProduct(product);
     if (product) {
       addItemToCart(product);
-      setIsCartOpen(true); // Open cart when product is added
       // Clear selected product after adding to cart
       setTimeout(() => setSelectedProduct(null), 100);
     }
