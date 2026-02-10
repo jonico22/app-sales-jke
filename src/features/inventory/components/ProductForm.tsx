@@ -7,7 +7,6 @@ import {
   Plus,
   Package,
   Bell,
-  DollarSign,
   Save,
   Wand2
 } from 'lucide-react';
@@ -15,6 +14,7 @@ import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
 import { generateSku } from '@/lib/utils';
 import { productService } from '@/services/product.service';
 import { categoryService, type CategorySelectOption } from '@/services/category.service';
+import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
 
 const productSchema = z.object({
@@ -35,6 +35,7 @@ import { CategoryEditModal } from '../../categories/components/CategoryEditModal
 type ProductFormValues = z.output<typeof productSchema>;
 
 export default function ProductForm() {
+  const society = useSocietyStore(state => state.society); // Add hook
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategorySelectOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -270,7 +271,9 @@ export default function ProductForm() {
           <div className="space-y-2">
             <Label htmlFor="priceCost">PRECIO COSTO</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                {society?.mainCurrency?.symbol || 'S/'}
+              </span>
               <Input
                 id="priceCost"
                 type="number"
@@ -284,7 +287,9 @@ export default function ProductForm() {
           <div className="space-y-2">
             <Label htmlFor="price">PRECIO VENTA</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                {society?.mainCurrency?.symbol || 'S/'}
+              </span>
               <Input
                 id="price"
                 type="number"
