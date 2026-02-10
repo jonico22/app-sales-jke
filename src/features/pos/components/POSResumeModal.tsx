@@ -27,7 +27,7 @@ export function POSResumeModal({
                         <Copy className="w-8 h-8 text-sky-500" />
                     </div>
                     <h2 className="text-xl font-bold text-slate-800 mb-2">
-                        Retomar y Clonar Pedido
+                        Remplazar por un nuevo Pedido
                     </h2>
                     {orderCode && (
                         <span className="text-sm font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md mb-2">

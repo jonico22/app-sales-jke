@@ -69,6 +69,7 @@ export interface Order {
         code: string;
         symbol: string;
     };
+    totalProducts?: number; // Added from API response
 }
 // Keeping Create/Update interfaces mostly as is unless they also need massive changes, 
 // but usually request/response differs. The user only showed Response.
@@ -177,6 +178,7 @@ export const orderService = {
         createdAtTo?: string;
         updatedAtFrom?: string;
         updatedAtTo?: string;
+        include?: string; // Allow including relations
     }): Promise<OrdersResponse> => {
         const response = await api.get<OrdersResponse>('/sales/orders', { params });
         return response.data;

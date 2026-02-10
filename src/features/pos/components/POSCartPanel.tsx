@@ -16,9 +16,10 @@ interface POSCartPanelProps {
 export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
     const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, branchId, currencyId } = useCartStore();
     const society = useSocietyStore(state => state.society);
-    const subtotal = useCartStore(selectTotalPrice);
-    const igv = subtotal * 0.18;
-    const total = subtotal + igv - (discount || 0);
+    const totalWithTax = useCartStore(selectTotalPrice);
+    const subtotal = totalWithTax / 1.18;
+    const igv = totalWithTax - subtotal;
+    const total = totalWithTax - (discount || 0);
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -47,7 +48,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 // The user validation error for customerId was just "Required", not "Invalid".
 
                 exchangeRate: 1.0,
-                status: targetStatus, // Use the target status
+                status: OrderStatus.PENDING_PAYMENT, // Use the target status
                 subtotal: subtotal,
                 taxAmount: igv,
                 total: total,
@@ -262,14 +263,14 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                             ) : (
                                 <ShoppingBag className="w-5 h-5" />
                             )}
-                            {isProcessing ? 'Procesando...' : 'Procesar Venta'}
+                            {isProcessing ? 'Procesando...' : 'Registar Venta'}
                         </button>
                         <button
                             className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors active:scale-[0.98]"
                             onClick={() => handleProcessOrder(OrderStatus.PENDING)}
                             disabled={isProcessing}
                         >
-                            Realizar otro pedido
+                            Registar Pedido
                         </button>
                     </div>
                 </div>
