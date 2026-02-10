@@ -163,7 +163,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-medium">x{item.quantity}</span>
                                             <div className="relative group">
-                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{society?.mainCurrency?.symbol || 'S/'}</span>
                                                 <input
                                                     type="number"
                                                     min="0"
@@ -205,7 +205,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                 Descuento General
                             </label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">S/</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{society?.mainCurrency?.symbol || 'S/'}</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -233,21 +233,21 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                     <div className="pt-4 border-t border-dashed border-slate-200 space-y-2">
                         <div className="flex justify-between text-sm text-slate-500">
                             <span>Subtotal</span>
-                            <span>S/ {subtotal.toFixed(2)}</span>
+                            <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm text-slate-500">
                             <span>IGV (18%)</span>
-                            <span>S/ {igv.toFixed(2)}</span>
+                            <span>{society?.mainCurrency?.symbol || 'S/'} {igv.toFixed(2)}</span>
                         </div>
                         {discount > 0 && (
                             <div className="flex justify-between text-sm text-emerald-600 font-medium">
                                 <span>Descuento</span>
-                                <span>- S/ {discount.toFixed(2)}</span>
+                                <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toFixed(2)}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-end pt-2">
                             <span className="text-base font-bold text-slate-800">TOTAL</span>
-                            <span className="text-2xl font-black text-sky-600">S/ {total.toFixed(2)}</span>
+                            <span className="text-2xl font-black text-sky-600">{society?.mainCurrency?.symbol || 'S/'} {total.toFixed(2)}</span>
                         </div>
                     </div>
 
