@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useIdleTimer } from 'react-idle-timer';
+
 import DashboardLayout from './components/layout/DashboardLayout';
 import POSLayout from './components/layout/POSLayout';
 import AuthLayout from './features/auth/AuthLayout';
@@ -12,6 +13,7 @@ import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
+import { useSocketConnection } from '@/hooks/useSocketConnection';
 import DashboardPage from './features/dashboard/DashboardPage';
 import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
@@ -107,6 +109,11 @@ const router = createBrowserRouter([
 function App() {
   const { isAuthenticated, logout } = useAuthStore();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+
+  // Initialize socket connection manager
+  useSocketConnection();
+
+
 
   const handleOnIdle = () => {
     if (isAuthenticated) {

@@ -1,32 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Banknote, ChevronDown, Check, RefreshCw, TrendingUp } from 'lucide-react';
-import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
+import { type CurrencySelectOption } from '@/services/currency.service';
+import { useCurrencies } from '@/hooks/useCurrencies';
+import { useCartStore } from '@/store/cart.store';
 
 export function CurrencySelector() {
-    const [currencies, setCurrencies] = useState<CurrencySelectOption[]>([]);
-    const [selectedCurrency, setSelectedCurrency] = useState<CurrencySelectOption | null>(null);
+    const { data: currencies = [] } = useCurrencies();
+    const { currencyId, setCurrencyId } = useCartStore();
     const [isOpen, setIsOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchCurrencies = async () => {
-            try {
-                const response = await currencyService.getForSelect();
-                setCurrencies(response.data || []);
-                if (response.data?.length > 0) {
-                    // Try to find PEN or USD as default, otherwise first one
-                    const defaultCurrency = response.data.find(c => c.code === 'PEN') || response.data[0];
-                    setSelectedCurrency(defaultCurrency);
-                }
-            } catch (error) {
-                console.error('Error fetching currencies:', error);
-            }
-        };
+    // Derive selected currency from store ID
+    const selectedCurrency = currencies.find(c => c.id === currencyId) || null;
 
-        fetchCurrencies();
-    }, []);
+    useEffect(() => {
+        // Set default currency if loaded and none selected
+        // Assuming '1' is the default mock ID or we want to pick the first one/PEN
+        if (currencies.length > 0 && (!currencyId || currencyId === '1')) {
+            const defaultCurrency = currencies.find(c => c.code === 'PEN') || currencies[0];
+            if (defaultCurrency && defaultCurrency.id !== currencyId) {
+                setCurrencyId(defaultCurrency.id);
+            }
+        }
+    }, [currencies, currencyId, setCurrencyId]);
 
     const handleSelectCurrency = (currency: CurrencySelectOption) => {
-        setSelectedCurrency(currency);
+        setCurrencyId(currency.id);
         setIsOpen(false);
     };
 

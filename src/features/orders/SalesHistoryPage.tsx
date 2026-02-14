@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SalesOrderDetailView } from './components/SalesOrderDetailView';
 
 import { orderService, OrderStatus } from '@/services/order.service';
 import type { Order } from '@/services/order.service';
@@ -275,6 +276,36 @@ export default function SalesHistoryPage() {
         );
     };
 
+    // URL Search Params for Detail View
+    const [searchParams, setSearchParams] = useSearchParams();
+    const detailId = searchParams.get('id');
+
+    // Effect to auto-open modal or handle view based on URL
+    // Note: User requested full page, so we will switch view if detailId matches
+    useEffect(() => {
+        if (detailId) {
+            // Logic to handle detail view is in the render
+        }
+    }, [detailId]);
+
+    const handleClearDetail = () => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('id');
+        setSearchParams(newParams);
+        setSelectedOrder(null);
+    };
+
+    if (detailId) {
+        return (
+            <div className="p-6 max-w-[1400px] mx-auto">
+                <SalesOrderDetailView
+                    orderId={detailId}
+                    onBack={handleClearDetail}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
             {/* Header */}
@@ -411,7 +442,12 @@ export default function SalesHistoryPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <div className="flex justify-center gap-2">
                                                     <button
-                                                        onClick={() => handleViewDetails(order)}
+                                                        onClick={() => {
+                                                            // Instead of modal, now we can navigate to detail view for consistency
+                                                            // setSelectedOrder(order);
+                                                            // setIsDetailModalOpen(true);
+                                                            setSearchParams({ id: order.id });
+                                                        }}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                         title="Ver Detalle"
                                                     >

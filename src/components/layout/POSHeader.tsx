@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Store, Bell, ChevronDown, Check } from 'lucide-react';
+import { Store, ChevronDown, Check } from 'lucide-react';
 import { useBranchStore } from '@/store/branch.store';
-import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
+import { type BranchOfficeSelectOption } from '@/services/branch-office.service';
+import { useBranches } from '@/hooks/useBranches';
 import { CurrencySelector } from './CurrencySelector';
+import NotificationDropdown from '@/components/layout/NotificationDropdown';
 
 interface POSHeaderProps {
   title?: string;
@@ -10,30 +12,26 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderProps) {
+  const { data: branchesData = [] } = useBranches();
   const { branches, selectedBranch, setBranches, selectBranch } = useBranchStore();
 
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Fetch branches and currencies on mount
+  // Sync branches from query to store
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        // Fetch Branches
-        if (branches.length === 0) {
-          const branchResponse = await branchOfficeService.getForSelect();
-          setBranches(branchResponse.data || []);
-          if (!selectedBranch && branchResponse.data?.length > 0) {
-            selectBranch(branchResponse.data[0]);
-          }
+    if (branchesData.length > 0) {
+      // Only update if store is empty or different?
+      // For now, just setting it ensures it's up to date.
+      // Avoid infinite loop if setBranches is stable (it is from zustand)
+      if (branches.length === 0 || branches.length !== branchesData.length) {
+        setBranches(branchesData);
+        if (!selectedBranch) {
+          selectBranch(branchesData[0]);
         }
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
       }
-    };
-
-    fetchInitialData();
-  }, [branches.length, selectedBranch, setBranches, selectBranch]);
+    }
+  }, [branchesData, setBranches, branches.length, selectedBranch, selectBranch]);
 
   // Update time every minute
   useEffect(() => {
@@ -157,10 +155,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
           <p className="text-xs font-medium text-slate-400">{formatTime(currentTime)}</p>
         </div>
 
-        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
+        <NotificationDropdown />
       </div>
     </header>
   );
