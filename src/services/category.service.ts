@@ -76,6 +76,23 @@ export interface UpdatedByUsersResponse {
     data: UserSelectOption[];
 }
 
+export interface BulkUploadResponse {
+    success: boolean;
+    message: string;
+    data: {
+        status: string;
+        message: string;
+        details: {
+            success: boolean;
+            processed: number;
+            errors: Array<{
+                row: number;
+                error: string;
+            }>;
+        };
+    };
+}
+
 export const categoryService = {
     // Get all categories
     getAll: async (params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<CategoriesResponse> => {
@@ -116,6 +133,19 @@ export const categoryService = {
     // Get users who updated categories
     getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
         const response = await api.get<UpdatedByUsersResponse>('/sales/categories/created-by-users');
+        return response.data;
+    },
+
+    // Bulk upload categories from CSV file
+    bulkUpload: async (file: File): Promise<BulkUploadResponse> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post<BulkUploadResponse>('/sales/categories/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     },
 };
