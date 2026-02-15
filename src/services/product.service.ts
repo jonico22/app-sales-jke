@@ -105,6 +105,23 @@ export interface UpdatedByUsersResponse {
     data: UserSelectOption[];
 }
 
+export interface BulkUploadResponse {
+    success: boolean;
+    message: string;
+    data: {
+        status: string;
+        message: string;
+        details: {
+            success: boolean;
+            processed: number;
+            errors: Array<{
+                row: number;
+                error: string;
+            }>;
+        };
+    };
+}
+
 export const productService = {
     // Get all products
     getAll: async (params?: {
@@ -162,6 +179,19 @@ export const productService = {
     // Get users who created products
     getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
         const response = await api.get<UpdatedByUsersResponse>('/sales/products/created-by-users');
+        return response.data;
+    },
+
+    // Bulk upload products from CSV file
+    bulkUpload: async (file: File): Promise<BulkUploadResponse> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post<BulkUploadResponse>('/sales/products/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     },
 };
