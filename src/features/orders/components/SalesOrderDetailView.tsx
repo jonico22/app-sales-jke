@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, User, ShoppingBag, FileText, Printer, MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { ArrowLeft, User, ShoppingBag, FileText, Printer, Mail, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Order } from '@/services/order.service';
@@ -129,8 +129,8 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         </div>
                     </div>
                     <div className={`px-4 py-1.5 rounded-full text-sm font-bold border ${order.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                            order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
-                                'bg-amber-50 text-amber-700 border-amber-100'
+                        order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
+                            'bg-amber-50 text-amber-700 border-amber-100'
                         }`}>
                         {order.status === 'COMPLETED' ? 'COMPLETADO' :
                             order.status === 'CANCELLED' ? 'ANULADO' : order.status}

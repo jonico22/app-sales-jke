@@ -15,6 +15,10 @@ export interface Product {
     priceCost: string;
     stock: number;
     minStock: number;
+    barcode: string | null;
+    brand: string | null;
+    color: string | null;
+    colorCode: string | null;
     societyId: string;
     categoryId: string;
     imageId: string | null;
@@ -39,6 +43,10 @@ export interface CreateProductRequest {
     imageId?: string;
     isActive?: boolean;
     code: string;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface UpdateProductRequest {
@@ -51,6 +59,10 @@ export interface UpdateProductRequest {
     categoryId?: string;
     imageId?: string;
     isActive?: boolean;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface ProductResponse {

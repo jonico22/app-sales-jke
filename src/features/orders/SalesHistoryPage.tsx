@@ -184,10 +184,7 @@ export default function SalesHistoryPage() {
     // Local filtering removed in favor of Server Side Pagination
     const filteredOrders = orders;
 
-    const handleViewDetails = (order: Order) => {
-        setSelectedOrder(order);
-        setIsDetailModalOpen(true);
-    };
+
 
     const handleExport = () => {
         exportToExcel(
