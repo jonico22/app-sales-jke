@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, AlertTriangle, CheckCircle2, Info, XCircle, BellOff, Loader2 } from 'lucide-react';
+import { Bell, AlertTriangle, CheckCircle2, Info, XCircle, BellOff, Loader2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { notificationService, type Notification, NotificationType } from '@/services/notification.service';
 import { socket } from '@/services/socket';
 import { toast } from 'sonner';
+import { downloadFileFromUrl } from '@/utils/download.utils';
 
 export default function NotificationDropdown() {
     const navigate = useNavigate();
@@ -48,9 +49,11 @@ export default function NotificationDropdown() {
             toast(newNotification.title, {
                 description: newNotification.message,
                 action: {
-                    label: 'Ver',
+                    label: newNotification.type === 'SYSTEM' ? 'Descargar' : 'Ver',
                     onClick: () => {
-                        if (newNotification.link) {
+                        if (newNotification.type === 'SYSTEM' && newNotification.link) {
+                            downloadFileFromUrl(newNotification.link);
+                        } else if (newNotification.link) {
                             navigate(newNotification.link);
                         }
                         setIsOpen(true);
@@ -103,24 +106,32 @@ export default function NotificationDropdown() {
     const handleNotificationClick = async (notification: Notification) => {
         console.log("[NotificationDropdown] Clicked notification:", notification);
 
-        // Resolve target link
-        let targetLink = notification.link;
-        if (!targetLink && notification.metadata?.orderId) {
-            targetLink = `/orders/history?id=${notification.metadata.orderId}`;
-        }
-
-        // Navigate if link exists
-        if (targetLink) {
-            console.log("[NotificationDropdown] Navigating to:", targetLink);
-            navigate(targetLink);
+        // Handle File Download for SYSTEM type
+        if (notification.type === NotificationType.SYSTEM) {
+            if (notification.link || notification.metadata?.downloadUrl) {
+                const url = notification.link || notification.metadata?.downloadUrl;
+                downloadFileFromUrl(url);
+            } else {
+                toast.error('El enlace de descarga no está disponible');
+            }
+            // Close dropdown after action
             setIsOpen(false);
         } else {
-            console.warn("[NotificationDropdown] No link found for notification");
-            // Still close dropdown? Maybe not if user wanted to do something.
-            // But usually clicking means interaction done.
-            // Let's keep it open if no action taken, or close it?
-            // "no me lleva la pagina ni me cierra el dropdown" implies expected behavior is closing.
-            setIsOpen(false);
+            // Resolve target link
+            let targetLink = notification.link;
+            if (!targetLink && notification.metadata?.orderId) {
+                targetLink = `/orders/history?id=${notification.metadata.orderId}`;
+            }
+
+            // Navigate if link exists
+            if (targetLink) {
+                console.log("[NotificationDropdown] Navigating to:", targetLink);
+                navigate(targetLink);
+                setIsOpen(false);
+            } else {
+                console.warn("[NotificationDropdown] No link found for notification");
+                setIsOpen(false);
+            }
         }
 
         // Mark as read if not already
@@ -143,6 +154,8 @@ export default function NotificationDropdown() {
                 return <CheckCircle2 className="h-5 w-5 text-green-500" />;
             case NotificationType.ERROR:
                 return <XCircle className="h-5 w-5 text-red-500" />;
+            case NotificationType.SYSTEM:
+                return <Download className="h-5 w-5 text-slate-600" />;
             case NotificationType.INFO:
             default:
                 return <Info className="h-5 w-5 text-blue-500" />;
@@ -154,6 +167,7 @@ export default function NotificationDropdown() {
             case NotificationType.WARNING: return 'bg-orange-50 group-hover:bg-orange-100';
             case NotificationType.SUCCESS: return 'bg-green-50 group-hover:bg-green-100';
             case NotificationType.ERROR: return 'bg-red-50 group-hover:bg-red-100';
+            case NotificationType.SYSTEM: return 'bg-slate-100 group-hover:bg-slate-200';
             case NotificationType.INFO:
             default: return 'bg-blue-50 group-hover:bg-blue-100';
         }

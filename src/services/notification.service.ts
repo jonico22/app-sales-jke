@@ -4,7 +4,8 @@ export const NotificationType = {
     INFO: 'INFO',
     SUCCESS: 'SUCCESS',
     WARNING: 'WARNING',
-    ERROR: 'ERROR'
+    ERROR: 'ERROR',
+    SYSTEM: 'SYSTEM'
 } as const;
 
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];

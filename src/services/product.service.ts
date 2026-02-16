@@ -114,10 +114,7 @@ export interface BulkUploadResponse {
         details: {
             success: boolean;
             processed: number;
-            errors: Array<{
-                row: number;
-                error: string;
-            }>;
+            errors: string[];
         };
     };
 }

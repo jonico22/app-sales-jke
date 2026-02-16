@@ -16,6 +16,7 @@ export default function NewInventoryPage() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [uploadStats, setUploadStats] = useState({ processed: 0, success: 0, failed: 0 });
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [fileAnalysis, setFileAnalysis] = useState<FileAnalysis>({
     totalRows: 0,
     validRows: 0,
@@ -83,20 +84,26 @@ export default function NewInventoryPage() {
     if (!fileAnalysis.originalFile) return;
 
     setIsUploading(true);
+    setUploadErrors([]);
+
     try {
       const response = await productService.bulkUpload(fileAnalysis.originalFile);
 
       if (response.success && response.data.details) {
         const { processed, errors } = response.data.details;
         const failed = errors.length;
-        const success = processed - failed;
+        // Interpret 'processed' as the count of successful validations/insertions from backend
+        // Total rows processed is success + failure
+        const success = processed;
+        const totalProcessed = success + failed;
 
-        if (processed > 0) {
+        if (totalProcessed > 0 || success > 0) {
           setUploadStats({
-            processed,
+            processed: totalProcessed,
             success,
             failed
           });
+          setUploadErrors(errors);
           setIsModalOpen(false); // Close review modal
           setIsSuccessModalOpen(true); // Open success modal
         } else {
@@ -195,6 +202,7 @@ export default function NewInventoryPage() {
         onClose={() => setIsSuccessModalOpen(false)}
         onNavigate={() => navigate('/inventory')}
         stats={uploadStats}
+        errors={uploadErrors}
       />
     </div>
   );
