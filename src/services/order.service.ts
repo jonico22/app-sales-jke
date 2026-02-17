@@ -139,6 +139,14 @@ export interface OrdersResponse {
     };
 }
 
+export interface OrderReportsResponse {
+    success: boolean;
+    message: string;
+    data: {
+        message: string;
+    };
+}
+
 export interface DeleteOrderResponse {
     success: boolean;
     message: string;
@@ -186,6 +194,26 @@ export const orderService = {
         include?: string; // Allow including relations
     }): Promise<OrdersResponse> => {
         const response = await api.get<OrdersResponse>('/sales/orders', { params });
+        return response.data;
+    },
+
+    // Get order reports (no pagination)
+    getReports: async (params?: {
+        search?: string;
+        isActive?: boolean;
+        partnerId?: string;
+        branchId?: string;
+        status?: OrderStatus;
+        dateFrom?: string;
+        dateTo?: string;
+        createdBy?: string;
+        createdAtFrom?: string;
+        createdAtTo?: string;
+        updatedAtFrom?: string;
+        updatedAtTo?: string;
+        include?: string;
+    }): Promise<OrderReportsResponse> => {
+        const response = await api.get<OrderReportsResponse>('/sales/orders/reports', { params });
         return response.data;
     },
 

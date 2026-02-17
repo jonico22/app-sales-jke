@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SalesOrderDetailView } from './components/SalesOrderDetailView';
 
 import { orderService, OrderStatus } from '@/services/order.service';
 import type { Order } from '@/services/order.service';
@@ -25,6 +26,7 @@ import { DateRangePicker } from '@/components/shared/DateRangePicker';
 import { SalesHistoryFilterPanel, type FilterValues } from './components/SalesHistoryFilterPanel';
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
 import { exportToExcel } from '@/utils/excel.utils';
+import { ReportGenerationModal } from './components/ReportGenerationModal';
 
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
@@ -32,6 +34,8 @@ export default function SalesHistoryPage() {
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportMessage, setReportMessage] = useState<string>('');
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -183,57 +187,112 @@ export default function SalesHistoryPage() {
     // Local filtering removed in favor of Server Side Pagination
     const filteredOrders = orders;
 
-    const handleViewDetails = (order: Order) => {
-        setSelectedOrder(order);
-        setIsDetailModalOpen(true);
-    };
+
+
+    const [isExporting, setIsExporting] = useState(false);
+
+    const getExcelColumns = () => [
+        { header: 'ID Venta', key: 'orderCode' as keyof Order, width: 15 },
+        {
+            header: 'Fecha',
+            key: (order: Order) => order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') : '-',
+            width: 20
+        },
+        {
+            header: 'Cliente',
+            key: (order: Order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
+            width: 30
+        },
+        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toFixed(2), width: 15 },
+        {
+            header: 'Método de Pago',
+            key: (order: Order) => {
+                const method = order.OrderPayment?.[0]?.paymentMethod;
+                const methods: Record<string, string> = {
+                    'CASH': 'Efectivo', 'CARD': 'Tarjeta', 'YAPE': 'Yape', 'PLIN': 'Plin',
+                    'TRANSFER': 'Transferencia', 'OTHER': 'Otro'
+                };
+                return method ? (methods[method] || method) : '-';
+            },
+            width: 15
+        },
+        {
+            header: 'Estado',
+            key: (order: Order) => {
+                const statuses: Record<string, string> = {
+                    [OrderStatus.COMPLETED]: 'Completado',
+                    [OrderStatus.CANCELLED]: 'Anulado',
+                    [OrderStatus.PENDING]: 'Pendiente',
+                    [OrderStatus.PENDING_PAYMENT]: 'Pedido Pendiente'
+                };
+                return statuses[order.status] || order.status;
+            },
+            width: 15
+        },
+    ];
 
     const handleExport = () => {
         exportToExcel(
             filteredOrders,
-            [
-                { header: 'ID Venta', key: 'orderCode', width: 15 },
-                {
-                    header: 'Fecha',
-                    key: (order) => order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') : '-',
-                    width: 20
-                },
-                {
-                    header: 'Cliente',
-                    key: (order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
-                    width: 30
-                },
-                { header: 'Total', key: (order) => Number(order.totalAmount).toFixed(2), width: 15 },
-                {
-                    header: 'Método de Pago',
-                    key: (order) => {
-                        const method = order.OrderPayment?.[0]?.paymentMethod;
-                        const methods: Record<string, string> = {
-                            'CASH': 'Efectivo', 'CARD': 'Tarjeta', 'YAPE': 'Yape', 'PLIN': 'Plin',
-                            'TRANSFER': 'Transferencia', 'OTHER': 'Otro'
-                        };
-                        return method ? (methods[method] || method) : '-';
-                    },
-                    width: 15
-                },
-                {
-                    header: 'Estado',
-                    key: (order) => {
-                        const statuses: Record<string, string> = {
-                            [OrderStatus.COMPLETED]: 'Completado',
-                            [OrderStatus.CANCELLED]: 'Anulado',
-                            [OrderStatus.PENDING]: 'Pendiente',
-                            [OrderStatus.PENDING_PAYMENT]: 'Pedido Pendiente'
-                        };
-                        return statuses[order.status] || order.status;
-                    },
-                    width: 15
-                },
-            ],
-            `Reporte_Ventas_${format(new Date(), 'yyyy-MM-dd')}`,
+            getExcelColumns(),
+            `Reporte_Ventas_Pagina_${currentPage}_${format(new Date(), 'yyyy-MM-dd')}`,
             'Ventas'
         );
     };
+
+    const handleExportGeneral = async () => {
+        setIsExporting(true);
+        try {
+            const queryParams: any = {
+                search: debouncedSearchTerm,
+            };
+
+            if (startDate) {
+                queryParams.dateFrom = format(startDate, 'yyyy-MM-dd');
+            }
+            if (endDate) {
+                queryParams.dateTo = format(endDate, 'yyyy-MM-dd');
+            }
+
+            // Add advanced filters
+            if (advancedFilters.createdBy) queryParams.createdBy = advancedFilters.createdBy;
+            if (advancedFilters.createdAtFrom) {
+                const date = advancedFilters.createdAtFrom;
+                queryParams.createdAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.createdAtTo) {
+                const date = advancedFilters.createdAtTo;
+                queryParams.createdAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.updatedAtFrom) {
+                const date = advancedFilters.updatedAtFrom;
+                queryParams.updatedAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (advancedFilters.updatedAtTo) {
+                const date = advancedFilters.updatedAtTo;
+                queryParams.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (statusFilter !== 'ALL') {
+                queryParams.status = statusFilter;
+            }
+
+            const response = await orderService.getReports(queryParams);
+
+            if (response.success && response.data) {
+                // Open success modal instead of exporting
+                setReportMessage(response.data.message);
+                setIsReportModalOpen(true);
+            } else {
+                console.error('Error fetching general report:', response);
+            }
+
+        } catch (error) {
+            console.error('Error exporting general report:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
 
     const getStatusBadge = (status: string) => {
         const styles = {
@@ -275,6 +334,36 @@ export default function SalesHistoryPage() {
         );
     };
 
+    // URL Search Params for Detail View
+    const [searchParams, setSearchParams] = useSearchParams();
+    const detailId = searchParams.get('id');
+
+    // Effect to auto-open modal or handle view based on URL
+    // Note: User requested full page, so we will switch view if detailId matches
+    useEffect(() => {
+        if (detailId) {
+            // Logic to handle detail view is in the render
+        }
+    }, [detailId]);
+
+    const handleClearDetail = () => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('id');
+        setSearchParams(newParams);
+        setSelectedOrder(null);
+    };
+
+    if (detailId) {
+        return (
+            <div className="p-6 max-w-[1400px] mx-auto">
+                <SalesOrderDetailView
+                    orderId={detailId}
+                    onBack={handleClearDetail}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
             {/* Header */}
@@ -285,11 +374,19 @@ export default function SalesHistoryPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
+                        onClick={handleExportGeneral}
+                        disabled={isExporting}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm transition-all text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? <RefreshCw size={18} className="animate-spin" /> : <FileText size={18} />}
+                        <span>Exportar Reporte General</span>
+                    </button>
+                    <button
                         onClick={handleExport}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm transition-all text-sm font-medium"
                     >
                         <Download size={18} />
-                        <span>Exportar</span>
+                        <span>Exportar Actual</span>
                     </button>
                     <button
                         onClick={() => navigate('/pos')}
@@ -411,7 +508,12 @@ export default function SalesHistoryPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <div className="flex justify-center gap-2">
                                                     <button
-                                                        onClick={() => handleViewDetails(order)}
+                                                        onClick={() => {
+                                                            // Instead of modal, now we can navigate to detail view for consistency
+                                                            // setSelectedOrder(order);
+                                                            // setIsDetailModalOpen(true);
+                                                            setSearchParams({ id: order.id });
+                                                        }}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                         title="Ver Detalle"
                                                     >
@@ -485,6 +587,12 @@ export default function SalesHistoryPage() {
                 isOpen={isDetailModalOpen}
                 onClose={() => setIsDetailModalOpen(false)}
                 order={selectedOrder}
+            />
+
+            <ReportGenerationModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                message={reportMessage}
             />
         </div>
     );

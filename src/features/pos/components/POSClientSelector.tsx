@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { User, UserPlus, ChevronDown, Check, Search } from 'lucide-react';
+import { User, UserPlus, ChevronDown, Check, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { clientService, type ClientSelectOption } from '@/services/client.service';
+import { type ClientSelectOption } from '@/services/client.service';
+import { useClients } from '@/hooks/useClients';
 
 interface POSClientSelectorProps {
     selectedClient: ClientSelectOption | null;
@@ -15,34 +16,32 @@ export function POSClientSelector({
     onNewClient
 }: POSClientSelectorProps) {
 
-    const [clients, setClients] = useState<ClientSelectOption[]>([]);
+    const { data: clients = [], isLoading } = useClients();
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch clients on mount and set default
+    // Set default client once loaded if none selected
     useEffect(() => {
-        const fetchClients = async () => {
-            try {
-                const response = await clientService.getForSelect();
-                const clientList = response.data || [];
-                setClients(clientList);
+        if (!isLoading && clients.length > 0 && (!selectedClient || selectedClient.id === 'public')) {
+            // Try to find "Público General" or take first
+            // Only set if we don't have a valid selected client (mock 'public' is considered invalid/placeholder here for initial load)
+            // But wait, if selectedClient is passed as prop, we should respect it?
+            // The original logic was: "If no client is selected (or only mock default), try to find..."
+            // We should maintain that behavior but be careful not to override if user selected someone else.
 
-                // If no client is selected (or only mock default), try to find "Público General"
-                if (!selectedClient || selectedClient.id === 'public') {
-                    // Try to find by exact name match or just take the first one if available
-                    const defaultClient = clientList.find(c => c.name === 'PÚBLICO GENERAL') || clientList[0];
-                    if (defaultClient) {
-                        onSelectClient(defaultClient);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching clients:', error);
+            // Actually, selectedClient is controlled by parent. We should only trigger this if parent passes null or 'public' AND we haven't done it yet?
+            // The previous effect ran ONCE on mount.
+            // We can replicate "run once when data matches"
+
+            const defaultClient = clients.find(c => c.name === 'PÚBLICO GENERAL') || clients[0];
+            if (defaultClient && selectedClient?.id === 'public') {
+                onSelectClient(defaultClient);
             }
-        };
-        fetchClients();
-    }, []);
+        }
+    }, [clients, isLoading]);
+    // Note: removed selectedClient from deps to avoid loop if onSelectClient changes ID but we check against 'public'
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -96,9 +95,13 @@ export function POSClientSelector({
                         `}
                     >
                         <span className="text-slate-700 truncate">
-                            {selectedClient ? selectedClient.name : 'Seleccionar cliente...'}
+                            {isLoading ? 'Cargando clientes...' : (selectedClient ? selectedClient.name : 'Seleccionar cliente...')}
                         </span>
-                        <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                        ) : (
+                            <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                        )}
                     </button>
 
                     {/* Dropdown Content */}
@@ -124,7 +127,7 @@ export function POSClientSelector({
                             <div className="max-h-60 overflow-y-auto overflow-x-hidden p-1.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                                 {filteredClients.length === 0 ? (
                                     <div className="px-4 py-8 text-center text-sm text-slate-500">
-                                        No se encontraron resultados
+                                        {searchTerm ? 'No se encontraron resultados' : 'No hay clientes disponibles'}
                                     </div>
                                 ) : (
                                     filteredClients.map((client) => (

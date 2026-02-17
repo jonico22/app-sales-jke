@@ -15,6 +15,10 @@ export interface Product {
     priceCost: string;
     stock: number;
     minStock: number;
+    barcode: string | null;
+    brand: string | null;
+    color: string | null;
+    colorCode: string | null;
     societyId: string;
     categoryId: string;
     imageId: string | null;
@@ -39,6 +43,10 @@ export interface CreateProductRequest {
     imageId?: string;
     isActive?: boolean;
     code: string;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface UpdateProductRequest {
@@ -51,6 +59,10 @@ export interface UpdateProductRequest {
     categoryId?: string;
     imageId?: string;
     isActive?: boolean;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface ProductResponse {
@@ -91,6 +103,20 @@ export interface UpdatedByUsersResponse {
     success: boolean;
     message: string;
     data: UserSelectOption[];
+}
+
+export interface BulkUploadResponse {
+    success: boolean;
+    message: string;
+    data: {
+        status: string;
+        message: string;
+        details: {
+            success: boolean;
+            processed: number;
+            errors: string[];
+        };
+    };
 }
 
 export const productService = {
@@ -150,6 +176,19 @@ export const productService = {
     // Get users who created products
     getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
         const response = await api.get<UpdatedByUsersResponse>('/sales/products/created-by-users');
+        return response.data;
+    },
+
+    // Bulk upload products from CSV file
+    bulkUpload: async (file: File): Promise<BulkUploadResponse> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post<BulkUploadResponse>('/sales/products/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     },
 };

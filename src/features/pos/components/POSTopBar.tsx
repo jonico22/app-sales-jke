@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Store, Banknote } from 'lucide-react';
-import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
-import { currencyService, type Currency } from '@/services/currency.service';
+// import { type BranchOffice } from '@/services/branch-office.service';
+// import { currencyService, type Currency } from '@/services/currency.service';
 import { useCartStore } from '@/store/cart.store';
+import { useBranches } from '@/hooks/useBranches';
+import { useCurrencies } from '@/hooks/useCurrencies';
 
 export function POSTopBar() {
-    const [branches, setBranches] = useState<BranchOffice[]>([]);
-    const [currencies, setCurrencies] = useState<Currency[]>([]);
+    const { data: branches = [] } = useBranches();
+    const { data: currencies = [] } = useCurrencies();
+
     const { branchId, setBranchId, currencyId, setCurrencyId } = useCartStore();
 
     // No local state for selectedBranch/Currency, use store
@@ -14,32 +17,22 @@ export function POSTopBar() {
     const selectedCurrency = currencyId;
 
     useEffect(() => {
-        // Fetch branches
-        branchOfficeService.getForSelect().then(response => {
-            if (response.success && response.data) {
-                // Adjust based on actual response structure. assuming data.data based on earlier pattern or just data
-                const data = (response.data as any).data || response.data;
-                if (Array.isArray(data)) {
-                    setBranches(data);
-                    if (data.length > 0 && selectedBranch === '1') setBranchId(data[0].id);
-                }
-            }
-        }).catch(console.error);
+        // Set default branch if loaded and none selected
+        if (branches.length > 0 && selectedBranch === '1') {
+            setBranchId(branches[0].id);
+        }
+    }, [branches, selectedBranch, setBranchId]);
 
-        // Fetch currencies
-        currencyService.getForSelect().then(response => {
-            if (response.success && response.data) {
-                const data = (response.data as any).data || response.data;
-                if (Array.isArray(data)) {
-                    setCurrencies(data);
-                    if (data.length > 0 && selectedCurrency === '1') setCurrencyId(data[0].id);
-                }
-            }
-        }).catch(console.error);
-    }, []);
+    useEffect(() => {
+        // Set default currency if loaded and none selected
+        if (currencies.length > 0 && selectedCurrency === '1') {
+            const defaultCurrency = currencies.find(c => c.code === 'PEN') || currencies[0];
+            if (defaultCurrency) setCurrencyId(defaultCurrency.id);
+        }
+    }, [currencies, selectedCurrency, setCurrencyId]);
 
     // Fallback/Mock if empty (to match design immediately)
-    const displayBranches = branches.length > 0 ? branches : [{ id: '1', name: 'Sede Principal' }];
+    const displayBranches = branches.length > 0 ? (branches as any[]) : [{ id: '1', name: 'Sede Principal' }];
     const displayCurrencies = currencies.length > 0 ? currencies : [{ id: '1', name: 'PEN', symbol: 'S/' }];
 
 
