@@ -85,7 +85,8 @@ export default function NewCategoryPage() {
       const response = await categoryService.bulkUpload(fileAnalysis.originalFile);
 
       if (response.success && response.data.details) {
-        const { processed, errors } = response.data.details;
+        const { processed } = response.data.details;
+        const errors = response.data.details.errors || [];
         const failed = errors.length;
         const success = processed - failed;
 

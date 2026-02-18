@@ -85,7 +85,7 @@ export interface BulkUploadResponse {
         details: {
             success: boolean;
             processed: number;
-            errors: Array<{
+            errors?: Array<{
                 row: number;
                 error: string;
             }>;
