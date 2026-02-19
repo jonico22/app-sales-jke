@@ -9,6 +9,7 @@ const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutGrid },
   { name: 'Categorías', href: '/categories', icon: Tags },
   { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   {
     name: 'Pedidos',
     icon: ShoppingCart,
@@ -17,7 +18,6 @@ const navItems = [
       { name: 'Histórico de Ventas', href: '/orders/history' }
     ]
   },
-  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Reportes', href: '/reports', icon: FileText },
   { name: 'Configuración', href: '/settings', icon: Settings },

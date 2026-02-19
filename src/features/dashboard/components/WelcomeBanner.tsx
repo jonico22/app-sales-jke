@@ -44,12 +44,6 @@ export function WelcomeBanner() {
       <div className="flex items-center gap-3 w-full lg:w-auto">
         <Link
           to="/inventory/new"
-          className="flex-1 lg:flex-none items-center justify-center gap-2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex"
-        >
-          <FileDown className="h-4 w-4" /> IMPORTAR EXCEL
-        </Link>
-        <Link
-          to="/inventory/new"
           className="flex-1 lg:flex-none items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors flex"
         >
           <Plus className="h-4 w-4" /> NUEVO PRODUCTO
