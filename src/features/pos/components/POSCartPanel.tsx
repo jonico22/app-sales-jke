@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Trash2, ShoppingBag, Pencil, Loader2 } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Loader2 } from 'lucide-react';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';

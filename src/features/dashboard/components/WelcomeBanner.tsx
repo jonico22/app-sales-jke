@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Rocket, FileDown, Plus, X } from 'lucide-react';
+import { Rocket, Plus, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'dashboard_welcome_dismissed';

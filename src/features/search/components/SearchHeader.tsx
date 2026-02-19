@@ -1,4 +1,4 @@
-import { Search, Plus, Heart, TrendingUp, ChevronDown, Check, X } from 'lucide-react';
+import { Search, Heart, TrendingUp, ChevronDown, Check, X } from 'lucide-react';
 import type { Color } from '@/services/product.service';
 import { useState, useRef, useEffect } from 'react';
 
