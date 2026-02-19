@@ -22,6 +22,7 @@ import NewInventoryPage from './features/inventory/NewInventoryPage';
 import POSPage from './features/pos/POSPage';
 import PendingOrdersPage from './features/orders/PendingOrdersPage';
 import SalesHistoryPage from './features/orders/SalesHistoryPage';
+import AdvancedSearchPage from './features/search/AdvancedSearchPage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -84,7 +85,12 @@ const router = createBrowserRouter([
           {
             path: 'orders/history',
             element: <SalesHistoryPage />
-          }
+          },
+          {
+            path: 'orders/history',
+            element: <SalesHistoryPage />
+          },
+
         ]
       },
       {
@@ -94,6 +100,10 @@ const router = createBrowserRouter([
           {
             path: '',
             element: <POSPage />
+          },
+          {
+            path: 'search',
+            element: <AdvancedSearchPage />
           }
         ]
       }

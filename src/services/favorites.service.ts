@@ -30,13 +30,13 @@ export interface ToggleFavoriteResponse {
 export const favoritesService = {
     // Get all favorites
     getAll: async (): Promise<FavoritesResponse> => {
-        const response = await api.get<FavoritesResponse>('/favorites');
+        const response = await api.get<FavoritesResponse>('sales/favorites');
         return response.data;
     },
 
     // Toggle favorite (add/remove)
     toggle: async (data: ToggleFavoriteRequest): Promise<ToggleFavoriteResponse> => {
-        const response = await api.post<ToggleFavoriteResponse>('/favorites/toggle', data);
+        const response = await api.post<ToggleFavoriteResponse>('sales/favorites/toggle', data);
         return response.data;
     },
 };

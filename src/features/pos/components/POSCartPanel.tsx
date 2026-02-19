@@ -135,61 +135,68 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
                     {items.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
-                            <ShoppingBag className="w-16 h-16 opacity-20" />
+                            <ShoppingBag className="w-16 h-16 opacity-10" />
                             <p className="text-sm font-medium">El carrito está vacío</p>
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.product.id} className="flex items-start gap-4 p-4 bg-white border border-slate-100 rounded-xl hover:border-sky-100 hover:shadow-sm transition-all group">
-                                {/* Product Image/Icon */}
-                                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
-                                    {/* Placeholder for image, using icon if no image */}
-                                    <ShoppingBag className="w-6 h-6 text-slate-400" />
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h4 className="font-semibold text-slate-700 text-sm truncate pr-2">
+                            <div key={item.product.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 className="font-bold text-slate-800 text-sm line-clamp-1">
                                             {item.product.name}
                                         </h4>
+                                        <p className="text-xs text-slate-400 font-medium">
+                                            {item.product.brand || item.product.description || 'Sin detalles'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => removeItem(item.product.id)}
+                                        className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-end justify-between">
+                                    {/* Quantity Stepper */}
+                                    <div className="flex items-center p-1 gap-1">
                                         <button
-                                            onClick={() => removeItem(item.product.id)}
-                                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                            onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-slate-100 text-slate-400 rounded-lg hover:border-slate-300 hover:text-slate-600 transition-all active:scale-95"
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <span className="text-lg leading-none font-bold mb-0.5">−</span>
+                                        </button>
+                                        <span className="w-8 text-center font-bold text-slate-700 text-sm">
+                                            {item.quantity}
+                                        </span>
+                                        <button
+                                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                            className="w-8 h-8 flex items-center justify-center bg-sky-600 text-white rounded-lg hover:bg-sky-700 shadow-sm shadow-sky-200 transition-all active:scale-95"
+                                        >
+                                            <span className="text-lg leading-none font-bold mb-0.5">+</span>
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-medium">x{item.quantity}</span>
-                                            <div className="relative group">
-                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{society?.mainCurrency?.symbol || 'S/'}</span>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.10"
-                                                    value={item.product.price}
-                                                    onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
-                                                    className="w-24 pl-6 pr-7 py-1 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-md focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/10 outline-none transition-all"
-                                                />
-                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
-                                                    <Pencil className="w-3 h-3" />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Quantity Input */}
-                                        <div className="flex items-center gap-1">
+                                    {/* Price Input */}
+                                    <div className="text-right">
+                                        <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">
+                                            Precio Unit.
+                                        </label>
+                                        <div className="relative group/price">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-600/70">
+                                                {society?.mainCurrency?.symbol || 'S/'}
+                                            </span>
                                             <input
                                                 type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value) || 1)}
-                                                className="w-16 h-8 text-center text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:border-sky-400 focus:ring-0 outline-none"
+                                                min="0"
+                                                step="0.10"
+                                                value={item.product.price}
+                                                onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
+                                                className="w-28 pl-8 pr-3 py-1.5 text-right text-sm font-bold text-sky-700 bg-sky-50/50 border border-sky-100 rounded-lg focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/10 outline-none transition-all"
                                             />
                                         </div>
                                     </div>
@@ -200,41 +207,57 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-6 bg-white border-t border-slate-100 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="p-6 bg-white border-t border-slate-100 space-y-6 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative">
 
                     {/* Discount & Notes */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <div>
-                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 block">
-                                Descuento General
+                            <label className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">
+                                <span>Descuento Global</span>
+                                {discount > 0 && (
+                                    <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
+                                        Aplicado
+                                    </span>
+                                )}
                             </label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{society?.mainCurrency?.symbol || 'S/'}</span>
+                            <div className="relative group">
+                                <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${discount > 0 ? 'text-orange-500' : 'text-slate-400'}`}>
+                                    <ShoppingBag className="w-4 h-4 rotate-12" />
+                                </div>
                                 <input
                                     type="number"
                                     min="0"
                                     value={discount || ''}
-                                    placeholder="0.00"
+                                    placeholder="Ej. 10.00"
                                     onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                    className="w-full pl-8 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:border-sky-500 outline-none transition-colors"
+                                    className={`w-full pl-10 pr-4 py-3 text-sm font-medium border rounded-xl outline-none transition-all ${discount > 0
+                                        ? 'bg-orange-50/50 border-orange-200 text-orange-700 focus:border-orange-400 focus:ring-4 focus:ring-orange-500/10 placeholder:text-orange-300'
+                                        : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10'
+                                        }`}
                                 />
+                                {discount > 0 && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-orange-600 text-sm">
+                                        - {society?.mainCurrency?.symbol || 'S/'} {discount.toFixed(2)}
+                                    </div>
+                                )}
                             </div>
                         </div>
+
                         <div>
-                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 block">
-                                Comentarios de la orden
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 block">
+                                Comentarios
                             </label>
                             <textarea
                                 value={orderNotes}
                                 onChange={(e) => setOrderNotes(e.target.value)}
-                                placeholder="Agregar nota o instrucción..."
-                                className="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:border-sky-500 outline-none resize-none h-20 transition-colors"
+                                placeholder="Notas adicionales del pedido..."
+                                className="w-full p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none resize-none h-24 transition-all placeholder:text-slate-400"
                             />
                         </div>
                     </div>
 
                     {/* Totals */}
-                    <div className="pt-4 border-t border-dashed border-slate-200 space-y-2">
+                    <div className="space-y-3">
                         <div className="flex justify-between text-sm text-slate-500">
                             <span>Subtotal</span>
                             <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toFixed(2)}</span>
@@ -244,14 +267,14 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                             <span>{society?.mainCurrency?.symbol || 'S/'} {igv.toFixed(2)}</span>
                         </div>
                         {discount > 0 && (
-                            <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                            <div className="flex justify-between text-sm text-orange-600 font-bold bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
                                 <span>Descuento</span>
                                 <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toFixed(2)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-end pt-2">
-                            <span className="text-base font-bold text-slate-800">TOTAL</span>
-                            <span className="text-2xl font-black text-sky-600">{society?.mainCurrency?.symbol || 'S/'} {total.toFixed(2)}</span>
+                        <div className="flex justify-between items-end pt-4 border-t border-slate-100">
+                            <span className="text-base font-bold text-slate-800">TOTAL A PAGAR</span>
+                            <span className="text-3xl font-black text-slate-800 tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toFixed(2)}</span>
                         </div>
                     </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { POSWelcomeHeader } from './components/POSWelcomeHeader';
 import { POSClientSelector } from './components/POSClientSelector';
 import { POSProductSearch } from './components/POSProductSearch';
@@ -34,6 +34,7 @@ export default function POSPage() {
   const processingCloneRef = useRef<string | null>(null);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const addItemToCart = useCartStore(state => state.addItem);
 
   // Handle "Resume/Clone" order from Pending Orders
@@ -165,7 +166,7 @@ export default function POSPage() {
           />
 
           {/* View Catalog Button */}
-          <POSCatalogButton onClick={() => { }} />
+          <POSCatalogButton onClick={() => navigate('/pos/search')} />
 
           {/* Quick Actions */}
           <POSQuickActions
