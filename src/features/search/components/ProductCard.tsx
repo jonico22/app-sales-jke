@@ -36,11 +36,11 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
     };
 
     // Helper for stock status
-    let stockStatus: { label: string; color: string; bg: string } = { label: 'En Stock', color: 'text-emerald-600', bg: 'bg-emerald-50' };
+    let stockStatus: { label: string; color: string; bg: string } = { label: `${product.stock} en stock`, color: 'text-emerald-600', bg: 'bg-emerald-50' };
     if (product.stock <= 0) {
         stockStatus = { label: 'Agotado', color: 'text-slate-500', bg: 'bg-slate-100' };
     } else if (product.stock <= (product.minStock || 5)) {
-        stockStatus = { label: 'Bajo Stock', color: 'text-amber-600', bg: 'bg-amber-50' };
+        stockStatus = { label: `Solo ${product.stock} en stock`, color: 'text-amber-600', bg: 'bg-amber-50' };
     }
 
     return (
@@ -70,7 +70,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                     <span className="px-2 py-0.5 bg-slate-100 rounded text-slate-500 font-medium truncate max-w-[100px]">
                         {product.category?.name || 'General'}
                     </span>
-                    <span className={`flex items-center gap-1 ${stockStatus.color} font-medium`}>
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md ${stockStatus.bg} ${stockStatus.color} font-medium`}>
                         <div className={`w-1.5 h-1.5 rounded-full bg-current`} />
                         {stockStatus.label}
                     </span>

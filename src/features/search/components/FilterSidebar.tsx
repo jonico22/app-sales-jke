@@ -1,46 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { categoryService, type Category } from '@/services/category.service';
-import { productService, type Brand } from '@/services/product.service';
+import { useCategories } from '@/hooks/useCategories';
+import { useBrands } from '@/hooks/useBrands';
 
 interface FilterSidebarProps {
     filters: {
         categoryId: string;
         brand: string;
-        minPrice: number;
-        maxPrice: number;
-        stockStatus: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
+        priceFrom: number;
+        priceTo: number;
+        stockStatus: 'all' | 'available' | 'low' | 'out';
     };
     onFilterChange: (key: string, value: any) => void;
     onClearFilters: () => void;
 }
 
 export function FilterSidebar({ filters, onFilterChange, onClearFilters }: FilterSidebarProps) {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [brands, setBrands] = useState<Brand[]>([]);
+    // Categories and brands are now fetched via hooks
     const [categorySearch, setCategorySearch] = useState('');
 
-    useEffect(() => {
-        loadFilters();
-    }, []);
+    // Fetch categories and brands using custom hooks
+    const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
+    const { data: brands = [], isLoading: brandsLoading, error: brandsError } = useBrands();
 
-    const loadFilters = async () => {
-        try {
-            const [catsRes, brandsRes] = await Promise.all([
-                categoryService.getAll({ limit: 100 }), // Fetch enough categories
-                productService.getBrands()
-            ]);
+    // Optionally handle loading/error states
+    if (categoriesLoading || brandsLoading) {
+        // You could render a loading indicator here
+    }
+    if (categoriesError) {
+        console.error('Failed to load categories', categoriesError);
+    }
+    if (brandsError) {
+        console.error('Failed to load brands', brandsError);
+    }
 
-            if (catsRes.success && catsRes.data) {
-                setCategories(catsRes.data.data);
-            }
-            if (brandsRes.success && Array.isArray(brandsRes.data)) {
-                setBrands(brandsRes.data);
-            }
-        } catch (error) {
-            console.error('Failed to load filters', error);
-        }
-    };
 
     const filteredCategories = categories.filter(c =>
         c.name.toLowerCase().includes(categorySearch.toLowerCase())
@@ -109,19 +102,46 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
             {/* Price Range */}
             <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Rango de Precio</h3>
-                <div className="px-2">
-                    <input
-                        type="range"
-                        min="0"
-                        max="1000"
-                        step="10"
-                        value={filters.maxPrice || 1000}
-                        onChange={(e) => onFilterChange('maxPrice', parseInt(e.target.value))}
-                        className="w-full accent-sky-500 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
-                        <span>S/ {filters.minPrice || 0}</span>
-                        <span>S/ {filters.maxPrice || 1000}+</span>
+                <div className="px-2 space-y-3">
+                    {/* Min Price Slider */}
+                    <div>
+                        <div className="flex justify-between text-xs text-slate-500 mb-1">
+                            <span>Mínimo</span>
+                            <span className="font-semibold text-slate-700">S/ {filters.priceFrom}</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1000"
+                            step="10"
+                            value={filters.priceFrom}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (val <= filters.priceTo) onFilterChange('priceFrom', val);
+                            }}
+                            className="w-full accent-sky-500 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                    </div>
+                    {/* Max Price Slider */}
+                    <div>
+                        <div className="flex justify-between text-xs text-slate-500 mb-1">
+                            <span>Máximo</span>
+                            <span className="font-semibold text-slate-700">
+                                S/ {filters.priceTo}{filters.priceTo >= 1000 ? '+' : ''}
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1000"
+                            step="10"
+                            value={filters.priceTo}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (val >= filters.priceFrom) onFilterChange('priceTo', val);
+                            }}
+                            className="w-full accent-sky-500 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                        />
                     </div>
                 </div>
             </div>
@@ -132,9 +152,9 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
                 <div className="space-y-3">
                     {[
                         { id: 'all', label: 'Todos' },
-                        { id: 'in_stock', label: 'Disponible', color: 'bg-emerald-500' },
-                        { id: 'low_stock', label: 'Bajo Stock', color: 'bg-amber-500' },
-                        { id: 'out_of_stock', label: 'Agotado', color: 'bg-slate-300' }
+                        { id: 'available', label: 'Disponible', color: 'bg-emerald-500' },
+                        { id: 'low', label: 'Bajo Stock', color: 'bg-amber-500' },
+                        { id: 'out', label: 'Agotado', color: 'bg-slate-300' }
                     ].map((status) => (
                         <label key={status.id} className="flex items-center gap-3 cursor-pointer">
                             <input

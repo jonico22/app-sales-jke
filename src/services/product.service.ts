@@ -41,6 +41,7 @@ export interface Product {
     updatedBy: string | null;
     category: ProductCategory | null;
     image: string | null;
+    salesCount?: number;
 }
 
 export interface CreateProductRequest {
@@ -204,17 +205,19 @@ export const productService = {
     },
 
     // Advanced Search Helpers
-    getBestSellers: async (): Promise<ProductsResponse> => {
-        const response = await api.get<ProductsResponse>('/sales/products/best-sellers');
+    getBestSellers: async (): Promise<{ success: boolean; message: string; data: Product[] }> => {
+        const response = await api.get<{ success: boolean; message: string; data: Product[] }>('/sales/products/best-sellers');
         return response.data;
     },
 
-    getBrands: async (): Promise<{ success: boolean; data: Brand[] }> => {
+    // Updated to include optional message field in response
+    getBrands: async (): Promise<{ success: boolean; message?: string; data: Brand[] }> => {
         const response = await api.get<{ success: boolean; data: Brand[] }>('/sales/products/brands');
         return response.data;
     },
 
-    getColors: async (): Promise<{ success: boolean; data: Color[] }> => {
+    // Updated to include optional message field in response
+    getColors: async (): Promise<{ success: boolean; message?: string; data: Color[] }> => {
         const response = await api.get<{ success: boolean; data: Color[] }>('/sales/products/colors');
         return response.data;
     },

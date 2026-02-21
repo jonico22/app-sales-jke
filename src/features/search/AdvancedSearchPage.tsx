@@ -21,8 +21,9 @@ export default function AdvancedSearchPage() {
     const [colors, setColors] = useState<Color[]>([]); // Added colors state
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
+    const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>(['favorites']);
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
+    const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
 
     // Client State
     const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
@@ -43,10 +44,10 @@ export default function AdvancedSearchPage() {
     const [filters, setFilters] = useState({
         categoryId: '',
         brand: '',
-        color: '', // Added color filter
-        minPrice: 0,
-        maxPrice: 1000,
-        stockStatus: 'all' as 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'
+        color: '',
+        priceFrom: 0,
+        priceTo: 1000,
+        stockStatus: 'all' as 'all' | 'available' | 'low' | 'out'
     });
 
 
@@ -65,6 +66,20 @@ export default function AdvancedSearchPage() {
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
+
+    // Debounce Price Range (600ms so sliders don't spam the API)
+    const [debouncedPriceFrom, setDebouncedPriceFrom] = useState(filters.priceFrom);
+    const [debouncedPriceTo, setDebouncedPriceTo] = useState(filters.priceTo);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedPriceFrom(filters.priceFrom);
+            setDebouncedPriceTo(filters.priceTo);
+        }, 600);
+
+        return () => clearTimeout(timer);
+    }, [filters.priceFrom, filters.priceTo]);
+
     // Load initial data (colors, favorites) only once
     useEffect(() => {
         const loadInitialData = async () => {
@@ -79,8 +94,10 @@ export default function AdvancedSearchPage() {
                 }
 
                 if (favsRes.success) {
-                    const favIds = new Set(favsRes.data.map(f => f.productId));
+                    const favList = favsRes.data as any as Product[];
+                    const favIds = new Set(favList.map((f: any) => f.id || f.productId));
                     setFavorites(favIds);
+                    setFavoriteProducts(favList);
                 }
             } catch (error) {
                 console.error('Error loading initial data', error);
@@ -94,19 +111,78 @@ export default function AdvancedSearchPage() {
     const loadProducts = async () => {
         setLoading(true);
         try {
-            // Prepare params
+            // Priority: If favorites filter is active, use the cached list (no extra API call)
+            if (activeQuickFilters.includes('favorites')) {
+                let data = [...favoriteProducts];
+
+                // Client-side filtering
+                if (debouncedSearchQuery) {
+                    const lowerQuery = debouncedSearchQuery.toLowerCase();
+                    data = data.filter(p =>
+                        p.name.toLowerCase().includes(lowerQuery) ||
+                        (p.code && p.code.toLowerCase().includes(lowerQuery)) ||
+                        (p.barcode && p.barcode.toLowerCase().includes(lowerQuery))
+                    );
+                }
+                if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
+                if (filters.brand) data = data.filter(p => p.brand === filters.brand);
+                if (filters.color) {
+                    data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                }
+                if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
+                if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
+
+                setProducts(data);
+                return;
+            }
+
+            // Priority: If bestSellers filter is active
+            if (activeQuickFilters.includes('bestSellers')) {
+                const bestSellersRes = await productService.getBestSellers();
+                if (bestSellersRes.success) {
+                    let data = bestSellersRes.data;
+
+                    // Client-side filtering for favorites based on other active filters
+                    if (debouncedSearchQuery) {
+                        const lowerQuery = debouncedSearchQuery.toLowerCase();
+                        data = data.filter(p =>
+                            p.name.toLowerCase().includes(lowerQuery) ||
+                            (p.code && p.code.toLowerCase().includes(lowerQuery)) ||
+                            (p.barcode && p.barcode.toLowerCase().includes(lowerQuery))
+                        );
+                    }
+                    if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
+                    if (filters.brand) data = data.filter(p => p.brand === filters.brand);
+                    if (filters.color) {
+                        data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                    }
+                    if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
+                    if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
+
+                    setProducts(data);
+                } else {
+                    setProducts([]);
+                }
+                return;
+            }
+
+            // Normal Product Fetching
+            // Don't fetch the massive generic list unless they've actually started a search or applied a primary filter or selected 'Todos'
+            if (!debouncedSearchQuery && !filters.categoryId && !filters.brand && !activeQuickFilters.includes('bestSellers') && !activeQuickFilters.includes('all')) {
+                setProducts([]);
+                setLoading(false);
+                return;
+            }
+
             const params: any = {
                 limit: 50,
                 search: debouncedSearchQuery || undefined,
                 categoryId: filters.categoryId || undefined,
                 brand: filters.brand || undefined,
-                minPrice: filters.minPrice > 0 ? filters.minPrice : undefined,
-                maxPrice: filters.maxPrice < 1000 ? filters.maxPrice : undefined,
+                priceFrom: filters.priceFrom > 0 ? filters.priceFrom : undefined,
+                priceTo: filters.priceTo < 1000 ? filters.priceTo : undefined,
+                stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
             };
-
-            // Handle stock status mapping to API params
-            if (filters.stockStatus === 'in_stock') params.minStock = 1;
-            if (filters.stockStatus === 'out_of_stock') params.maxStock = 0;
 
             const productsRes = await productService.getAll(params);
 
@@ -133,7 +209,7 @@ export default function AdvancedSearchPage() {
     // Effect to reload products when filters or search changes
     useEffect(() => {
         loadProducts();
-    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, activeQuickFilters]);
+    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, favoriteProducts]);
 
     // Simplified client-side filter for just what's loaded (pagination etc)
     // Actually, if we reload data on search, 'filteredProducts' should just be 'products'
@@ -150,31 +226,72 @@ export default function AdvancedSearchPage() {
             categoryId: '',
             brand: '',
             color: '',
-            minPrice: 0,
-            maxPrice: 1000,
+            priceFrom: 0,
+            priceTo: 1000,
             stockStatus: 'all'
         });
         setSearchQuery('');
-        setActiveQuickFilters([]);
+        setActiveQuickFilters(['favorites']);
     };
 
     const handleToggleFavorite = async (id: string) => {
-        try {
-            // Optimistic update
-            const newFavorites = new Set(favorites);
-            if (newFavorites.has(id)) {
-                newFavorites.delete(id);
-            } else {
-                newFavorites.add(id);
-            }
-            setFavorites(newFavorites);
+        // Optimistic update for both sets
+        const isAdding = !favorites.has(id);
+        setFavorites(prev => {
+            const next = new Set(prev);
+            isAdding ? next.add(id) : next.delete(id);
+            return next;
+        });
+        // Keep favoriteProducts cache in sync so the favorites filter view is accurate
+        setFavoriteProducts(prev =>
+            isAdding
+                ? [...prev, products.find(p => p.id === id)].filter(Boolean) as Product[]
+                : prev.filter(p => p.id !== id)
+        );
 
-            await favoritesService.toggle({ productId: id });
+        try {
+            const response = await favoritesService.toggle({ productId: id });
+
+            // Revert on API error
+            if (!response.success) {
+                console.error('Failed to toggle favorite API:', response.message);
+                setFavorites(prev => {
+                    const next = new Set(prev);
+                    isAdding ? next.delete(id) : next.add(id);
+                    return next;
+                });
+                setFavoriteProducts(prev =>
+                    isAdding
+                        ? prev.filter(p => p.id !== id)
+                        : [...prev, products.find(p => p.id === id)].filter(Boolean) as Product[]
+                );
+            } else if (response.data && response.data.isFavorite !== undefined) {
+                // Sync with exact server state
+                setFavorites(prev => {
+                    const next = new Set(prev);
+                    response.data.isFavorite ? next.add(id) : next.delete(id);
+                    return next;
+                });
+                if (!response.data.isFavorite) {
+                    setFavoriteProducts(prev => prev.filter(p => p.id !== id));
+                }
+            }
         } catch (error) {
             console.error('Failed to toggle favorite', error);
-            // Revert on error would go here
+            // Revert on exception
+            setFavorites(prev => {
+                const next = new Set(prev);
+                isAdding ? next.delete(id) : next.add(id);
+                return next;
+            });
+            setFavoriteProducts(prev =>
+                isAdding
+                    ? prev.filter(p => p.id !== id)
+                    : [...prev, products.find(p => p.id === id)].filter(Boolean) as Product[]
+            );
         }
     };
+
 
 
 
@@ -202,13 +319,17 @@ export default function AdvancedSearchPage() {
                     onSearchChange={setSearchQuery}
                     activeQuickFilters={activeQuickFilters}
                     onToggleQuickFilter={(filter) => {
-                        setActiveQuickFilters(prev =>
-                            prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter]
-                        );
+                        setActiveQuickFilters(prev => {
+                            if (filter === 'all') return ['all'];
+                            if (filter === 'favorites') return ['favorites'];
+                            if (filter === 'bestSellers') return ['bestSellers'];
+                            return prev.includes(filter) ? prev.filter(f => f !== filter) : [...prev, filter];
+                        });
                     }}
                     colors={colors}
                     selectedColor={filters.color}
                     onColorSelect={(colorId) => handleFilterChange('color', colorId)}
+                    onClearFilters={handleClearFilters}
                     clientSelector={
                         <POSClientSelector
                             selectedClient={selectedClient}

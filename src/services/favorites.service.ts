@@ -1,12 +1,8 @@
 import api from './api.client';
 import type { Product } from './product.service';
 
-export interface Favorite {
-    id: string;
-    userId: string;
-    productId: string;
-    product: Product;
-    createdAt: string;
+export interface Favorite extends Product {
+    favoriteAt: string;
 }
 
 export interface FavoritesResponse {
