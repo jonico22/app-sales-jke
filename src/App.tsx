@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import DashboardPage from './features/dashboard/DashboardPage';
 import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
@@ -22,6 +23,10 @@ import NewInventoryPage from './features/inventory/NewInventoryPage';
 import POSPage from './features/pos/POSPage';
 import PendingOrdersPage from './features/orders/PendingOrdersPage';
 import SalesHistoryPage from './features/orders/SalesHistoryPage';
+import AdvancedSearchPage from './features/search/AdvancedSearchPage';
+import SecurityPage from './features/security/SecurityPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
+import ProfilePage from './features/profile/ProfilePage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -84,7 +89,20 @@ const router = createBrowserRouter([
           {
             path: 'orders/history',
             element: <SalesHistoryPage />
-          }
+          },
+          {
+            path: 'security',
+            element: <SecurityPage />
+          },
+          {
+            path: 'notifications',
+            element: <NotificationsPage />
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />
+          },
+
         ]
       },
       {
@@ -94,6 +112,10 @@ const router = createBrowserRouter([
           {
             path: '',
             element: <POSPage />
+          },
+          {
+            path: 'search',
+            element: <AdvancedSearchPage />
           }
         ]
       }
@@ -112,6 +134,9 @@ function App() {
 
   // Initialize socket connection manager
   useSocketConnection();
+
+  // Handle real-time updates
+  useRealtimeUpdates();
 
 
 

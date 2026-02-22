@@ -9,6 +9,7 @@ const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutGrid },
   { name: 'Categorías', href: '/categories', icon: Tags },
   { name: 'Inventario', href: '/inventory', icon: ClipboardList },
+  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   {
     name: 'Pedidos',
     icon: ShoppingCart,
@@ -17,10 +18,17 @@ const navItems = [
       { name: 'Histórico de Ventas', href: '/orders/history' }
     ]
   },
-  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Reportes', href: '/reports', icon: FileText },
-  { name: 'Configuración', href: '/settings', icon: Settings },
+  {
+    name: 'Configuración',
+    icon: Settings,
+    children: [
+      { name: 'Mi Perfil', href: '/profile' },
+      { name: 'Seguridad y Acceso', href: '/security' },
+      { name: 'General', href: '/settings' }
+    ]
+  },
 ];
 
 interface DashboardSidebarProps {
@@ -36,7 +44,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos for now
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos', 'Configuración']); // Default expand Pedidos and Configuración for now
 
   const toggleMenu = (name: string) => {
     if (isCollapsed) return;

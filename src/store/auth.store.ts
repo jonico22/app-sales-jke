@@ -9,6 +9,8 @@ interface AuthState {
   role: Role | null;
   login: (data: LoginData) => void;
   logout: () => void;
+  setMustChangePassword: (must: boolean) => void;
+  updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,6 +43,14 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('pos-cart-storage');
         localStorage.removeItem('branch-storage');
         localStorage.removeItem('society-storage');
+      },
+      setMustChangePassword: (must: boolean) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, mustChangePassword: must } : null
+        }));
+      },
+      updateUser: (user: User) => {
+        set({ user });
       },
     }),
     {

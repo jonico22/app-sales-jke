@@ -6,6 +6,17 @@ export interface ProductCategory {
     code: string;
 }
 
+export interface Brand {
+    id: string;
+    brand: string;
+}
+
+export interface Color {
+    id: string;
+    color: string;
+    colorCode: string;
+}
+
 export interface Product {
     id: string;
     code?: string;
@@ -30,6 +41,7 @@ export interface Product {
     updatedBy: string | null;
     category: ProductCategory | null;
     image: string | null;
+    salesCount?: number;
 }
 
 export interface CreateProductRequest {
@@ -189,6 +201,24 @@ export const productService = {
                 'Content-Type': 'multipart/form-data',
             },
         });
+        return response.data;
+    },
+
+    // Advanced Search Helpers
+    getBestSellers: async (): Promise<{ success: boolean; message: string; data: Product[] }> => {
+        const response = await api.get<{ success: boolean; message: string; data: Product[] }>('/sales/products/best-sellers');
+        return response.data;
+    },
+
+    // Updated to include optional message field in response
+    getBrands: async (): Promise<{ success: boolean; message?: string; data: Brand[] }> => {
+        const response = await api.get<{ success: boolean; data: Brand[] }>('/sales/products/brands');
+        return response.data;
+    },
+
+    // Updated to include optional message field in response
+    getColors: async (): Promise<{ success: boolean; message?: string; data: Color[] }> => {
+        const response = await api.get<{ success: boolean; data: Color[] }>('/sales/products/colors');
         return response.data;
     },
 };

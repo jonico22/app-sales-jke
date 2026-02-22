@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
@@ -11,6 +11,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
@@ -130,7 +131,13 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
               {/* Menu Items */}
               <div className="py-1">
-                <button className="w-full px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-3 transition-colors">
+                <button
+                  onClick={() => {
+                    navigate('/profile');
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-3 transition-colors"
+                >
                   <User className="h-4 w-4 text-slate-400" /> Mi Perfil
                 </button>
                 <button className="w-full px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-3 transition-colors">

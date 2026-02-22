@@ -6,8 +6,36 @@ export interface LoginRequest {
 }
 
 export interface Role {
+  id: string;
   code: string;
   name: string;
+  isActive: boolean;
+  societyId?: string;
+}
+
+export interface DocumentType {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface Person {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  documentNumber: string | null;
+  documentType?: DocumentType;
+}
+
+export interface UserSession {
+  id: string;
+  token: string;
+  expiresAt: string;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
 }
 
 export interface User {
@@ -17,9 +45,12 @@ export interface User {
   image: string | null;
   emailVerified: boolean;
   isActive: boolean;
-  failedLoginAttempts: number;
-  lockedUntil: string | null;
+  mustChangePassword: boolean;
   role: Role;
+  person?: Person;
+  sessions?: UserSession[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Session {
@@ -72,6 +103,21 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  documentType?: string | null;
+  documentNumber?: string | null;
+  image?: string | null;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
 export interface MeResponse {
   success: boolean;
   message: string;
@@ -118,6 +164,10 @@ export const authService = {
   },
   changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
     const response = await api.post<ChangePasswordResponse>('/auth/change-password', data);
+    return response.data;
+  },
+  updateProfile: async (data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
+    const response = await api.put<UpdateProfileResponse>('/users/me', data);
     return response.data;
   },
 };

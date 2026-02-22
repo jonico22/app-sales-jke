@@ -3,6 +3,7 @@ import { Store, Banknote } from 'lucide-react';
 // import { type BranchOffice } from '@/services/branch-office.service';
 // import { currencyService, type Currency } from '@/services/currency.service';
 import { useCartStore } from '@/store/cart.store';
+import { useBranchStore } from '@/store/branch.store';
 import { useBranches } from '@/hooks/useBranches';
 import { useCurrencies } from '@/hooks/useCurrencies';
 
@@ -10,18 +11,18 @@ export function POSTopBar() {
     const { data: branches = [] } = useBranches();
     const { data: currencies = [] } = useCurrencies();
 
-    const { branchId, setBranchId, currencyId, setCurrencyId } = useCartStore();
+    const { currencyId, setCurrencyId } = useCartStore();
+    const { selectedBranch, selectBranch } = useBranchStore();
 
-    // No local state for selectedBranch/Currency, use store
-    const selectedBranch = branchId;
+    // No local state for selectedCurrency, use store
     const selectedCurrency = currencyId;
 
     useEffect(() => {
         // Set default branch if loaded and none selected
-        if (branches.length > 0 && selectedBranch === '1') {
-            setBranchId(branches[0].id);
+        if (branches.length > 0 && !selectedBranch) {
+            selectBranch(branches[0]);
         }
-    }, [branches, selectedBranch, setBranchId]);
+    }, [branches, selectedBranch, selectBranch]);
 
     useEffect(() => {
         // Set default currency if loaded and none selected
@@ -45,8 +46,11 @@ export function POSTopBar() {
                 </div>
                 <select
                     className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[160px]"
-                    value={selectedBranch}
-                    onChange={(e) => setBranchId(e.target.value)}
+                    value={selectedBranch?.id || ''}
+                    onChange={(e) => {
+                        const branch = displayBranches.find(b => b.id === e.target.value);
+                        if (branch) selectBranch(branch);
+                    }}
                 >
                     {displayBranches.map(branch => (
                         <option key={branch.id} value={branch.id}>{branch.name}</option>

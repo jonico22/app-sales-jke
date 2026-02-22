@@ -36,13 +36,9 @@ export function useSessionValidator() {
     // Check on mount
     checkSession();
 
-    // Optional: Check on window focus to catch expiration that happened in other tabs/sleep
-    const handleFocus = () => checkSession();
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
+    // Removed the window.focus listener to prevent redundant /auth/me calls
+    // (e.g., when file dialogs close or clicking back into the window).
+    // The Axios interceptor already handles 401 errors gracefully.
   }, [isAuthenticated, token]);
 
   return {
