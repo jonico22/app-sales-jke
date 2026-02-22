@@ -69,8 +69,16 @@ export interface UnreadCountResponse {
 }
 
 export const notificationService = {
-    // Get all notifications with pagination
-    getAll: async (params?: { page?: number; limit?: number; read?: boolean }) => {
+    // Get all notifications with pagination and filters
+    getAll: async (params?: {
+        page?: number;
+        limit?: number;
+        read?: boolean;
+        type?: NotificationType | 'all';
+        search?: string;
+        startDate?: string;
+        endDate?: string;
+    }) => {
         const response = await api.get<NotificationsResponse>('/notifications', { params });
         return response.data;
     },

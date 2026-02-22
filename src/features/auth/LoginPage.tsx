@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,13 +28,13 @@ export default function LoginPage() {
   });
 
   // Load saved email on mount
-  useState(() => {
+  useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       setValue('email', savedEmail);
       setRememberMe(true);
     }
-  });
+  }, [setValue]);
 
   const onSubmit = async (data: LoginSchema) => {
     try {

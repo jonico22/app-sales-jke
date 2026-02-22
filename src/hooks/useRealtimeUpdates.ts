@@ -41,7 +41,7 @@ export function useRealtimeUpdates() {
                     // If we have product list queries in TanStack Query, we should add them here
                     queryClient.invalidateQueries({ queryKey: ['products'] });
                     break;
-                case 'orders':
+                case 'VENTA':
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     break;
                 default:
@@ -50,10 +50,10 @@ export function useRealtimeUpdates() {
             }
         };
 
-        socket.on('UPDATE_TABLE', handleUpdateTable);
+        socket.on('ui_update_table', handleUpdateTable);
 
         return () => {
-            socket.off('UPDATE_TABLE', handleUpdateTable);
+            socket.off('ui_update_table', handleUpdateTable);
         };
     }, [queryClient]);
 }

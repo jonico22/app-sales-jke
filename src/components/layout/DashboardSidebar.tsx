@@ -24,8 +24,9 @@ const navItems = [
     name: 'Configuración',
     icon: Settings,
     children: [
-      { name: 'General', href: '/settings' },
-      { name: 'Seguridad y Acceso', href: '/security' }
+      { name: 'Mi Perfil', href: '/profile' },
+      { name: 'Seguridad y Acceso', href: '/security' },
+      { name: 'General', href: '/settings' }
     ]
   },
 ];

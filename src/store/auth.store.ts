@@ -10,6 +10,7 @@ interface AuthState {
   login: (data: LoginData) => void;
   logout: () => void;
   setMustChangePassword: (must: boolean) => void;
+  updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -47,6 +48,9 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({
           user: state.user ? { ...state.user, mustChangePassword: must } : null
         }));
+      },
+      updateUser: (user: User) => {
+        set({ user });
       },
     }),
     {

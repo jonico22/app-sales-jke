@@ -25,6 +25,8 @@ import PendingOrdersPage from './features/orders/PendingOrdersPage';
 import SalesHistoryPage from './features/orders/SalesHistoryPage';
 import AdvancedSearchPage from './features/search/AdvancedSearchPage';
 import SecurityPage from './features/security/SecurityPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
+import ProfilePage from './features/profile/ProfilePage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -91,6 +93,14 @@ const router = createBrowserRouter([
           {
             path: 'security',
             element: <SecurityPage />
+          },
+          {
+            path: 'notifications',
+            element: <NotificationsPage />
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />
           },
 
         ]

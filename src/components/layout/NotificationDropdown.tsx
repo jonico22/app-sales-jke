@@ -15,17 +15,25 @@ export default function NotificationDropdown() {
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [hasFetchedList, setHasFetchedList] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const fetchNotifications = async () => {
+    const fetchInitialCount = async () => {
+        try {
+            const countData = await notificationService.getUnreadCount();
+            setUnreadCount(countData.data.count);
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+        }
+    };
+
+    const fetchNotificationsList = async () => {
+        if (loading) return;
         try {
             setLoading(true);
-            const [notifsData, countData] = await Promise.all([
-                notificationService.getAll({ limit: 10, read: false }),
-                notificationService.getUnreadCount()
-            ]);
+            const notifsData = await notificationService.getAll({ limit: 10, read: false });
             setNotifications(notifsData.data.items);
-            setUnreadCount(countData.data.count);
+            setHasFetchedList(true);
         } catch (error) {
             console.error('Error fetching notifications:', error);
             toast.error('Error al cargar notificaciones');
@@ -35,7 +43,7 @@ export default function NotificationDropdown() {
     };
 
     useEffect(() => {
-        fetchNotifications();
+        fetchInitialCount();
 
         // Listen for real-time notifications
         socket.on('ui_notification', (newNotification: Notification) => {
@@ -61,9 +69,15 @@ export default function NotificationDropdown() {
                 }
             });
 
-            // Update state
-            setNotifications(prev => [newNotification, ...prev]);
+            // Update state: increment count, and append to list only if we've already loaded it
             setUnreadCount(prev => prev + 1);
+            setNotifications(prev => {
+                // If we haven't fetched the list yet, we don't need to append. If we have, add to top.
+                if (hasFetchedList || prev.length > 0) {
+                    return [newNotification, ...prev];
+                }
+                return prev;
+            });
         });
 
         return () => {
@@ -84,10 +98,14 @@ export default function NotificationDropdown() {
     }, []);
 
     const handleToggle = () => {
-        setIsOpen(!isOpen);
-        if (!isOpen) {
-            // Refresh when opening
-            fetchNotifications();
+        const newIsOpen = !isOpen;
+        setIsOpen(newIsOpen);
+        if (newIsOpen && !hasFetchedList) {
+            // Fetch list the first time it is opened
+            fetchNotificationsList();
+        } else if (newIsOpen && unreadCount > 0) {
+            // Always refresh list if there are unread notifications to make sure they are included
+            fetchNotificationsList();
         }
     };
 
@@ -255,7 +273,13 @@ export default function NotificationDropdown() {
                     {/* Footer */}
                     {notifications.length > 0 && (
                         <div className="px-4 py-3 bg-slate-50/50 text-center border-t border-slate-100">
-                            <button className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                            <button
+                                onClick={() => {
+                                    navigate('/notifications');
+                                    setIsOpen(false);
+                                }}
+                                className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                            >
                                 Ver historial completo
                             </button>
                         </div>
