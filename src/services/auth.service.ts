@@ -17,6 +17,7 @@ export interface User {
   image: string | null;
   emailVerified: boolean;
   isActive: boolean;
+  mustChangePassword: boolean;
   failedLoginAttempts: number;
   lockedUntil: string | null;
   role: Role;

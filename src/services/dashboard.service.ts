@@ -1,19 +1,10 @@
 import api from './api.client';
 
 export interface DashboardStats {
-    totalSales: number;
-    totalOrders: number;
-    totalProducts: number;
-    totalClients: number;
-    recentSales: {
-        date: string;
-        amount: number;
-    }[];
-    topProducts: {
-        name: string;
-        quantity: number;
-        revenue: number;
-    }[];
+    totalStockValue: number;
+    lowStockItems: number;
+    netSales: number;
+    newProducts: number;
 }
 
 export interface DashboardStatsResponse {
@@ -25,7 +16,7 @@ export interface DashboardStatsResponse {
 export const dashboardService = {
     // Get general dashboard statistics
     getStats: async (): Promise<DashboardStatsResponse> => {
-        const response = await api.get<DashboardStatsResponse>('/dashboard/stats');
+        const response = await api.get<DashboardStatsResponse>('/sales/dashboard/stats');
         return response.data;
     },
 };

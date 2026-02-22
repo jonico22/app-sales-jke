@@ -20,7 +20,14 @@ const navItems = [
   },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Reportes', href: '/reports', icon: FileText },
-  { name: 'Configuración', href: '/settings', icon: Settings },
+  {
+    name: 'Configuración',
+    icon: Settings,
+    children: [
+      { name: 'General', href: '/settings' },
+      { name: 'Seguridad y Acceso', href: '/security' }
+    ]
+  },
 ];
 
 interface DashboardSidebarProps {
@@ -36,7 +43,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos for now
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos', 'Configuración']); // Default expand Pedidos and Configuración for now
 
   const toggleMenu = (name: string) => {
     if (isCollapsed) return;

@@ -40,7 +40,16 @@ export default function LoginPage() {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
       login(response.data); // Update global store
-      await societyService.getCurrent();
+
+      // Only load society data if password change is not mandatory
+      // The backend likely blocks normal endpoints until the password is changed
+      if (!response.data.user.mustChangePassword) {
+        try {
+          await societyService.getCurrent();
+        } catch (err) {
+          console.error('Failed to load initial society data', err);
+        }
+      }
 
       // Handle Remember Me
       if (rememberMe) {
@@ -50,7 +59,13 @@ export default function LoginPage() {
       }
 
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
-      navigate('/');
+
+      // Navigation Logic
+      if (response.data.user.mustChangePassword) {
+        navigate('/security');
+      } else {
+        navigate('/');
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);

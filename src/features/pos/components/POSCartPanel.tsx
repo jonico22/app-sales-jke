@@ -3,6 +3,7 @@ import { X, Trash2, ShoppingBag, Loader2 } from 'lucide-react';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
+import { useBranchStore } from '@/store/branch.store';
 import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
@@ -16,8 +17,9 @@ interface POSCartPanelProps {
 }
 
 export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
-    const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, branchId, currencyId } = useCartStore();
+    const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, currencyId } = useCartStore();
     const society = useSocietyStore(state => state.society);
+    const selectedBranch = useBranchStore(state => state.selectedBranch);
     const totalWithTax = useCartStore(selectTotalPrice);
     const subtotal = totalWithTax / 1.18;
     const igv = totalWithTax - subtotal;
@@ -41,13 +43,10 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
 
             const orderData: CreateOrderRequest = {
                 societyId: society?.id || '1',
-                branchId: branchId || '1',
+                branchId: selectedBranch?.id || '1',
                 // Use currency from society store
                 currencyId: society?.mainCurrency?.id || currencyId || '1',
                 partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2',
-                // Note: The user's backend seems to validate UUIDs maybe? 'public' might fail if it's not in DB. Assuming '2' or similar generic ID, or the user's system handles 'public'.
-                // If selectedClient.id is 'public', we probably need a valid Anonymous Customer ID from the DB. 
-                // For now, I'll pass 'public' if that's what was there, OR if the user error implied invalid customerId I should be careful.
                 // The user validation error for customerId was just "Required", not "Invalid".
 
                 exchangeRate: 1.0,

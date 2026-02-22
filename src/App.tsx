@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import DashboardPage from './features/dashboard/DashboardPage';
 import CategoriesPage from './features/categories/CategoriesPage';
 import NewCategoryPage from './features/categories/NewCategoryPage';
@@ -23,6 +24,7 @@ import POSPage from './features/pos/POSPage';
 import PendingOrdersPage from './features/orders/PendingOrdersPage';
 import SalesHistoryPage from './features/orders/SalesHistoryPage';
 import AdvancedSearchPage from './features/search/AdvancedSearchPage';
+import SecurityPage from './features/security/SecurityPage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
 
 const router = createBrowserRouter([
@@ -87,8 +89,8 @@ const router = createBrowserRouter([
             element: <SalesHistoryPage />
           },
           {
-            path: 'orders/history',
-            element: <SalesHistoryPage />
+            path: 'security',
+            element: <SecurityPage />
           },
 
         ]
@@ -122,6 +124,9 @@ function App() {
 
   // Initialize socket connection manager
   useSocketConnection();
+
+  // Handle real-time updates
+  useRealtimeUpdates();
 
 
 
