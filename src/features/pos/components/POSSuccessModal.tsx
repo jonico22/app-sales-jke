@@ -1,4 +1,4 @@
-import { CheckCircle2, Printer, Share2, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, ArrowLeft } from 'lucide-react';
 
 interface POSSuccessModalProps {
     isOpen: boolean;
@@ -18,8 +18,6 @@ export function POSSuccessModal({
     paymentMethod,
     total,
     onClose,
-    onPrintTicket,
-    onShareWhatsApp
 }: POSSuccessModalProps) {
     if (!isOpen) return null;
 
@@ -73,23 +71,6 @@ export function POSSuccessModal({
 
                 {/* Action Buttons */}
                 <div className="px-6 pb-6 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            onClick={onPrintTicket}
-                            className="flex items-center justify-center gap-2 py-3 px-4 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98]"
-                        >
-                            <Printer className="w-4 h-4" />
-                            Imprimir Ticket
-                        </button>
-                        <button
-                            onClick={onShareWhatsApp}
-                            className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98]"
-                        >
-                            <Share2 className="w-4 h-4" />
-                            Compartir por WhatsApp
-                        </button>
-                    </div>
-
                     <button
                         onClick={onClose}
                         className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border-2 border-slate-200 text-slate-600 hover:text-sky-600 hover:border-sky-200 font-bold rounded-xl transition-all active:scale-[0.98]"

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu } from 'lucide-react';
-import { Input } from '@/components/ui';
+import { ChevronDown, User, Settings, Moon, Sun, Megaphone, HelpCircle, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import NotificationDropdown from './NotificationDropdown';
 
@@ -68,20 +67,6 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         </h1>
       </div>
 
-      {/* Center: Search */}
-      <div className="flex-1 max-w-xl mx-8 relative">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Buscar productos, ventas o clientes..."
-            className="pl-9 pr-12 w-full bg-slate-50 border-slate-200 focus:bg-white transition-all text-sm placeholder:text-muted-foreground/70"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 border border-slate-200 rounded px-1.5 py-0.5 bg-white">
-            <span className="text-[10px] font-medium text-slate-400">⌘K</span>
-          </div>
-        </div>
-      </div>
 
       {/* Right: Actions & Profile */}
       <div className="flex items-center gap-6">

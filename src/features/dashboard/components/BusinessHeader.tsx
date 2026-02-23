@@ -1,8 +1,10 @@
 import { Store, BadgeCheck, Hash, Coins, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSocietyStore } from '@/store/society.store';
 import { Button } from '@/components/ui';
 
 export function BusinessHeader() {
+  const navigate = useNavigate();
   const society = useSocietyStore((state) => state.society);
 
   if (!society) {
@@ -18,11 +20,11 @@ export function BusinessHeader() {
         {/* Left: Logo and Info */}
         <div className="flex items-center gap-4">
           {/* Logo/Icon */}
-          <div className="bg-cyan-50 p-4 rounded-2xl flex-shrink-0">
+          <div className="p-2 rounded-2xl flex-shrink-0 border border-slate-100">
             {society.logo ? (
-              <img 
-                src={society.logo} 
-                alt={society.name} 
+              <img
+                src={society.logo.path}
+                alt={society.name}
                 className="h-10 w-10 object-contain"
               />
             ) : (
@@ -34,7 +36,7 @@ export function BusinessHeader() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h1 className="text-xl font-bold text-slate-800">{society.name}</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold uppercase tracking-wide rounded-full">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-cyan-700 text-[10px] font-bold uppercase tracking-wide rounded-full">
                 <BadgeCheck className="h-3 w-3" />
                 Verificada
               </span>
@@ -70,6 +72,7 @@ export function BusinessHeader() {
         <Button
           variant="outline"
           className="border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30"
+          onClick={() => navigate('/settings')}
         >
           Editar Perfil
         </Button>

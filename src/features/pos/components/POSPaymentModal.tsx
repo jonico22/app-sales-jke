@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Banknote, CreditCard, QrCode, Check, Printer, Mail } from 'lucide-react';
+import { X, Banknote, CreditCard, QrCode, Check } from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { orderService, OrderStatus } from '@/services/order.service';
 import { orderPaymentService, OrderPaymentMethod, OrderPaymentStatus } from '@/services/order-payment.service';
@@ -269,18 +269,6 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                             </div>
                         </div>
                     )}
-
-                    {/* Additional Options */}
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                        <button className="py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors">
-                            <Printer className="w-4 h-4" />
-                            Imprimir Ticket
-                        </button>
-                        <button className="py-2.5 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors">
-                            <Mail className="w-4 h-4" />
-                            Enviar Correo
-                        </button>
-                    </div>
 
                 </div>
 
