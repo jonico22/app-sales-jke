@@ -65,6 +65,8 @@ export interface UpdateSocietyRequest {
     taxValue?: number;
     stockNotificationEnabled?: boolean;
     salesNotificationEnabled?: boolean;
+    stockNotificationFrequency?: string;
+    salesNotificationFrequency?: string;
     notificationFrequency?: string;
 }
 

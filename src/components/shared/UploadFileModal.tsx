@@ -239,6 +239,14 @@ export function UploadFileModal({
             return;
         }
 
+        // Basic URL validation
+        try {
+            new URL(externalLink.url);
+        } catch (e) {
+            toast.error('Por favor ingresa una URL válida');
+            return;
+        }
+
         try {
             setIsUploading(true);
             const response = await fileService.registerExternal({

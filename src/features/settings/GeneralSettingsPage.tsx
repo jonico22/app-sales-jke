@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -16,7 +16,7 @@ import {
     Clock,
     HardDrive
 } from 'lucide-react';
-import { Button, Input, Label, Card, Switch } from '@/components/ui';
+import { Button, Input, Label, Card } from '@/components/ui';
 import { societyService } from '@/services/society.service';
 import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
 import { useSocietyStore } from '@/store/society.store';
@@ -35,9 +35,8 @@ const businessSchema = z.object({
     }),
     mainCurrencyId: z.string().min(1, { message: "La moneda principal es requerida" }),
     taxValue: z.number().min(0).max(100),
-    stockNotificationEnabled: z.boolean(),
-    salesNotificationEnabled: z.boolean(),
-    notificationFrequency: z.string(),
+    stockNotificationFrequency: z.string(),
+    salesNotificationFrequency: z.string(),
 });
 
 type BusinessFormValues = z.infer<typeof businessSchema>;
@@ -53,7 +52,7 @@ export default function GeneralSettingsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeletingLogo, setIsDeletingLogo] = useState(false);
 
-    const { register, handleSubmit, control, reset, formState: { errors, dirtyFields } } = useForm<BusinessFormValues>({
+    const { register, handleSubmit, reset, formState: { errors, dirtyFields } } = useForm<BusinessFormValues>({
         resolver: zodResolver(businessSchema),
         defaultValues: {
             name: '',
@@ -66,9 +65,8 @@ export default function GeneralSettingsPage() {
             },
             mainCurrencyId: '',
             taxValue: 0,
-            stockNotificationEnabled: false,
-            salesNotificationEnabled: false,
-            notificationFrequency: 'REAL_TIME',
+            stockNotificationFrequency: 'DAILY',
+            salesNotificationFrequency: 'DAILY',
         }
     });
 
@@ -98,9 +96,8 @@ export default function GeneralSettingsPage() {
                         },
                         mainCurrencyId: s.mainCurrency?.id || '',
                         taxValue: s.taxes?.[0]?.value || 0,
-                        stockNotificationEnabled: s.stockNotificationEnabled || false,
-                        salesNotificationEnabled: s.salesNotificationEnabled || false,
-                        notificationFrequency: s.notificationFrequency || 'REAL_TIME',
+                        stockNotificationFrequency: s.stockNotificationFrequency || 'DAILY',
+                        salesNotificationFrequency: s.salesNotificationFrequency || 'DAILY',
                     });
                 }
                 setCurrencies(currenciesData.data);
@@ -127,9 +124,14 @@ export default function GeneralSettingsPage() {
             if (dirtyFields.name) payload.name = data.name;
             if (dirtyFields.mainCurrencyId) payload.mainCurrencyId = data.mainCurrencyId;
             if (dirtyFields.taxValue) payload.taxValue = data.taxValue;
-            if (dirtyFields.stockNotificationEnabled) payload.stockNotificationEnabled = data.stockNotificationEnabled;
-            if (dirtyFields.salesNotificationEnabled) payload.salesNotificationEnabled = data.salesNotificationEnabled;
-            if (dirtyFields.notificationFrequency) payload.notificationFrequency = data.notificationFrequency;
+            if (dirtyFields.stockNotificationFrequency) {
+                payload.stockNotificationFrequency = data.stockNotificationFrequency;
+                payload.stockNotificationEnabled = data.stockNotificationFrequency !== 'NEVER';
+            }
+            if (dirtyFields.salesNotificationFrequency) {
+                payload.salesNotificationFrequency = data.salesNotificationFrequency;
+                payload.salesNotificationEnabled = data.salesNotificationFrequency !== 'NEVER';
+            }
 
             // Handle logoId separately as it's state-based
             if (logoId !== society.logo?.id) {
@@ -426,55 +428,50 @@ export default function GeneralSettingsPage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-6">
-                                    <div className="flex items-start justify-between gap-4">
+                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-8">
+                                    {/* Alertas de Stock Bajo */}
+                                    <div className="space-y-4">
                                         <div className="space-y-1">
                                             <Label className="text-slate-700 font-bold">Alertas de Stock Bajo</Label>
                                             <p className="text-xs text-slate-500">Recibir notificaciones cuando el inventario llegue al mínimo.</p>
                                         </div>
-                                        <Controller
-                                            name="stockNotificationEnabled"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Switch
-                                                    checked={field.value}
-                                                    onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
-                                                />
-                                            )}
-                                        />
+                                        <div className="space-y-2 pl-0">
+                                            <Label className="text-xs text-slate-500 flex items-center gap-2">
+                                                <Clock className="h-3 w-3" /> Frecuencia de Alerta
+                                            </Label>
+                                            <select
+                                                {...register('stockNotificationFrequency')}
+                                                className="w-full h-9 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.1rem_1.1rem] bg-[right_0.4rem_center] bg-no-repeat"
+                                            >
+                                                <option value="DAILY">Diario</option>
+                                                <option value="WEEKLY">Semanal</option>
+                                                <option value="MONTHLY">Mensual</option>
+                                                <option value="NEVER">Nunca</option>
+                                            </select>
+                                        </div>
                                     </div>
 
-                                    <div className="flex items-start justify-between gap-4">
+                                    {/* Alertas de Ventas Realizadas */}
+                                    <div className="space-y-4">
                                         <div className="space-y-1">
                                             <Label className="text-slate-700 font-bold">Alertas de Ventas Realizadas</Label>
                                             <p className="text-xs text-slate-500">Recibir una notificación cada vez que se complete una transacción.</p>
                                         </div>
-                                        <Controller
-                                            name="salesNotificationEnabled"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Switch
-                                                    checked={field.value}
-                                                    onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
-                                                />
-                                            )}
-                                        />
+                                        <div className="space-y-2 pl-0">
+                                            <Label className="text-xs text-slate-500 flex items-center gap-2">
+                                                <Clock className="h-3 w-3" /> Frecuencia de Alerta
+                                            </Label>
+                                            <select
+                                                {...register('salesNotificationFrequency')}
+                                                className="w-full h-9 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.1rem_1.1rem] bg-[right_0.4rem_center] bg-no-repeat"
+                                            >
+                                                <option value="DAILY">Diario</option>
+                                                <option value="WEEKLY">Semanal</option>
+                                                <option value="MONTHLY">Mensual</option>
+                                                <option value="NEVER">Nunca</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-2 pt-4">
-                                    <Label className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-slate-400" />
-                                        Frecuencia de Notificaciones
-                                    </Label>
-                                    <select
-                                        {...register('notificationFrequency')}
-                                        className="w-full h-10 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.24rem_1.24rem] bg-[right_0.5rem_center] bg-no-repeat"
-                                    >
-                                        <option value="REAL_TIME">Tiempo Real</option>
-                                        <option value="DAILY">Diario</option>
-                                        <option value="WEEKLY">Semanal</option>
-                                    </select>
                                 </div>
 
                                 <div className="space-y-2 pt-4 border-t border-slate-100">
