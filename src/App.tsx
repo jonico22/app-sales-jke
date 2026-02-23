@@ -1,13 +1,11 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 
+// Layout & route guards (eagerly loaded — always needed)
 import DashboardLayout from './components/layout/DashboardLayout';
 import POSLayout from './components/layout/POSLayout';
 import AuthLayout from './features/auth/AuthLayout';
-import LoginPage from './features/auth/LoginPage';
-import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
-import ResetPasswordPage from './features/auth/ResetPasswordPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
 import { Toaster } from '@/components/ui';
@@ -15,19 +13,36 @@ import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
-import DashboardPage from './features/dashboard/DashboardPage';
-import CategoriesPage from './features/categories/CategoriesPage';
-import NewCategoryPage from './features/categories/NewCategoryPage';
-import ProductsPage from './features/inventory/ProductsPage';
-import NewInventoryPage from './features/inventory/NewInventoryPage';
-import POSPage from './features/pos/POSPage';
-import PendingOrdersPage from './features/orders/PendingOrdersPage';
-import SalesHistoryPage from './features/orders/SalesHistoryPage';
-import AdvancedSearchPage from './features/search/AdvancedSearchPage';
-import SecurityPage from './features/security/SecurityPage';
-import NotificationsPage from './features/notifications/NotificationsPage';
-import ProfilePage from './features/profile/ProfilePage';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
+
+// Auth pages — small, keep eager so login is instant
+import LoginPage from './features/auth/LoginPage';
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
+import ResetPasswordPage from './features/auth/ResetPasswordPage';
+
+// App pages — lazy loaded (only downloaded when the user visits them)
+const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
+const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage'));
+const NewCategoryPage = lazy(() => import('./features/categories/NewCategoryPage'));
+const ProductsPage = lazy(() => import('./features/inventory/ProductsPage'));
+const NewInventoryPage = lazy(() => import('./features/inventory/NewInventoryPage'));
+const POSPage = lazy(() => import('./features/pos/POSPage'));
+const PendingOrdersPage = lazy(() => import('./features/orders/PendingOrdersPage'));
+const SalesHistoryPage = lazy(() => import('./features/orders/SalesHistoryPage'));
+const AdvancedSearchPage = lazy(() => import('./features/search/AdvancedSearchPage'));
+const SecurityPage = lazy(() => import('./features/security/SecurityPage'));
+const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage'));
+const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
+const GeneralSettingsPage = lazy(() => import('./features/settings/GeneralSettingsPage'));
+const DownloadsPage = lazy(() => import('./features/settings/DownloadsPage'));
+const FileManagerPage = lazy(() => import('./features/settings/FileManagerPage'));
+
+// Simple loading fallback shown while a lazy chunk is being fetched
+const PageLoader = () => (
+  <div className="flex h-full min-h-[60vh] items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+  </div>
+);
 
 const router = createBrowserRouter([
   {
@@ -64,45 +79,56 @@ const router = createBrowserRouter([
         children: [
           {
             path: '/',
-            element: <DashboardPage />
+            element: <Suspense fallback={<PageLoader />}><DashboardPage /></Suspense>
           },
           {
             path: 'categories',
-            element: <CategoriesPage />
+            element: <Suspense fallback={<PageLoader />}><CategoriesPage /></Suspense>
           },
           {
             path: 'categories/new',
-            element: <NewCategoryPage />
+            element: <Suspense fallback={<PageLoader />}><NewCategoryPage /></Suspense>
           },
           {
             path: 'inventory',
-            element: <ProductsPage />
+            element: <Suspense fallback={<PageLoader />}><ProductsPage /></Suspense>
           },
           {
             path: 'inventory/new',
-            element: <NewInventoryPage />
+            element: <Suspense fallback={<PageLoader />}><NewInventoryPage /></Suspense>
           },
           {
             path: 'orders/pending',
-            element: <PendingOrdersPage />
+            element: <Suspense fallback={<PageLoader />}><PendingOrdersPage /></Suspense>
           },
           {
             path: 'orders/history',
-            element: <SalesHistoryPage />
+            element: <Suspense fallback={<PageLoader />}><SalesHistoryPage /></Suspense>
           },
           {
             path: 'security',
-            element: <SecurityPage />
+            element: <Suspense fallback={<PageLoader />}><SecurityPage /></Suspense>
           },
           {
             path: 'notifications',
-            element: <NotificationsPage />
+            element: <Suspense fallback={<PageLoader />}><NotificationsPage /></Suspense>
           },
           {
             path: 'profile',
-            element: <ProfilePage />
+            element: <Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>
           },
-
+          {
+            path: 'settings',
+            element: <Suspense fallback={<PageLoader />}><GeneralSettingsPage /></Suspense>
+          },
+          {
+            path: 'downloads',
+            element: <Suspense fallback={<PageLoader />}><DownloadsPage /></Suspense>
+          },
+          {
+            path: 'settings/files',
+            element: <Suspense fallback={<PageLoader />}><FileManagerPage /></Suspense>
+          },
         ]
       },
       {
@@ -111,11 +137,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: '',
-            element: <POSPage />
+            element: <Suspense fallback={<PageLoader />}><POSPage /></Suspense>
           },
           {
             path: 'search',
-            element: <AdvancedSearchPage />
+            element: <Suspense fallback={<PageLoader />}><AdvancedSearchPage /></Suspense>
           }
         ]
       }

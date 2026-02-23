@@ -15,6 +15,15 @@ export interface Tax {
     code: string;
 }
 
+export interface LegalEntity {
+    id: string;
+    businessName: string;
+    documentNumber: string;
+    fiscalAddress: string | null;
+    phoneNumber: string | null;
+    email: string | null;
+}
+
 export interface Society {
     id: string;
     name: string;
@@ -23,22 +32,40 @@ export interface Society {
     legalEntityId: string | null;
     stockNotificationFrequency: string;
     salesNotificationFrequency: string;
+    stockNotificationEnabled: boolean;
+    salesNotificationEnabled: boolean;
+    notificationFrequency: string;
     backupFrequency: string;
     dataRetentionDays: number | null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uiConfig: any | null;
     mainCurrency: MainCurrency;
     taxes: Tax[];
-    logo: string | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    legalEntity: any | null;
+    logo: {
+        id: string;
+        path: string;
+    } | null;
+    legalEntity: LegalEntity | null;
     subscriptionId: string;
+    storageLimit: string;
 }
 
 export interface UpdateSocietyRequest {
     name?: string;
-    description?: string;
-    isActive?: boolean;
+    logo?: string | null;
+    logoId?: string | null;
+    legalEntity?: {
+        businessName?: string | null;
+        documentNumber?: string | null;
+        fiscalAddress?: string | null;
+        phoneNumber?: string | null;
+        email?: string | null;
+    };
+    mainCurrencyId?: string;
+    taxValue?: number;
+    stockNotificationEnabled?: boolean;
+    salesNotificationEnabled?: boolean;
+    notificationFrequency?: string;
 }
 
 export interface GetCodeResponse {

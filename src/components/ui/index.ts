@@ -11,3 +11,5 @@ export * from './dialog';
 export * from './dropdown-menu';
 export * from './sheet';
 export * from './checkbox';
+export * from './Modal';
+export * from './tabs';

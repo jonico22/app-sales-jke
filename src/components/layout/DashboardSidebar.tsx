@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, MapPin, ChevronDown, ChevronRight, CloudDownload, Building2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -26,7 +26,9 @@ const navItems = [
     children: [
       { name: 'Mi Perfil', href: '/profile' },
       { name: 'Seguridad y Acceso', href: '/security' },
-      { name: 'General', href: '/settings' }
+      { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
+      { name: 'Manejador de Archivos', href: '/settings/files', icon: Package },
+      { name: 'Descargas', href: '/downloads', icon: CloudDownload }
     ]
   },
 ];

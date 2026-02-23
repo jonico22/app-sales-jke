@@ -166,20 +166,6 @@ export function POSProductSearch({
                     </>
                 )}
             </div>
-
-
-            {/* Quick Filters */}
-            <div className="hidden md:flex items-center gap-2 mt-3">
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
-                    Más vendidos
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
-                    Promociones
-                </button>
-                <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer">
-                    Últimos agregados
-                </button>
-            </div>
         </div>
     );
 }
