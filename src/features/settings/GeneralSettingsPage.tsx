@@ -305,6 +305,7 @@ export default function GeneralSettingsPage() {
                                 accept="image/jpeg,image/png,image/webp"
                                 category={FileCategory.GENERAL}
                                 cropShape="round"
+                                showLibraryTab={true}
                             />
                         </Card>
 
