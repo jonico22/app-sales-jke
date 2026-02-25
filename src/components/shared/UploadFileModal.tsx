@@ -10,7 +10,10 @@ import {
     RotateCcw,
     Minus,
     Plus,
-    CheckCircle2
+    CheckCircle2,
+    Search,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 import {
@@ -23,7 +26,7 @@ import {
     TabsTrigger,
     TabsContent
 } from '@/components/ui';
-import { fileService, FileCategory } from '@/services/file.service';
+import { fileService, FileCategory, type FileMetadata } from '@/services/file.service';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +39,7 @@ interface UploadFileModalProps {
     accept?: string;
     category?: FileCategory;
     maxSizeMB?: number;
+    showLibraryTab?: boolean;
 }
 
 export function UploadFileModal({
@@ -46,8 +50,10 @@ export function UploadFileModal({
     title = 'Subir Nuevo Archivo',
     accept = 'image/jpeg,image/png,image/webp,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv',
     category = FileCategory.GENERAL,
-    maxSizeMB = 2
+    maxSizeMB = 2,
+    showLibraryTab = false
 }: UploadFileModalProps) {
+    const [activeTab, setActiveTab] = useState('upload');
     const [isUploading, setIsUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -57,7 +63,47 @@ export function UploadFileModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isCropping, setIsCropping] = useState(false);
-    const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string, size: number, type: string }>>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string, size: number, type: string, url?: string }>>([]);
+
+    // Library State
+    const [libraryFiles, setLibraryFiles] = useState<FileMetadata[]>([]);
+    const [librarySearch, setLibrarySearch] = useState('');
+    const [debouncedLibrarySearch, setDebouncedLibrarySearch] = useState('');
+    const [libraryPage, setLibraryPage] = useState(1);
+    const [libraryTotalPages, setLibraryTotalPages] = useState(1);
+    const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+    const [selectedLibraryFile, setSelectedLibraryFile] = useState<FileMetadata | null>(null);
+
+    // Debounce library search
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedLibrarySearch(librarySearch), 500);
+        return () => clearTimeout(timer);
+    }, [librarySearch]);
+
+    // Fetch library ONLY conditionally on tab click
+    useEffect(() => {
+        if (activeTab === 'library' && showLibraryTab) {
+            const fetchLibrary = async () => {
+                setIsLoadingLibrary(true);
+                try {
+                    const params = {
+                        page: libraryPage,
+                        limit: 10,
+                        search: debouncedLibrarySearch,
+                        category: category
+                    };
+                    const res = await fileService.getGallery(params);
+                    setLibraryFiles(res.data.data);
+                    setLibraryTotalPages(res.data.pagination?.totalPages || 1);
+                } catch (error) {
+                    toast.error('Error al cargar la biblioteca de medios');
+                } finally {
+                    setIsLoadingLibrary(false);
+                }
+            };
+            fetchLibrary();
+        }
+    }, [activeTab, libraryPage, debouncedLibrarySearch, category, showLibraryTab]);
 
 
     // Initial cleanup and effect for preview
@@ -217,7 +263,8 @@ export function UploadFileModal({
             toast.success('Archivo subido exitosamente');
 
             if (selectedFile) {
-                setUploadedFiles(prev => [...prev, { name: selectedFile.name, size: selectedFile.size, type: selectedFile.type }]);
+                // If the selected file is an image, store the objectUrl or the cropped image payload to display it in the list (if we still have the previewUrl)
+                setUploadedFiles(prev => [...prev, { name: selectedFile.name, size: selectedFile.size, type: selectedFile.type, url: selectedFile.type.startsWith('image/') && previewUrl ? previewUrl : undefined }]);
                 setSelectedFile(null);
                 setPreviewUrl(null);
                 setRotation(0);
@@ -284,6 +331,11 @@ export function UploadFileModal({
         setIsCropping(false);
         setUploadedFiles([]);
         setExternalLink({ name: '', url: '', mimeType: 'application/pdf' });
+        // Reset library state
+        setLibrarySearch('');
+        setLibraryPage(1);
+        setSelectedLibraryFile(null);
+        setActiveTab('upload');
         onClose();
     };
 
@@ -292,14 +344,20 @@ export function UploadFileModal({
             isOpen={isOpen}
             onClose={handleClose}
             title={title}
-            size="md"
+            size="lg"
         >
-            <Tabs defaultValue="upload" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="mb-6">
                     <TabsTrigger value="upload" className="flex items-center gap-2">
                         <Upload className="w-4 h-4" />
-                        Subir Archivo
+                        Subir nuevo
                     </TabsTrigger>
+                    {showLibraryTab && (
+                        <TabsTrigger value="library" className="flex items-center gap-2">
+                            <FileIcon className="w-4 h-4" />
+                            Biblioteca de medios
+                        </TabsTrigger>
+                    )}
                     <TabsTrigger value="external" className="flex items-center gap-2">
                         <LinkIcon className="w-4 h-4" />
                         Enlace Externo
@@ -504,10 +562,14 @@ export function UploadFileModal({
                             {uploadedFiles.map((file, idx) => (
                                 <div key={idx} className="border border-slate-100 rounded-xl bg-white p-4 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-[84px] h-[84px] rounded-xl bg-[#f5dfce] flex items-center justify-center text-orange-200/50">
-                                            <div className="w-10 h-10 border-2 border-current rounded-md flex items-center justify-center opacity-70">
-                                                <div className="w-6 h-6 border-b-2 border-current rounded-full"></div>
-                                            </div>
+                                        <div className="w-[84px] h-[84px] rounded-xl bg-[#f5dfce] flex items-center justify-center text-orange-200/50 overflow-hidden relative">
+                                            {file.url ? (
+                                                <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-10 h-10 border-2 border-current rounded-md flex items-center justify-center opacity-70">
+                                                    <div className="w-6 h-6 border-b-2 border-current rounded-full"></div>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
@@ -642,6 +704,116 @@ export function UploadFileModal({
                             </Button>
                         </div>
                     </form>
+                </TabsContent>
+                <TabsContent value="library" className="space-y-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                            placeholder="Buscar por nombre de archivo..."
+                            value={librarySearch}
+                            onChange={(e) => {
+                                setLibrarySearch(e.target.value);
+                                setLibraryPage(1);
+                            }}
+                            className="pl-9 bg-white"
+                        />
+                    </div>
+
+                    <div className="min-h-[260px]">
+                        {isLoadingLibrary ? (
+                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-slate-400">
+                                <Loader2 className="w-6 h-6 animate-spin mb-2" />
+                                <span className="text-sm">Cargando biblioteca...</span>
+                            </div>
+                        ) : libraryFiles.length === 0 ? (
+                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
+                                <FileIcon className="w-8 h-8 mb-2 opacity-50" />
+                                <span className="text-sm">No se encontraron archivos</span>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                                {libraryFiles.map(file => (
+                                    <div
+                                        key={file.id}
+                                        onClick={() => setSelectedLibraryFile(file)}
+                                        className={cn(
+                                            "relative aspect-square border rounded-xl cursor-pointer overflow-hidden transition-all bg-slate-50 group",
+                                            selectedLibraryFile?.id === file.id
+                                                ? "border-sky-500 ring-2 ring-sky-500/20 bg-orange-50/50"
+                                                : "border-slate-200 hover:border-sky-300"
+                                        )}
+                                    >
+                                        {file.mimeType && file.mimeType.startsWith('image/') ? (
+                                            <img src={file.path || file.downloadUrl} alt={file.name} className="object-cover w-full h-full" />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                                                <FileIcon className="w-6 h-6 mb-1 opacity-50" />
+                                                <span className="text-[10px] uppercase truncate w-full text-center px-1">{file.mimeType ? file.mimeType.split('/')[1] : 'FILE'}</span>
+                                            </div>
+                                        )}
+                                        {selectedLibraryFile?.id === file.id && (
+                                            <div className="absolute top-1.5 right-1.5 bg-sky-500 rounded-full text-white shadow-sm z-10 w-4 h-4 flex items-center justify-center">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Pagination control */}
+                    {libraryTotalPages > 1 && (
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100/50 mt-4">
+                            <span className="text-xs text-slate-500 font-medium">
+                                Página {libraryPage} de {libraryTotalPages}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setLibraryPage(p => Math.max(1, p - 1))}
+                                    disabled={libraryPage === 1 || isLoadingLibrary}
+                                    className="h-8 px-2"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setLibraryPage(p => Math.min(libraryTotalPages, p + 1))}
+                                    disabled={libraryPage === libraryTotalPages || isLoadingLibrary}
+                                    className="h-8 px-2"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-end w-full gap-3 pt-6 border-t border-slate-100 mt-4">
+                        <Button
+                            variant="ghost"
+                            onClick={handleClose}
+                            className="font-bold text-slate-500 hover:text-slate-700 h-10"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="primary"
+                            className="bg-[#56a3e2] hover:bg-[#4a8ec5] text-white font-bold h-10 px-6 shadow-sm"
+                            onClick={() => {
+                                if (selectedLibraryFile) {
+                                    // To match what registerExternal/upload return, we pass selectedLibraryFile
+                                    onSuccess(selectedLibraryFile);
+                                    handleClose();
+                                }
+                            }}
+                            disabled={!selectedLibraryFile || isLoadingLibrary}
+                        >
+                            Seleccionar e Insertar
+                        </Button>
+                    </div>
                 </TabsContent>
             </Tabs>
         </Modal >

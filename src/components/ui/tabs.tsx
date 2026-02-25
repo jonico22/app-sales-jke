@@ -10,16 +10,24 @@ interface TabsContextType {
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
 
 // Main Tabs Component
-interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
-    defaultValue: string;
+interface TabsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue'> {
+    defaultValue?: string;
+    value?: string;
+    onValueChange?: (value: string) => void;
     children: React.ReactNode;
 }
 
-export function Tabs({ defaultValue, children, className, ...props }: TabsProps) {
-    const [activeTab, setActiveTab] = useState(defaultValue);
+export function Tabs({ defaultValue, value, onValueChange, children, className, ...props }: TabsProps) {
+    const [internalTab, setInternalTab] = useState(defaultValue || "");
+    const activeTab = value !== undefined ? value : internalTab;
+
+    const handleTabChange = (newValue: string) => {
+        if (value === undefined) setInternalTab(newValue);
+        if (onValueChange) onValueChange(newValue);
+    };
 
     return (
-        <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+        <TabsContext.Provider value={{ activeTab, setActiveTab: handleTabChange }}>
             <div className={cn("w-full", className)} {...props}>
                 {children}
             </div>
@@ -32,8 +40,8 @@ export function TabsList({ className, children, ...props }: React.HTMLAttributes
     return (
         <div
             className={cn(
-                "inline-flex h-10 items-center justify-center rounded-md bg-transparent p-1 text-slate-500",
-                "border-b border-slate-200 w-full justify-start rounded-none px-0",
+                "flex h-10 items-center justify-start rounded-md bg-transparent text-slate-500",
+                "border-b border-slate-200 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
                 className
             )}
             {...props}
@@ -59,7 +67,7 @@ export function TabsTrigger({ value, className, children, ...props }: TabsTrigge
             type="button"
             data-state={isActive ? "active" : "inactive"}
             className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap px-6 py-2.5 text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+                "inline-flex items-center justify-center whitespace-nowrap px-4 sm:px-6 py-2.5 text-sm font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
                 "border-b-2 border-transparent hover:text-slate-700",
                 isActive
                     ? "border-[#0ea5e9] text-[#0ea5e9] font-bold"
