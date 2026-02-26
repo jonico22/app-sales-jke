@@ -138,7 +138,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                   {/* Submenu */}
                   <div className={cn(
                     "overflow-hidden transition-all duration-300 ease-in-out",
-                    !isCollapsed && isExpanded ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                    !isCollapsed && isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   )}>
                     <div className="pl-11 pr-3 space-y-1 py-1">
                       {item.children?.map((child) => {
