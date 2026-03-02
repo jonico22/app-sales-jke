@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, Trash2, ShoppingBag, Loader2 } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
@@ -28,6 +29,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
     const [processingStatus, setProcessingStatus] = useState<OrderStatus | null>(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showNotes, setShowNotes] = useState(false);
 
     const handleProcessOrder = async (targetStatus: OrderStatus = OrderStatus.PENDING_PAYMENT) => {
         if (items.length === 0) return;
@@ -118,7 +120,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
             <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-sky-100 rounded-lg text-sky-600">
                             <ShoppingBag className="w-5 h-5" />
@@ -134,9 +136,9 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 min-h-[120px] custom-scrollbar">
                     {items.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 min-h-[150px]">
                             <ShoppingBag className="w-16 h-16 opacity-10" />
                             <p className="text-sm font-medium">El carrito está vacío</p>
                         </div>
@@ -154,7 +156,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                     </div>
                                     <button
                                         onClick={() => removeItem(item.product.id)}
-                                        className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -186,7 +188,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                             Precio Unit.
                                         </label>
                                         <div className="relative group/price">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-600/70">
+                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-sky-600/70">
                                                 {society?.mainCurrency?.symbol || 'S/'}
                                             </span>
                                             <input
@@ -195,7 +197,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                                 step="0.10"
                                                 value={item.product.price}
                                                 onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
-                                                className="w-28 pl-8 pr-3 py-1.5 text-right text-sm font-bold text-sky-700 bg-sky-50/50 border border-sky-100 rounded-lg focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/10 outline-none transition-all"
+                                                className="w-24 pl-7 pr-2 py-1 text-right text-xs font-bold text-sky-700 bg-sky-50/50 border border-sky-100 rounded-lg focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/10 outline-none transition-all"
                                             />
                                         </div>
                                     </div>
@@ -206,12 +208,12 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-6 bg-white border-t border-slate-100 space-y-6 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative">
+                <div className="p-4 sm:p-5 bg-white border-t border-slate-100 space-y-3 sm:space-y-4 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative shrink-0 max-h-[55vh] sm:max-h-none overflow-y-auto custom-scrollbar">
 
                     {/* Discount & Notes */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         <div>
-                            <label className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">
+                            <label className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 sm:mb-2">
                                 <span>Descuento Global</span>
                                 {discount > 0 && (
                                     <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
@@ -229,7 +231,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                     value={discount || ''}
                                     placeholder="Ej. 10.00"
                                     onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                    className={`w-full pl-10 pr-4 py-3 text-sm font-medium border rounded-xl outline-none transition-all ${discount > 0
+                                    className={`w-full pl-10 pr-4 py-2 sm:py-3 text-sm font-medium border rounded-xl outline-none transition-all ${discount > 0
                                         ? 'bg-orange-50/50 border-orange-200 text-orange-700 focus:border-orange-400 focus:ring-4 focus:ring-orange-500/10 placeholder:text-orange-300'
                                         : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10'
                                         }`}
@@ -243,65 +245,82 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                         </div>
 
                         <div>
-                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 block">
-                                Comentarios
-                            </label>
-                            <textarea
-                                value={orderNotes}
-                                onChange={(e) => setOrderNotes(e.target.value)}
-                                placeholder="Notas adicionales del pedido..."
-                                className="w-full p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none resize-none h-24 transition-all placeholder:text-slate-400"
-                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNotes(!showNotes)}
+                                className="flex items-center justify-between w-full text-left focus:outline-none mb-1.5 sm:mb-2 group"
+                            >
+                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider group-hover:text-slate-600 transition-colors">
+                                    Comentarios {orderNotes ? '(Añadidos)' : ''}
+                                </span>
+                                {showNotes ? (
+                                    <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                                ) : (
+                                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                                )}
+                            </button>
+                            {showNotes && (
+                                <div className="mt-2 animate-in slide-in-from-top-2 fade-in duration-200">
+                                    <textarea
+                                        value={orderNotes}
+                                        onChange={(e) => setOrderNotes(e.target.value)}
+                                        placeholder="Notas adicionales del pedido..."
+                                        className="w-full p-3 sm:p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none resize-none h-16 sm:h-24 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Totals */}
-                    <div className="space-y-3">
-                        <div className="flex justify-between text-sm text-slate-500">
+                    <div className="space-y-1.5 sm:space-y-2">
+                        <div className="flex justify-between text-xs sm:text-sm text-slate-500">
                             <span>Subtotal</span>
-                            <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toFixed(2)}</span>
+                            <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-slate-500">
+                        <div className="flex justify-between text-xs sm:text-sm text-slate-500">
                             <span>IGV (18%)</span>
-                            <span>{society?.mainCurrency?.symbol || 'S/'} {igv.toFixed(2)}</span>
+                            <span>{society?.mainCurrency?.symbol || 'S/'} {igv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                         {discount > 0 && (
-                            <div className="flex justify-between text-sm text-orange-600 font-bold bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
+                            <div className="flex justify-between text-xs sm:text-sm text-orange-600 font-bold bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
                                 <span>Descuento</span>
-                                <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toFixed(2)}</span>
+                                <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-end pt-4 border-t border-slate-100">
-                            <span className="text-base font-bold text-slate-800">TOTAL A PAGAR</span>
-                            <span className="text-3xl font-black text-slate-800 tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toFixed(2)}</span>
+                        <div className="flex justify-between items-end pt-3 sm:pt-4 border-t border-slate-100">
+                            <span className="text-sm font-bold text-slate-800">TOTAL A PAGAR</span>
+                            <span className="text-2xl font-black text-slate-800 tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="grid gap-3 pt-2">
+                    <div className="grid gap-2 sm:gap-3 pt-1">
 
-                        <button
+                        <Button
                             onClick={() => handleProcessOrder(OrderStatus.PENDING_PAYMENT)}
                             disabled={items.length === 0 || processingStatus !== null}
-                            className="w-full py-3.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-xl shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            variant="primary"
+                            className="w-full py-2.5 sm:py-3 shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 text-sm sm:text-base h-auto"
                         >
                             {processingStatus === OrderStatus.PENDING_PAYMENT ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                             ) : (
-                                <ShoppingBag className="w-5 h-5" />
+                                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                             {processingStatus === OrderStatus.PENDING_PAYMENT ? 'Procesando...' : 'Registar Venta'}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => handleProcessOrder(OrderStatus.PENDING)}
                             disabled={items.length === 0 || processingStatus !== null}
-                            className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-colors active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            variant="outline"
+                            className="w-full py-2 sm:py-2.5 flex items-center justify-center gap-2 text-sm h-auto bg-white hover:bg-slate-50 border-slate-200"
                         >
                             {processingStatus === OrderStatus.PENDING ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                             ) : null}
                             {processingStatus === OrderStatus.PENDING ? 'Guardando...' : 'Registar Pedido'}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

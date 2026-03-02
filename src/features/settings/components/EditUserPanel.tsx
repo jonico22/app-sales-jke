@@ -224,8 +224,10 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
                     <Button
                         type="submit"
                         form="edit-user-form"
+                        variant="primary"
+                        size="md"
                         disabled={isSaving || isLoadingRoles}
-                        className="w-full bg-[#56a3e2] hover:bg-[#4a8ec5] text-white py-2.5 h-auto text-sm font-medium"
+                        className="w-full font-medium"
                     >
                         {isSaving ? (
                             <>
@@ -239,9 +241,10 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
                     <Button
                         type="button"
                         variant="outline"
+                        size="md"
                         onClick={onClose}
                         disabled={isSaving}
-                        className="w-full bg-white border-slate-200 text-slate-700 py-2.5 h-auto text-sm font-medium hover:bg-slate-50 hover:text-slate-800"
+                        className="w-full font-medium"
                     >
                         Cancelar
                     </Button>

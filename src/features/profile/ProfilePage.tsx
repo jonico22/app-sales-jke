@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,6 +16,7 @@ import { Button, Input, Label, Card } from '@/components/ui';
 import { authService } from '@/services/auth.service';
 import { userService } from '@/services/user.service';
 import { useAuthStore } from '@/store/auth.store';
+import { AvatarSelectionModal } from './components/AvatarSelectionModal';
 
 const profileSchema = z.object({
     firstName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
@@ -31,7 +32,7 @@ export default function ProfilePage() {
     const user = useAuthStore((state) => state.user);
     const role = useAuthStore((state) => state.role);
     const updateUser = useAuthStore((state) => state.updateUser);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.image || null);
 
     const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<ProfileSchema>({
@@ -97,18 +98,18 @@ export default function ProfilePage() {
     };
 
     const handleAvatarClick = () => {
-        fileInputRef.current?.click();
+        setIsAvatarModalOpen(true);
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleAvatarConfirm = (url: string, updatedUser: any) => {
+        setAvatarPreview(url);
+
+        // Update global user store with the merged data
+        const mergedUser = {
+            ...user,
+            ...updatedUser,
+        };
+        updateUser(mergedUser);
     };
 
 
@@ -143,13 +144,6 @@ export default function ProfilePage() {
                                 <div className="absolute bottom-2 right-2 bg-sky-500 p-2.5 rounded-full border-4 border-white text-white shadow-lg group-hover:bg-sky-600 transition-colors">
                                     <Camera className="h-5 w-5" />
                                 </div>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                />
                             </div>
                             <button
                                 type="button"
@@ -257,10 +251,11 @@ export default function ProfilePage() {
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-6 rounded-xl font-bold h-auto shadow-sm transition-all hover:shadow-md active:scale-95 disabled:opacity-50"
+                                    size="lg"
                                     disabled={isSubmitting || (!isDirty && avatarPreview === user?.image)}
+                                    className="flex items-center gap-2"
                                 >
-                                    <Save className="w-5 h-5 mr-3" />
+                                    <Save className="w-5 h-5 mr-1" />
                                     {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
                                 </Button>
                             </div>
@@ -318,6 +313,13 @@ export default function ProfilePage() {
                     </div>
                 </Card>
             </div>
+
+            <AvatarSelectionModal
+                isOpen={isAvatarModalOpen}
+                onClose={() => setIsAvatarModalOpen(false)}
+                onConfirm={handleAvatarConfirm}
+                initialName={user?.person?.firstName || user?.name || ''}
+            />
         </div>
     );
 }

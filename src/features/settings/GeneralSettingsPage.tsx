@@ -235,7 +235,9 @@ export default function GeneralSettingsPage() {
                     </div>
                     <Button
                         type="submit"
-                        className="bg-[#56a3e2] hover:bg-[#4a8ec5] text-white px-8 py-6 rounded-xl font-bold h-auto shadow-md"
+                        variant="primary"
+                        size="md"
+                        className="px-8 shadow-md"
                         disabled={isSaving}
                     >
                         <Save className="w-4 h-4 mr-2" />
