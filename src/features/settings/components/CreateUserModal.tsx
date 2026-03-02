@@ -200,16 +200,18 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                     <Button
                         type="button"
                         variant="outline"
+                        size="md"
                         onClick={onClose}
                         disabled={isSaving}
-                        className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-800"
                     >
                         Cancelar
                     </Button>
                     <Button
                         type="submit"
+                        variant="primary"
+                        size="md"
                         disabled={isSaving || isLoadingRoles}
-                        className="bg-[#56a3e2] hover:bg-[#4a8ec5] text-white px-5 shadow-sm"
+                        className="shadow-sm flex items-center"
                     >
                         {isSaving ? (
                             <>

@@ -3,19 +3,25 @@
 
 @theme {
   /* JKE Solutions Brand Colors - Innovation Cyan & Core Dark */
-  --color-primary: #00bfff;
-  --color-primary-hover: #0099cc;
+  --color-primary: #0ea5e9; /* Sky 500 */
+  --color-primary-hover: #0284c7; /* Sky 600 */
   --color-primary-foreground: #ffffff;
 
-  --color-secondary: #334155;
-  --color-secondary-foreground: #ffffff;
+  --color-secondary: #ffffff;
+  --color-secondary-hover: #f8fafc; /* Slate 50 */
+  --color-secondary-foreground: #475569; /* Slate 600 */
+  --color-secondary-border: #e2e8f0; /* Slate 200 */
 
-  --color-background: #ffffff;
+  --color-danger: #ef4444; /* Red 500 */
+  --color-danger-hover: #dc2626; /* Red 600 */
+  --color-danger-foreground: #ffffff;
+
+  --color-background: #f8fafc;
   --color-foreground: #334155;
 
-  --color-muted: #e2e8f0;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
   --color-accent: #e0f7ff;
-  --color-destructive: #ef4444;
   --color-success: #22c55e;
 
   /* JKE Solutions Typography */

@@ -166,7 +166,8 @@ export default function SecurityPage() {
                             <Button
                                 type="submit"
                                 variant="primary"
-                                className="bg-[#56a3e2] hover:bg-[#4a8ec5] text-white px-8 py-6 rounded-xl font-bold h-auto shadow-sm"
+                                size="lg"
+                                className="font-bold flex items-center shadow-sm"
                                 disabled={isSubmitting}
                             >
                                 <Save className="w-4 h-4 mr-2" />

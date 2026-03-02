@@ -118,7 +118,9 @@ export default function UsersAndAccessPage() {
                 </div>
                 <Button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-[#56a3e2] hover:bg-[#4a8ec5] text-white px-6 py-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2"
+                    variant="primary"
+                    size="md"
+                    className="flex items-center gap-2"
                 >
                     <Plus className="w-4 h-4" />
                     Nuevo Usuario
