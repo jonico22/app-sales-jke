@@ -8,9 +8,10 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl';
+    hideHeader?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Initial focus and Escape key handling
@@ -55,17 +56,19 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
                 aria-modal="true"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800">
-                        {title}
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
+                {!hideHeader && (
+                    <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                        <h3 className="text-lg font-bold text-slate-800">
+                            {title}
+                        </h3>
+                        <button
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+                )}
 
                 {/* Body */}
                 <div className="p-6">

@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function ProtectedRoute() {
-    const { isAuthenticated, user } = useAuthStore();
+    const { isAuthenticated, user, subscription } = useAuthStore();
     const location = useLocation();
 
     if (!isAuthenticated) {
@@ -16,6 +16,19 @@ export default function ProtectedRoute() {
 
     if (user?.mustChangePassword && location.pathname !== '/security') {
         return <Navigate to="/security" replace />;
+    }
+
+    // --- Subscription Enforcement Logic ---
+    const status = subscription?.status;
+
+    // If pending first payment -> go to onboarding payment page
+    if (status === 'PENDING' && location.pathname !== '/onboarding/payment') {
+        return <Navigate to="/onboarding/payment" replace />;
+    }
+
+    // If expired or inactive -> force to billing page to renew/reactivate
+    if ((status === 'EXPIRED' || status === 'INACTIVE') && location.pathname !== '/settings/billing') {
+        return <Navigate to="/settings/billing" replace />;
     }
 
     return <Outlet />;
