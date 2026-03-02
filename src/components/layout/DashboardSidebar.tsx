@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, MapPin, ChevronDown, ChevronRight, CloudDownload, Building2 } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, ChevronDown, ChevronRight, Building2, CreditCard } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -7,28 +7,39 @@ import { useState } from 'react';
 // Define navigation items
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutGrid },
-  { name: 'Categorías', href: '/categories', icon: Tags },
-  { name: 'Inventario', href: '/inventory', icon: ClipboardList },
-  { name: 'Puntos de Venta', href: '/pos', icon: MapPin },
+  {
+    name: 'Inventario', icon: ClipboardList,
+    children: [
+      { name: 'Inventario', href: '/inventory' },
+      { name: 'Categorías', href: '/categories', icon: Tags },
+      { name: 'Manejador de Archivos', href: '/settings/files' },
+    ]
+  },
   {
     name: 'Pedidos',
     icon: ShoppingCart,
     children: [
+      { name: 'Puntos de Venta', href: '/pos' },
       { name: 'Pedidos Pendientes', href: '/orders/pending' },
-      { name: 'Histórico de Ventas', href: '/orders/history' }
     ]
   },
   { name: 'Clientes', href: '/clients', icon: Users },
-  { name: 'Reportes', href: '/reports', icon: FileText },
+  {
+    name: 'Reportes', icon: FileText,
+    children: [
+      { name: 'Histórico de Ventas', href: '/orders/history' },
+      { name: 'Historial de Reportes', href: '/downloads' }
+    ]
+  },
   {
     name: 'Configuración',
     icon: Settings,
     children: [
       { name: 'Mi Perfil', href: '/profile' },
+      { name: 'Usuarios y Accesos', href: '/settings/users', icon: Users },
       { name: 'Seguridad y Acceso', href: '/security' },
       { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
-      { name: 'Manejador de Archivos', href: '/settings/files', icon: Package },
-      { name: 'Descargas', href: '/downloads', icon: CloudDownload }
+      { name: 'Suscripción y Facturación', href: '/settings/billing', icon: CreditCard },
     ]
   },
 ];
@@ -46,7 +57,19 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos', 'Configuración']); // Default expand Pedidos and Configuración for now
+  const subscription = useAuthStore((state) => state.subscription);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos and Configuración for now
+
+  const isBlocked = subscription?.status === 'EXPIRED' || subscription?.status === 'INACTIVE';
+
+  const displayNavItems = isBlocked
+    ? navItems
+      .filter((item) => item.name === 'Configuración')
+      .map((item) => ({
+        ...item,
+        children: item.children?.filter((child) => child.name === 'Suscripción y Facturación'),
+      }))
+    : navItems;
 
   const toggleMenu = (name: string) => {
     if (isCollapsed) return;
@@ -100,7 +123,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
 
         {/* Navigation Links */}
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
-          {navItems.map((item) => {
+          {displayNavItems.map((item) => {
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedMenus.includes(item.name);
             const isActive = pathname === item.href || (hasChildren && item.children?.some(child => pathname === child.href));

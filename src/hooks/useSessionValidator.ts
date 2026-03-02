@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 
 export function useSessionValidator() {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { isAuthenticated, logout, token } = useAuthStore();
+  const { isAuthenticated, logout, token, setSubscription } = useAuthStore();
   const navigate = useNavigate();
 
   const handleRedirect = useCallback(() => {
@@ -22,7 +22,10 @@ export function useSessionValidator() {
 
     const checkSession = async () => {
       try {
-        await authService.getMe();
+        const response = await authService.getMe();
+        if (response.data?.subscription) {
+          setSubscription(response.data.subscription);
+        }
       } catch (error) {
         const err = error as AxiosError;
         // If 401 Unauthorized, session is definitely expired/invalid

@@ -36,6 +36,9 @@ const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const GeneralSettingsPage = lazy(() => import('./features/settings/GeneralSettingsPage'));
 const DownloadsPage = lazy(() => import('./features/settings/DownloadsPage'));
 const FileManagerPage = lazy(() => import('./features/settings/FileManagerPage'));
+const UsersAndAccessPage = lazy(() => import('./features/settings/UsersAndAccessPage'));
+const BillingPage = lazy(() => import('./features/settings/BillingPage'));
+const PendingPaymentPage = lazy(() => import('./features/onboarding/PendingPaymentPage'));
 
 // Simple loading fallback shown while a lazy chunk is being fetched
 const PageLoader = () => (
@@ -129,6 +132,14 @@ const router = createBrowserRouter([
             path: 'settings/files',
             element: <Suspense fallback={<PageLoader />}><FileManagerPage /></Suspense>
           },
+          {
+            path: 'settings/users',
+            element: <Suspense fallback={<PageLoader />}><UsersAndAccessPage /></Suspense>
+          },
+          {
+            path: 'settings/billing',
+            element: <Suspense fallback={<PageLoader />}><BillingPage /></Suspense>
+          },
         ]
       },
       {
@@ -144,6 +155,10 @@ const router = createBrowserRouter([
             element: <Suspense fallback={<PageLoader />}><AdvancedSearchPage /></Suspense>
           }
         ]
+      },
+      {
+        path: 'onboarding/payment',
+        element: <Suspense fallback={<PageLoader />}><PendingPaymentPage /></Suspense>
       }
     ]
   },

@@ -66,6 +66,7 @@ export interface LoginData {
   newExpiresAt: string;
   role: Role;
   session: Session;
+  subscription?: SubscriptionInfo;
 }
 
 export interface LoginResponse {
@@ -118,6 +119,12 @@ export interface UpdateProfileResponse {
   data: User;
 }
 
+export interface SubscriptionInfo {
+  status: 'ACTIVE' | 'INACTIVE' | string;
+  planId: string;
+  endDate: string;
+}
+
 export interface MeResponse {
   success: boolean;
   message: string;
@@ -126,6 +133,7 @@ export interface MeResponse {
     role: Role;
     token: string;
     expiresAt: string;
+    subscription?: SubscriptionInfo;
   };
 }
 

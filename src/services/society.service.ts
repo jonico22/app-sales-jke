@@ -48,6 +48,11 @@ export interface Society {
     legalEntity: LegalEntity | null;
     subscriptionId: string;
     storageLimit: string;
+    maxUsers?: number;
+    maxProducts?: number;
+    usedStorage?: number;
+    totalProducts?: number;
+    totalUsers?: number;
 }
 
 export interface UpdateSocietyRequest {
