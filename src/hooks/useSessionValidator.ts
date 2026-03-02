@@ -11,6 +11,7 @@ export function useSessionValidator() {
   const navigate = useNavigate();
 
   const handleRedirect = useCallback(() => {
+    localStorage.setItem('redirectUrl', window.location.pathname + window.location.search);
     logout();
     navigate('/auth/login');
     setIsSessionExpired(false);

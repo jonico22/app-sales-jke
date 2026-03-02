@@ -183,13 +183,15 @@ function App() {
 
   const handleOnIdle = () => {
     if (isAuthenticated) {
+      // Save current URL to redirect back after login
+      localStorage.setItem('redirectUrl', window.location.pathname + window.location.search);
       logout();
       setIsSessionExpired(true);
     }
   };
 
   useIdleTimer({
-    timeout: 1000 * 60 * 20, // 20 minutes
+    timeout: 1000 * 60 * 60, // 60 minutes
     onIdle: handleOnIdle,
     debounce: 500,
   });
