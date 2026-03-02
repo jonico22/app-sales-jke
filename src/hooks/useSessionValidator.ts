@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 
 export function useSessionValidator() {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { isAuthenticated, logout, token, setSubscription } = useAuthStore();
+  const { isAuthenticated, logout, token, setSubscription, updateUser } = useAuthStore();
   const navigate = useNavigate();
 
   const handleRedirect = useCallback(() => {
@@ -24,8 +24,13 @@ export function useSessionValidator() {
     const checkSession = async () => {
       try {
         const response = await authService.getMe();
-        if (response.data?.subscription) {
-          setSubscription(response.data.subscription);
+        if (response.data) {
+          if (response.data.subscription) {
+            setSubscription(response.data.subscription);
+          }
+          if (response.data.user) {
+            updateUser(response.data.user);
+          }
         }
       } catch (error) {
         const err = error as AxiosError;
