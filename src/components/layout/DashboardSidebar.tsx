@@ -10,13 +10,13 @@ const navItems = [
   {
     name: 'Inventario', icon: ClipboardList,
     children: [
-      { name: 'Inventario', href: '/inventory' },
+      { name: 'Productos', href: '/inventory' },
       { name: 'Categorías', href: '/categories', icon: Tags },
       { name: 'Manejador de Archivos', href: '/settings/files' },
     ]
   },
   {
-    name: 'Pedidos',
+    name: 'Ventas',
     icon: ShoppingCart,
     children: [
       { name: 'Puntos de Venta', href: '/pos' },
@@ -24,6 +24,7 @@ const navItems = [
     ]
   },
   { name: 'Clientes', href: '/clients', icon: Users },
+  { name: 'Usuarios', href: '/settings/users', icon: Users },
   {
     name: 'Reportes', icon: FileText,
     children: [
@@ -36,7 +37,6 @@ const navItems = [
     icon: Settings,
     children: [
       { name: 'Mi Perfil', href: '/profile' },
-      { name: 'Usuarios y Accesos', href: '/settings/users', icon: Users },
       { name: 'Seguridad y Acceso', href: '/security' },
       { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
       { name: 'Suscripción y Facturación', href: '/settings/billing', icon: CreditCard },

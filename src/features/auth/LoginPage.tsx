@@ -61,10 +61,17 @@ export default function LoginPage() {
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
 
       // Navigation Logic
+      const savedUrl = localStorage.getItem('redirectUrl');
+
       if (response.data.user.mustChangePassword) {
         navigate('/security');
       } else {
-        navigate('/');
+        if (savedUrl) {
+          localStorage.removeItem('redirectUrl');
+          navigate(savedUrl);
+        } else {
+          navigate('/');
+        }
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

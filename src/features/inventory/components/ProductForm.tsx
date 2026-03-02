@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,8 @@ import { productService } from '@/services/product.service';
 import { categoryService, type CategorySelectOption } from '@/services/category.service';
 import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
+import { UploadFileModal } from '@/components/shared/UploadFileModal';
+import { FileCategory } from '@/services/file.service';
 
 const productSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -46,10 +48,11 @@ type ProductFormValues = z.output<typeof productSchema>;
 export default function ProductForm() {
   const society = useSocietyStore(state => state.society); // Add hook
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [imageId, setImageId] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [categories, setCategories] = useState<CategorySelectOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch categories on mount
   const fetchCategories = async () => {
@@ -107,6 +110,7 @@ export default function ProductForm() {
         categoryId: data.categoryId,
         isActive: data.isActive,
         code: data.sku,
+        imageId: imageId || undefined,
         // New fields mapping
         barcode: data.barcode || undefined,
         brand: data.brand || undefined,
@@ -116,6 +120,7 @@ export default function ProductForm() {
       toast.success('Producto guardado exitosamente');
       reset();
       setPreviewImage(null);
+      setImageId(null);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error saving product:', error);
@@ -128,14 +133,10 @@ export default function ProductForm() {
     setValue('sku', sku, { shouldValidate: true });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageUploadSuccess = (data: any) => {
+    if (data) {
+      if (data.id) setImageId(data.id);
+      if (data.path || data.downloadUrl) setPreviewImage(data.downloadUrl || data.path);
     }
   };
 
@@ -334,7 +335,7 @@ export default function ProductForm() {
               <Label className="text-sm font-bold text-slate-700">IMAGEN (OPCIONAL)</Label>
               <div
                 className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 p-6 flex items-center justify-center gap-6 hover:bg-slate-50 transition-colors cursor-pointer group"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setIsImageModalOpen(true)}
               >
                 <div className="h-20 w-20 bg-white border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                   {previewImage ? (
@@ -347,15 +348,8 @@ export default function ProductForm() {
                   <span className="text-base font-bold text-[#0ea5e9] group-hover:underline cursor-pointer">
                     Subir imagen
                   </span>
-                  <p className="text-sm text-slate-400 mt-1">PNG, JPG hasta 5MB</p>
+                  <p className="text-sm text-slate-400 mt-1">PNG, JPG, WEBP hasta 5MB</p>
                 </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
               </div>
             </div>
 
@@ -473,6 +467,17 @@ export default function ProductForm() {
         onOpenChange={setIsCategoryModalOpen}
         category={null} // null indicates creation mode
         onSave={handleCategorySaved}
+      />
+
+      <UploadFileModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onSuccess={handleImageUploadSuccess}
+        title="Subir Imagen de Producto"
+        accept="image/jpeg,image/png,image/webp"
+        category={FileCategory.GENERAL}
+        cropShape="square"
+        showLibraryTab={true}
       />
     </div>
   );

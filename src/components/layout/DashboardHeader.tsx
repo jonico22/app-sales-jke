@@ -43,12 +43,32 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
   const getPageTitle = (path: string) => {
     if (path === '/' || path === '/dashboard') return 'DASHBOARD';
+
+    // Inventario
+    if (path.startsWith('/inventory')) return 'PRODUCTOS';
     if (path.startsWith('/categories')) return 'GESTIÓN DE CATEGORÍAS';
-    if (path.startsWith('/inventory')) return 'INVENTARIO';
-    if (path.startsWith('/clients')) return 'CLIENTES';
+
+    // Ventas
+    if (path.startsWith('/pos')) return 'PUNTO DE VENTA';
+    if (path.startsWith('/orders/pending')) return 'PEDIDOS PENDIENTES';
+    if (path.startsWith('/orders/history')) return 'HISTÓRICO DE VENTAS';
     if (path.startsWith('/sales')) return 'VENTAS';
+
+    // Clientes & Usuarios
+    if (path.startsWith('/clients')) return 'CLIENTES';
+
+    // Reportes
+    if (path.startsWith('/downloads')) return 'HISTORIAL DE REPORTES';
     if (path.startsWith('/reports')) return 'REPORTES';
-    if (path.startsWith('/settings')) return 'CONFIGURACIÓN';
+
+    // Configuración (order matters: more specific first)
+    if (path.startsWith('/settings/users')) return 'USUARIOS';
+    if (path.startsWith('/settings/files')) return 'MANEJADOR DE ARCHIVOS';
+    if (path.startsWith('/settings/billing')) return 'SUSCRIPCIÓN Y FACTURACIÓN';
+    if (path.startsWith('/settings')) return 'PERFIL DEL NEGOCIO';
+    if (path.startsWith('/profile')) return 'MI PERFIL';
+    if (path.startsWith('/security')) return 'SEGURIDAD Y ACCESO';
+
     return 'JKE SOLUTIONS';
   };
 
