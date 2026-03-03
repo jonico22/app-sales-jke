@@ -196,23 +196,23 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Listado de Categorías</h2>
-          <p className="text-sm text-slate-500 mt-1">Gestione su inventario organizando productos por categorías.</p>
+          <h2 className="text-lg font-bold text-foreground tracking-tight uppercase">Listado de Categorías</h2>
+          <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Gestione su inventario organizando productos por categorías.</p>
         </div>
         <Link to="/categories/new">
-          <Button className="flex items-center gap-2 shadow-lg shadow-sky-500/20">
-            <Plus className="h-4 w-4" /> Nueva Categoría
+          <Button className="h-9 px-4 flex items-center gap-2 shadow-lg shadow-primary/20 text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95">
+            <Plus className="h-3.5 w-3.5" /> Nueva Categoría
           </Button>
         </Link>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre o código..."
-            className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-primary"
+            className="pl-9 bg-background border-input focus-visible:ring-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -221,7 +221,7 @@ export default function CategoriesPage() {
         <div className="flex w-full sm:w-auto gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex-1 sm:flex-none justify-between text-secondary border-slate-200 font-normal hover:bg-accent/10 min-w-[160px]">
+              <Button variant="outline" className="flex-1 sm:flex-none justify-between text-secondary border-border font-normal hover:bg-accent/10 hover:text-foreground min-w-[160px]">
                 {getStatusLabel()}
                 <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
               </Button>
@@ -241,7 +241,7 @@ export default function CategoriesPage() {
 
           <Button
             variant="outline"
-            className="flex-1 sm:flex-none text-secondary border-slate-200 font-normal gap-2 hover:bg-accent/10"
+            className="flex-1 sm:flex-none text-secondary border-border font-normal gap-2 hover:bg-accent/10 hover:text-foreground"
             onClick={() => setIsFilterPanelOpen(true)}
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -251,16 +251,16 @@ export default function CategoriesPage() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-700">
-            <TableRow className="hover:bg-slate-700/90 border-slate-600">
-              <TableHead className="w-[180px] font-bold text-xs uppercase tracking-wider text-slate-100">Código</TableHead>
-              <TableHead className="w-[350px] font-bold text-xs uppercase tracking-wider text-slate-100">Nombre de la Categoría</TableHead>
-              <TableHead className="font-bold text-xs uppercase tracking-wider text-slate-100">Descripción</TableHead>
-              <TableHead className="w-[140px] font-bold text-xs uppercase tracking-wider text-slate-100">Fecha Creación</TableHead>
-              <TableHead className="w-[100px] font-bold text-xs uppercase tracking-wider text-slate-100">Estado</TableHead>
-              <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-slate-100">Acciones</TableHead>
+          <TableHeader className="bg-muted/30 border-b border-border">
+            <TableRow className="hover:bg-muted/40 border-none h-10">
+              <TableHead className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
+              <TableHead className="w-[300px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Nombre de la Categoría</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Descripción</TableHead>
+              <TableHead className="w-[130px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Fecha Creación</TableHead>
+              <TableHead className="w-[90px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Estado</TableHead>
+              <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -275,15 +275,15 @@ export default function CategoriesPage() {
               </TableRow>
             ) : filteredCategories.length > 0 ? (
               filteredCategories.map((category) => (
-                <TableRow key={category.id} className="hover:bg-accent/10 border-slate-100 transition-colors">
-                  <TableCell className="font-semibold text-secondary">{category.code}</TableCell>
-                  <TableCell className="font-bold text-secondary">{category.name}</TableCell>
-                  <TableCell className="text-slate-500 max-w-[300px] truncate">{category.description || '-'}</TableCell>
-                  <TableCell className="text-slate-600 text-sm">
+                <TableRow key={category.id} className="hover:bg-muted/30 border-border transition-colors h-11">
+                  <TableCell className="font-bold text-foreground text-[11px]">{category.code}</TableCell>
+                  <TableCell className="font-bold text-foreground text-xs">{category.name}</TableCell>
+                  <TableCell className="text-muted-foreground/80 text-[11px] max-w-[300px] truncate">{category.description || '-'}</TableCell>
+                  <TableCell className="text-muted-foreground/80 text-[11px]">
                     {category.createdAt}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[10px] tracking-wide px-2.5 py-1">
+                    <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] tracking-wide px-2 py-0.5 border border-current/20">
                       {category.isActive ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </TableCell>
@@ -292,7 +292,7 @@ export default function CategoriesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-primary hover:bg-accent/20"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
                         onClick={() => handleEditClick(category)}
                       >
                         <Pencil className="h-4 w-4" />
@@ -300,7 +300,7 @@ export default function CategoriesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDeleteCategory(category.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -313,13 +313,13 @@ export default function CategoriesPage() {
               <TableRow>
                 <TableCell colSpan={6} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
-                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
-                      <Search className="h-8 w-8 text-slate-300" />
+                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4 border border-border">
+                      <Search className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                    <h3 className="text-lg font-semibold text-foreground mb-1">
                       No se encontraron categorías
                     </h3>
-                    <p className="text-slate-500 max-w-sm mb-6">
+                    <p className="text-muted-foreground max-w-sm mb-6">
                       No hay categorías que coincidan con tu búsqueda o los filtros seleccionados.
                     </p>
                     <Button
@@ -335,7 +335,7 @@ export default function CategoriesPage() {
                           updatedAtTo: null,
                         });
                       }}
-                      className="border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30"
+                      className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
                       Limpiar filtros
                     </Button>
@@ -347,27 +347,27 @@ export default function CategoriesPage() {
         </Table>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-slate-100">
-          <div className="text-sm text-slate-500">
-            Mostrando <span className="font-semibold text-secondary">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-secondary">{totalCategories}</span> categorías
+        <div className="flex items-center justify-between p-4 border-t border-border bg-card">
+          <div className="text-sm text-muted-foreground">
+            Mostrando <span className="font-semibold text-foreground">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-foreground">{totalCategories}</span> categorías
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 disabled:opacity-50 text-slate-500 border-slate-200"
+              className="h-8 w-8 p-0 disabled:opacity-50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
               disabled={!hasPrevPage || isLoading}
               onClick={handlePrevPage}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="text-sm text-slate-600 min-w-[80px] text-center">
+            <div className="text-sm text-muted-foreground min-w-[80px] text-center">
               Página {currentPage} de {totalPages}
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 text-slate-500 border-slate-200 hover:bg-accent/10 hover:text-secondary disabled:opacity-50"
+              className="h-8 w-8 p-0 text-muted-foreground border-border hover:bg-muted hover:text-foreground disabled:opacity-50"
               disabled={!hasNextPage || isLoading}
               onClick={handleNextPage}
             >

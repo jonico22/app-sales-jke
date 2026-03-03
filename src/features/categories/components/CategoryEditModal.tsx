@@ -110,106 +110,108 @@ export function CategoryEditModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
-        <div className="p-6 pb-0">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-card border-border shadow-2xl">
+        <div className="p-5 pb-0">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-800">
+            <DialogTitle className="text-lg font-bold text-foreground uppercase tracking-tight">
               {category ? 'Editar Categoría' : 'Nueva Categoría'}
             </DialogTitle>
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="p-6 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="p-5 space-y-5">
             {/* Code Field */}
-            <div className="space-y-2">
-              <Label htmlFor="code" className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                Código <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <Label htmlFor="code" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
+                Código <span className="text-destructive">*</span>
               </Label>
               <div className="flex gap-2">
                 <Input
                   id="code"
                   {...register('code')}
-                  className="flex-1 font-mono text-slate-700 bg-white"
+                  className="flex-1 font-mono text-xs bg-muted/20 border-border text-foreground h-9 focus-visible:ring-primary/20"
                   placeholder="CAT - 000"
                 />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="shrink-0 w-9 px-0 bg-sky-50 border-sky-100 text-sky-500 hover:bg-sky-100 hover:text-sky-600"
+                  className="shrink-0 w-9 h-9 px-0 bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 hover:text-primary transition-colors"
                   onClick={handleGenerateCode}
                   title="Generar código aleatorio"
                 >
                   <RotateCw className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] text-muted-foreground/60 leading-tight">
                 El código se genera automáticamente o puede ser personalizado.
               </p>
               {errors.code && (
-                <p className="text-xs text-red-500">{errors.code.message}</p>
+                <p className="text-[10px] text-destructive mt-1 font-medium">{errors.code.message}</p>
               )}
             </div>
 
             {/* Name Field */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                Nombre de la Categoría <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
+                Nombre de la Categoría <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
                 {...register('name')}
-                className="bg-white text-slate-800"
+                className="bg-muted/20 border-border text-foreground text-xs h-9 focus-visible:ring-primary/20"
                 placeholder="Ej. Electrónica"
               />
               {errors.name && (
-                <p className="text-xs text-red-500">{errors.name.message}</p>
+                <p className="text-[10px] text-destructive mt-1 font-medium">{errors.name.message}</p>
               )}
             </div>
 
             {/* Description Field */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
                 Descripción (Opcional)
               </Label>
               <Textarea
                 id="description"
                 {...register('description')}
-                className="resize-none min-h-[100px] bg-white text-slate-600"
+                className="resize-none min-h-[80px] bg-muted/20 border-border text-foreground text-xs p-3 focus-visible:ring-primary/20"
                 placeholder="Breve descripción de la categoría..."
               />
             </div>
 
             {/* Status Field */}
-            <div className="space-y-3">
-              <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="space-y-2 pt-1">
+              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
                 Estado
               </Label>
               <div className="flex items-center gap-3">
                 <Switch
                   checked={isActive}
-                  onChange={(e) => setValue('active', e.target.checked)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('active', e.target.checked)}
                 />
-                <span className="text-sm font-medium text-slate-700">
+                <span className="text-xs font-semibold text-foreground">
                   {isActive ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="p-6 bg-slate-50 border-t border-slate-100 mt-0">
+          <DialogFooter className="p-4 bg-muted/20 border-t border-border mt-0 gap-2 sm:gap-0">
             <Button
               type="button"
               variant="ghost"
+              size="sm"
               onClick={() => onOpenChange(false)}
-              className="text-slate-500 hover:text-slate-700 font-medium"
+              className="text-muted-foreground hover:text-foreground font-bold text-[10px] uppercase tracking-wider h-9"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="bg-primary hover:bg-primary-hover text-white shadow-lg shadow-sky-500/20 px-8"
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 px-6 h-9 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Guardando...' : (category ? 'Guardar Cambios' : 'Crear Categoría')}

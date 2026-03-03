@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       <SessionExpiredModal
         isOpen={isSessionExpired}
         onLogin={handleRedirect}

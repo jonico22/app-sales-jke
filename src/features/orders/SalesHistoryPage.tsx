@@ -296,15 +296,15 @@ export default function SalesHistoryPage() {
 
     const getStatusBadge = (status: string) => {
         const styles = {
-            [OrderStatus.COMPLETED]: { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Completado' },
-            [OrderStatus.CANCELLED]: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500', label: 'Anulado' },
-            [OrderStatus.PENDING]: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Pendiente' },
-            [OrderStatus.PENDING_PAYMENT]: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Pedido Pendiente' },
+            [OrderStatus.COMPLETED]: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', dot: 'bg-emerald-500', label: 'Completado' },
+            [OrderStatus.CANCELLED]: { bg: 'bg-red-500/10', text: 'text-red-500', dot: 'bg-red-500', label: 'Anulado' },
+            [OrderStatus.PENDING]: { bg: 'bg-amber-500/10', text: 'text-amber-500', dot: 'bg-amber-500', label: 'Pendiente' },
+            [OrderStatus.PENDING_PAYMENT]: { bg: 'bg-orange-500/10', text: 'text-orange-500', dot: 'bg-orange-500', label: 'Pedido Pendiente' },
         };
-        const config = styles[status as keyof typeof styles] || { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500', label: status };
+        const config = styles[status as keyof typeof styles] || { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground', label: status };
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
                 {config.label}
             </span>
@@ -312,22 +312,22 @@ export default function SalesHistoryPage() {
     };
 
     const getPaymentBadge = (payment?: OrderPayment) => {
-        if (!payment) return <span className="text-gray-400 text-xs">-</span>;
+        if (!payment) return <span className="text-muted-foreground/50 text-xs italic">-</span>;
 
         const styles = {
-            'CASH': { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: Banknote, label: 'Efectivo' },
-            'CARD': { bg: 'bg-blue-100', text: 'text-blue-700', icon: CreditCard, label: 'Tarjeta' },
-            'YAPE': { bg: 'bg-purple-100', text: 'text-purple-700', icon: QrCode, label: 'Yape' },
-            'PLIN': { bg: 'bg-cyan-100', text: 'text-cyan-700', icon: QrCode, label: 'Plin' },
-            'TRANSFER': { bg: 'bg-orange-100', text: 'text-orange-700', icon: ArrowRightLeft, label: 'Transferencia' },
-            'OTHER': { bg: 'bg-gray-100', text: 'text-gray-700', icon: HelpCircle, label: 'Otro' },
+            'CASH': { bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: Banknote, label: 'Efectivo' },
+            'CARD': { bg: 'bg-blue-500/10', text: 'text-blue-500', icon: CreditCard, label: 'Tarjeta' },
+            'YAPE': { bg: 'bg-purple-500/10', text: 'text-purple-500', icon: QrCode, label: 'Yape' },
+            'PLIN': { bg: 'bg-cyan-500/10', text: 'text-cyan-500', icon: QrCode, label: 'Plin' },
+            'TRANSFER': { bg: 'bg-orange-500/10', text: 'text-orange-500', icon: ArrowRightLeft, label: 'Transferencia' },
+            'OTHER': { bg: 'bg-muted', text: 'text-muted-foreground', icon: HelpCircle, label: 'Otro' },
         };
 
         const config = styles[payment.paymentMethod as keyof typeof styles] || styles['OTHER'];
         const Icon = config.icon;
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
                 <Icon size={14} />
                 {config.label}
             </span>
@@ -365,112 +365,112 @@ export default function SalesHistoryPage() {
     }
 
     return (
-        <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
+        <div className="p-6 space-y-6 max-w-[1400px] mx-auto min-h-screen bg-background">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Historial de Ventas</h1>
-                    <p className="text-gray-500 text-sm mt-1">Gestione y verifique las transacciones recientes.</p>
+                    <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Historial de Ventas</h1>
+                    <p className="text-muted-foreground text-[10px] mt-0.5 font-medium">Gestione y verifique las transacciones recientes.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <button
                         onClick={handleExportGeneral}
                         disabled={isExporting}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm transition-all text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-600/10 transition-all text-[11px] font-bold uppercase tracking-wider disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
                     >
-                        {isExporting ? <RefreshCw size={18} className="animate-spin" /> : <FileText size={18} />}
-                        <span>Exportar Reporte General</span>
+                        {isExporting ? <RefreshCw size={14} className="animate-spin" /> : <FileText size={14} />}
+                        <span className="truncate">Exportar Reporte General</span>
                     </button>
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm transition-all text-sm font-medium"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-card border border-border rounded-xl text-foreground hover:bg-muted shadow-sm transition-all text-[11px] font-bold uppercase tracking-wider active:scale-95"
                     >
-                        <Download size={18} />
-                        <span>Exportar Actual</span>
+                        <Download size={14} />
+                        <span className="truncate">Exportar Actual</span>
                     </button>
                     <button
                         onClick={() => navigate('/pos')}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-all text-sm font-medium"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary-hover shadow-md shadow-primary/10 transition-all text-[11px] font-bold uppercase tracking-wider active:scale-95"
                     >
-                        <Plus size={18} />
-                        <span>Nueva Venta</span>
+                        <Plus size={14} />
+                        Nueva Venta
                     </button>
                 </div>
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-white p-2 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-2 items-center justify-between">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <div className="bg-card p-3 rounded-2xl border border-border shadow-sm flex flex-col xl:flex-row gap-3 items-center justify-between">
+                <div className="relative w-full xl:max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                     <input
                         type="text"
                         placeholder="Buscar por cliente o ID..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                        className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary text-xs outline-none transition-all placeholder:text-muted-foreground/60 font-medium"
                     />
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                     <DateRangePicker
                         startDate={startDate}
                         endDate={endDate}
                         onChange={(update) => {
                             setDateRange(update);
-                            setCurrentPage(1); // Reset to page 1 on date change
+                            setCurrentPage(1);
                         }}
                     />
 
-                    <div className="relative">
+                    <div className="relative flex-1 sm:flex-none sm:min-w-[180px]">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="appearance-none pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-600 focus:outline-none cursor-pointer min-w-[180px]"
+                            className="w-full appearance-none pl-10 pr-10 py-2 bg-muted/50 hover:bg-muted border border-border rounded-xl text-xs text-foreground focus:outline-none cursor-pointer font-medium transition-colors"
                         >
-                            <option value="ALL">Todos los Métodos</option>
+                            <option value="ALL">Todos los Estados</option>
                             <option value={OrderStatus.COMPLETED}>Completados</option>
                             <option value={OrderStatus.CANCELLED}>Cancelados</option>
                         </select>
-                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={14} />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
                     </div>
 
                     <button
                         onClick={() => setIsFilterPanelOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm text-gray-600 transition-colors"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-muted/50 hover:bg-muted border border-border rounded-xl text-xs text-muted-foreground hover:text-foreground transition-all font-medium active:scale-95"
                     >
-                        <SlidersHorizontal size={16} />
+                        <SlidersHorizontal size={14} />
                         <span>Más Filtros</span>
                     </button>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50/50 border-b border-gray-200">
+                        <thead className="bg-muted/30 border-b border-border">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID Venta</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Cliente</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Método de Pago</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">ID Venta</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Fecha</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Total</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Estado</th>
+                                <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                                         <RefreshCw size={24} className="animate-spin mx-auto mb-2 opacity-20" />
                                         <span className="text-sm">Cargando transacciones...</span>
                                     </td>
                                 </tr>
                             ) : orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                                         No se encontraron ventas recientes.
                                     </td>
                                 </tr>
@@ -481,22 +481,22 @@ export default function SalesHistoryPage() {
                                     const payment = order.OrderPayment && order.OrderPayment.length > 0 ? order.OrderPayment[0] : undefined;
 
                                     return (
-                                        <tr key={order.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                        <tr key={order.id} className="hover:bg-muted/10 transition-colors group">
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs font-semibold text-foreground">
                                                 #{order.orderCode}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-5 py-3 whitespace-nowrap text-[11px] text-muted-foreground/80 font-medium">
                                                 {order.createdAt ? format(new Date(order.createdAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">
+                                            <td className="px-5 py-3 whitespace-nowrap">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold border border-primary/20">
                                                         {initials}
                                                     </div>
-                                                    <span className="text-sm text-gray-700 font-medium">{clientName}</span>
+                                                    <span className="text-xs text-foreground font-semibold">{clientName}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs font-bold text-foreground">
                                                 {order.currency?.symbol} {Number(order.totalAmount).toFixed(2)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -505,21 +505,18 @@ export default function SalesHistoryPage() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {getStatusBadge(order.status)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <div className="flex justify-center gap-2">
+                                            <td className="px-5 py-3 whitespace-nowrap text-center">
+                                                <div className="flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => {
-                                                            // Instead of modal, now we can navigate to detail view for consistency
-                                                            // setSelectedOrder(order);
-                                                            // setIsDetailModalOpen(true);
                                                             setSearchParams({ id: order.id });
                                                         }}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-95"
                                                         title="Ver Detalle"
                                                     >
                                                         <FileText size={18} />
                                                     </button>
-                                                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                                    <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all active:scale-95">
                                                         <MoreVertical size={18} />
                                                     </button>
                                                 </div>
@@ -533,10 +530,10 @@ export default function SalesHistoryPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50">
+                <div className="px-6 py-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/20">
                     <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-500">
-                            Mostrando <span className="font-medium">{orders.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-medium">{totalOrders}</span> ventas
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                            Mostrando <span className="font-bold text-foreground">{orders.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-bold text-foreground">{totalOrders}</span> ventas
                         </span>
                         <select
                             value={pageSize}
@@ -544,7 +541,7 @@ export default function SalesHistoryPage() {
                                 setPageSize(Number(e.target.value));
                                 setCurrentPage(1);
                             }}
-                            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
+                            className="bg-card border border-border text-foreground text-sm rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-2 font-bold outline-none transition-all"
                         >
                             <option value="10">10 por página</option>
                             <option value="20">20 por página</option>
@@ -552,21 +549,21 @@ export default function SalesHistoryPage() {
                             <option value="60">60 por página</option>
                         </select>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                         <button
                             disabled={!hasPrevPage || isLoading}
                             onClick={() => setCurrentPage(prev => prev - 1)}
-                            className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-all"
+                            className="px-5 py-2.5 border border-border bg-card rounded-xl text-sm text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-sm transition-all active:scale-95"
                         >
                             Anterior
                         </button>
-                        <span className="text-sm text-gray-600 min-w-[100px] text-center flex items-center justify-center">
+                        <span className="text-sm font-semibold text-foreground min-w-[120px] text-center bg-card border border-border py-2.5 rounded-xl px-4">
                             Página {currentPage} de {totalPages}
                         </span>
                         <button
                             disabled={!hasNextPage || isLoading}
                             onClick={() => setCurrentPage(prev => prev + 1)}
-                            className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-all"
+                            className="px-5 py-2.5 border border-border bg-card rounded-xl text-sm text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-sm transition-all active:scale-95"
                         >
                             Siguiente
                         </button>

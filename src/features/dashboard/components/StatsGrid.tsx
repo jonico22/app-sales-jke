@@ -22,11 +22,11 @@ function StatCard({
   title,
   value,
   subtitle,
-  subtitleColorClass = 'text-slate-400',
+  subtitleColorClass = 'text-muted-foreground',
   loading = false,
 }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm min-h-[160px] flex flex-col justify-between">
+    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm min-h-[160px] flex flex-col justify-between">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className={`p-3 rounded-xl ${iconBgClass}`}>
@@ -41,13 +41,13 @@ function StatCard({
 
       {/* Content */}
       <div className="mt-4">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{title}</p>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{title}</p>
         {loading ? (
           <div className="h-9 flex items-center">
-            <Loader2 className="h-5 w-5 animate-spin text-slate-300" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/30" />
           </div>
         ) : (
-          <p className="text-3xl font-bold text-slate-800">{value}</p>
+          <p className="text-3xl font-bold text-foreground">{value}</p>
         )}
         <p className={`text-xs mt-1 ${subtitleColorClass}`}>
           {loading ? 'Cargando...' : subtitle}
@@ -69,7 +69,7 @@ export function StatsGrid() {
 
   if (isError) {
     return (
-      <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-medium">
+      <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-xl text-destructive text-sm font-medium">
         Error al cargar las estadísticas del dashboard.
       </div>
     );
@@ -80,9 +80,9 @@ export function StatsGrid() {
       {/* Valor Total Stock */}
       <StatCard
         icon={<Monitor className="h-5 w-5 text-cyan-600" />}
-        iconBgClass="bg-cyan-50"
+        iconBgClass="bg-cyan-500/10"
         badge="Global"
-        badgeColorClass="text-slate-400"
+        badgeColorClass="text-muted-foreground"
         title="Valor Total Stock"
         value={formatCurrency(stats?.totalStockValue || 0)}
         subtitle={stats?.totalStockValue ? "Valor estimado del inventario" : "Esperando datos..."}
@@ -92,7 +92,7 @@ export function StatsGrid() {
       {/* Bajo Stock */}
       <StatCard
         icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
-        iconBgClass="bg-red-50"
+        iconBgClass="bg-red-500/10"
         badge="Alerta"
         badgeColorClass="text-red-500"
         title="Bajo Stock"
@@ -105,9 +105,9 @@ export function StatsGrid() {
       {/* Ventas Netas */}
       <StatCard
         icon={<TrendingUp className="h-5 w-5 text-violet-600" />}
-        iconBgClass="bg-violet-50"
+        iconBgClass="bg-violet-500/10"
         badge="Este Mes"
-        badgeColorClass="text-slate-400"
+        badgeColorClass="text-muted-foreground"
         title="Ventas Netas"
         value={formatCurrency(stats?.netSales || 0)}
         subtitle={stats?.netSales ? "Ingresos totales acumulados" : "Sin transacciones"}
@@ -117,9 +117,9 @@ export function StatsGrid() {
       {/* Productos Nuevos */}
       <StatCard
         icon={<Sparkles className="h-5 w-5 text-fuchsia-500" />}
-        iconBgClass="bg-fuchsia-50"
+        iconBgClass="bg-fuchsia-500/10"
         badge="Nuevos"
-        badgeColorClass="text-slate-400"
+        badgeColorClass="text-muted-foreground"
         title="Productos Nuevos"
         value={`${stats?.newProducts || 0} Items`}
         subtitle={stats?.newProducts ? "Agregados recientemente" : "Sin novedades"}

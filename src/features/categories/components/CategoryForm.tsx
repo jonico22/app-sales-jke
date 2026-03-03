@@ -78,41 +78,41 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:p-8 h-full flex flex-col">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="bg-blue-50 p-3 rounded-xl">
-          <PenLine className="h-6 w-6 text-blue-600" />
+    <div className="bg-card rounded-2xl border border-border shadow-sm p-5 lg:p-6 h-full flex flex-col">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/20">
+          <PenLine className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800 text-lg">
+          <h3 className="font-bold text-foreground text-sm uppercase tracking-tight">
             {category ? 'Editar Categoría' : 'Ingreso Manual'}
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-[11px] text-muted-foreground font-medium">
             {category ? 'Modificar la información de la categoría.' : 'Crear una nueva categoría individualmente.'}
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 flex-1 flex flex-col">
         {/* Code Field */}
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-slate-600 uppercase tracking-wide">Código</Label>
+        <div className="space-y-1.5">
+          <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Código</Label>
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 placeholder="Generar automáticamente"
-                className={`bg-slate-50/50 ${errors.code ? 'border-red-500' : ''}`}
+                className={`bg-muted/20 h-9 text-xs ${errors.code ? 'border-destructive' : 'border-border'} text-foreground focus-visible:ring-primary/20`}
                 {...register('code')}
                 readOnly={!!category}
               />
               {errors.code && (
-                <span className="text-xs text-red-500 mt-1">{errors.code.message}</span>
+                <span className="text-[10px] text-destructive mt-1 font-medium">{errors.code.message}</span>
               )}
             </div>
             {!category && (
               <Button
                 type="button"
-                className="bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-3"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 w-9 px-0 shadow-lg shadow-primary/20 transition-all active:scale-95"
                 onClick={generateCode}
                 disabled={isGeneratingCode}
               >
@@ -123,52 +123,58 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
         </div>
 
         {/* Name Field */}
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-slate-600 uppercase tracking-wide">Nombre de la Categoría</Label>
+        <div className="space-y-1.5">
+          <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Nombre de la Categoría</Label>
           <Input
             placeholder="Ej. Electrodomésticos"
-            className={errors.name ? 'border-red-500' : ''}
+            className={`${errors.name ? 'border-destructive' : 'border-border'} bg-muted/20 h-9 text-xs text-foreground focus-visible:ring-primary/20`}
             {...register('name')}
           />
           {errors.name && (
-            <span className="text-xs text-red-500 mt-1">{errors.name.message}</span>
+            <span className="text-[10px] text-destructive mt-1 font-medium">{errors.name.message}</span>
           )}
         </div>
 
         {/* Description Field */}
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Descripción <span className="text-slate-400 font-normal normal-case">(Opcional)</span>
+        <div className="space-y-1.5">
+          <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
+            Descripción <span className="text-muted-foreground/50 font-normal normal-case">(Opcional)</span>
           </Label>
           <Textarea
             placeholder="Breve descripción de la categoría..."
-            className="resize-none h-32"
+            className="resize-none h-24 bg-muted/20 border-border text-xs text-foreground p-3 focus-visible:ring-primary/20"
             {...register('description')}
           />
         </div>
 
         {/* Status Field */}
-        <div className="space-y-3 pt-2">
-          <Label className="text-xs font-bold text-slate-600 uppercase tracking-wide">Estado</Label>
+        <div className="space-y-2 pt-1">
+          <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Estado</Label>
           <div className="flex items-center gap-3">
             <Switch
               checked={isActive}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('isActive', e.target.checked)}
             />
-            <span className="text-sm font-medium text-slate-700">Activo</span>
+            <span className="text-xs font-semibold text-foreground">Activo</span>
           </div>
         </div>
 
-        <div className="border-t border-slate-100 my-6"></div>
+        <div className="border-t border-border my-4"></div>
 
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white py-6 rounded-lg text-base font-semibold shadow-lg shadow-sky-500/20 mt-auto"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 mt-auto transition-all active:scale-95"
           disabled={isSubmitting}
         >
-          <Save className="h-5 w-5 mr-2" />
-          {isSubmitting ? 'Guardando...' : (category ? 'Actualizar Categoría' : 'Guardar Categoría')}
+          {isSubmitting ? (
+            'Guardando...'
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              {category ? 'Actualizar Categoría' : 'Guardar Categoría'}
+            </>
+          )}
         </Button>
       </form>
     </div>

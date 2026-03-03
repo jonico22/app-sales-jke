@@ -9,9 +9,10 @@ interface ModalProps {
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl';
     hideHeader?: boolean;
+    contentClassName?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false, contentClassName = '' }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Initial focus and Escape key handling
@@ -51,19 +52,19 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
             {/* Modal Content */}
             <div
                 ref={modalRef}
-                className={`relative bg-white rounded-2xl shadow-xl w-full ${sizeClasses[size]} transform transition-all animate-in fade-in zoom-in-95 duration-200`}
+                className={`relative bg-card rounded-2xl shadow-xl w-full ${sizeClasses[size]} transform transition-all animate-in fade-in zoom-in-95 duration-200`}
                 role="dialog"
                 aria-modal="true"
             >
                 {/* Header */}
                 {!hideHeader && (
-                    <div className="flex items-center justify-between p-6 border-b border-slate-100">
-                        <h3 className="text-lg font-bold text-slate-800">
+                    <div className="flex items-center justify-between p-6 border-b border-border">
+                        <h3 className="text-lg font-bold text-foreground">
                             {title}
                         </h3>
                         <button
                             onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors"
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted p-2 rounded-lg transition-colors"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -71,7 +72,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
                 )}
 
                 {/* Body */}
-                <div className="p-6">
+                <div className={`p-6 ${contentClassName}`}>
                     {children}
                 </div>
             </div>

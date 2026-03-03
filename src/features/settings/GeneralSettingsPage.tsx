@@ -228,8 +228,8 @@ export default function GeneralSettingsPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Configuración del Negocio</h1>
-                        <p className="text-slate-500 mt-1">
+                        <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Configuración del Negocio</h1>
+                        <p className="text-muted-foreground text-xs mt-1">
                             Gestiona los detalles de tu empresa, información fiscal y preferencias globales.
                         </p>
                     </div>
@@ -249,17 +249,17 @@ export default function GeneralSettingsPage() {
                     {/* Left Column: Logo & Business Data */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Logotipo */}
-                        <Card className="p-6 border-slate-200">
-                            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <Card className="p-6 border-border">
+                            <h2 className="text-sm font-bold text-foreground mb-6 flex items-center gap-2 uppercase tracking-tight">
                                 Logotipo
                             </h2>
                             <div className="flex flex-col md:flex-row items-center gap-8">
                                 <div className="relative group">
-                                    <div className="w-40 h-40 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center bg-slate-50 overflow-hidden transition-colors group-hover:border-primary/30">
+                                    <div className="w-40 h-40 rounded-full border-4 border-dashed border-border flex items-center justify-center bg-muted/30 overflow-hidden transition-colors group-hover:border-primary/30">
                                         {logoPreview ? (
                                             <img src={logoPreview} alt="Business Logo" className="w-full h-full object-contain" />
                                         ) : (
-                                            <Store className="w-12 h-12 text-slate-300" />
+                                            <Store className="w-12 h-12 text-muted-foreground/20" />
                                         )}
                                     </div>
                                     <div
@@ -271,8 +271,8 @@ export default function GeneralSettingsPage() {
                                 </div>
                                 <div className="space-y-4 text-center md:text-left">
                                     <div className="space-y-1">
-                                        <h3 className="font-bold text-slate-700">Logo de la Empresa</h3>
-                                        <p className="text-sm text-slate-500">
+                                        <h3 className="font-bold text-foreground text-sm">Logo de la Empresa</h3>
+                                        <p className="text-xs text-muted-foreground">
                                             Sube tu logo en formato PNG o JPG. Se recomienda 400x400px. Máximo 2MB.
                                         </p>
                                     </div>
@@ -312,8 +312,8 @@ export default function GeneralSettingsPage() {
                         </Card>
 
                         {/* Datos del Negocio */}
-                        <Card className="p-6 border-slate-200">
-                            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <Card className="p-6 border-border">
+                            <h2 className="text-sm font-bold text-foreground mb-6 flex items-center gap-2 uppercase tracking-tight">
                                 Datos del Negocio
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -393,8 +393,8 @@ export default function GeneralSettingsPage() {
 
                     {/* Right Column: Preferences */}
                     <div className="space-y-8">
-                        <Card className="p-6 border-slate-200">
-                            <h2 className="text-lg font-bold text-slate-800 mb-6">Preferencias del Sistema</h2>
+                        <Card className="p-6 border-border">
+                            <h2 className="text-sm font-bold text-foreground mb-6 uppercase tracking-tight">Preferencias del Sistema</h2>
 
                             <div className="space-y-6">
                                 <div className="space-y-2">
@@ -404,14 +404,14 @@ export default function GeneralSettingsPage() {
                                     </Label>
                                     <select
                                         {...register('mainCurrencyId')}
-                                        className="w-full h-10 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
+                                        className="w-full h-10 px-3 py-2 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
                                     >
                                         <option value="">Seleccionar moneda</option>
                                         {currencies.map(c => (
                                             <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
                                         ))}
                                     </select>
-                                    <p className="text-[10px] text-slate-400">Moneda base para reportes e inventario.</p>
+                                    <p className="text-[10px] text-muted-foreground">Moneda base para reportes e inventario.</p>
                                 </div>
 
                                 <div className="space-y-2">
@@ -425,26 +425,26 @@ export default function GeneralSettingsPage() {
                                             {...register('taxValue', { valueAsNumber: true })}
                                             className="pr-10"
                                         />
-                                        <div className="absolute right-0 top-0 h-full w-10 flex items-center justify-center bg-slate-50 border-l border-slate-200 rounded-r-lg text-slate-500 text-sm">
+                                        <div className="absolute right-0 top-0 h-full w-10 flex items-center justify-center bg-muted/50 border-l border-border rounded-r-lg text-muted-foreground text-sm">
                                             %
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-8">
+                                <div className="pt-4 border-t border-border flex flex-col gap-8">
                                     {/* Alertas de Stock Bajo */}
                                     <div className="space-y-4">
                                         <div className="space-y-1">
-                                            <Label className="text-slate-700 font-bold">Alertas de Stock Bajo</Label>
-                                            <p className="text-xs text-slate-500">Recibir notificaciones cuando el inventario llegue al mínimo.</p>
+                                            <Label className="text-foreground font-bold text-[11px] uppercase">Alertas de Stock Bajo</Label>
+                                            <p className="text-[10px] text-muted-foreground">Recibir notificaciones cuando el inventario llegue al mínimo.</p>
                                         </div>
                                         <div className="space-y-2 pl-0">
-                                            <Label className="text-xs text-slate-500 flex items-center gap-2">
+                                            <Label className="text-[10px] text-muted-foreground flex items-center gap-2">
                                                 <Clock className="h-3 w-3" /> Frecuencia de Alerta
                                             </Label>
                                             <select
                                                 {...register('stockNotificationFrequency')}
-                                                className="w-full h-9 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.1rem_1.1rem] bg-[right_0.4rem_center] bg-no-repeat"
+                                                className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
                                             >
                                                 <option value="DAILY">Diario</option>
                                                 <option value="WEEKLY">Semanal</option>
@@ -457,16 +457,16 @@ export default function GeneralSettingsPage() {
                                     {/* Alertas de Ventas Realizadas */}
                                     <div className="space-y-4">
                                         <div className="space-y-1">
-                                            <Label className="text-slate-700 font-bold">Alertas de Ventas Realizadas</Label>
-                                            <p className="text-xs text-slate-500">Recibir una notificación cada vez que se complete una transacción.</p>
+                                            <Label className="text-foreground font-bold text-[11px] uppercase">Alertas de Ventas Realizadas</Label>
+                                            <p className="text-[10px] text-muted-foreground">Recibir una notificación cada vez que se complete una transacción.</p>
                                         </div>
                                         <div className="space-y-2 pl-0">
-                                            <Label className="text-xs text-slate-500 flex items-center gap-2">
+                                            <Label className="text-[10px] text-muted-foreground flex items-center gap-2">
                                                 <Clock className="h-3 w-3" /> Frecuencia de Alerta
                                             </Label>
                                             <select
                                                 {...register('salesNotificationFrequency')}
-                                                className="w-full h-9 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.1rem_1.1rem] bg-[right_0.4rem_center] bg-no-repeat"
+                                                className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
                                             >
                                                 <option value="DAILY">Diario</option>
                                                 <option value="WEEKLY">Semanal</option>
@@ -477,18 +477,18 @@ export default function GeneralSettingsPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2 pt-4 border-t border-slate-100">
+                                <div className="space-y-2 pt-4 border-t border-border">
                                     <Label className="flex items-center gap-2">
-                                        <HardDrive className="w-4 h-4 text-slate-400" />
+                                        <HardDrive className="w-4 h-4 text-muted-foreground/50" />
                                         Capacidad de Almacenamiento
                                     </Label>
-                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                                        <p className="text-sm font-bold text-slate-700">
+                                    <div className="p-3 bg-muted/20 rounded-lg border border-border">
+                                        <p className="text-sm font-bold text-foreground">
                                             {society?.storageLimit ?
                                                 `${(parseInt(society.storageLimit) / (1024 * 1024)).toFixed(0)} MB` :
                                                 'No definido'}
                                         </p>
-                                        <p className="text-[10px] text-slate-400 mt-1">
+                                        <p className="text-[10px] text-muted-foreground mt-1">
                                             Límite total de archivos permitido para tu suscripción.
                                         </p>
                                     </div>

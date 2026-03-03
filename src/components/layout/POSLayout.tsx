@@ -18,15 +18,15 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <SessionExpiredModal 
-        isOpen={isSessionExpired} 
-        onLogin={handleRedirect} 
+    <div className="min-h-screen bg-background flex">
+      <SessionExpiredModal
+        isOpen={isSessionExpired}
+        onLogin={handleRedirect}
       />
-      
+
       {/* Sidebar - with user info enabled */}
-      <DashboardSidebar 
-        isOpen={isSidebarOpen} 
+      <DashboardSidebar
+        isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isCollapsed}
         toggleCollapse={toggleCollapse}
@@ -34,17 +34,17 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
       />
 
       {/* Main Content Wrapper */}
-      <div 
+      <div
         className={cn(
           "flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out",
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}
       >
-        
+
         {/* POS Header */}
-        <POSHeader 
+        <POSHeader
           title={title}
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
         {/* Page Content */}

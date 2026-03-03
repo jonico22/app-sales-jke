@@ -23,17 +23,17 @@ export function SlidePanel({
 }: SlidePanelProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-white">
+      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-card">
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-card">
           {children}
         </div>
 
         {footer && (
-          <div className="p-6 border-t border-slate-100 bg-white space-y-3">
+          <div className="p-6 border-t border-border bg-card/80 space-y-3 shrink-0 backdrop-blur-sm">
             {footer}
           </div>
         )}

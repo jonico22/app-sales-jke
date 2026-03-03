@@ -10,7 +10,7 @@ const DropdownMenuContext = React.createContext<{
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }>({
   open: false,
-  setOpen: () => {},
+  setOpen: () => { },
 })
 
 const DropdownMenu = ({ children }: DropdownMenuProps) => {
@@ -29,7 +29,6 @@ const DropdownMenuTrigger = ({ children, asChild }: { children: React.ReactNode,
   const { open, setOpen } = React.useContext(DropdownMenuContext)
 
   const handleClick = (e: React.MouseEvent) => {
-    // Stop propagation to prevent immediate closing if we had a click handler on window
     e.stopPropagation()
     setOpen(!open)
   }
@@ -37,7 +36,6 @@ const DropdownMenuTrigger = ({ children, asChild }: { children: React.ReactNode,
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<React.HTMLAttributes<HTMLElement>>, {
       onClick: handleClick,
-      // aria-expanded: open // Good for a11y
     })
   }
 
@@ -48,12 +46,12 @@ const DropdownMenuTrigger = ({ children, asChild }: { children: React.ReactNode,
   )
 }
 
-const DropdownMenuContent = ({ 
-  children, 
+const DropdownMenuContent = ({
+  children,
   className,
-  align = "end" 
-}: { 
-  children: React.ReactNode, 
+  align = "end"
+}: {
+  children: React.ReactNode,
   className?: string,
   align?: "start" | "end" | "center"
 }) => {
@@ -82,21 +80,19 @@ const DropdownMenuContent = ({
     <div
       ref={ref}
       className={cn(
-        "absolute z-50 mt-2 w-56 rounded-xl border border-slate-100 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in-95 duration-100",
+        "absolute z-50 mt-2 w-56 rounded-xl border border-border bg-card shadow-xl ring-1 ring-black/5 focus:outline-none animate-in fade-in zoom-in-95 duration-100 p-1",
         align === "end" ? "right-0" : align === "start" ? "left-0" : "left-1/2 -translate-x-1/2",
         className
       )}
     >
-      <div className="py-1">
-        {children}
-      </div>
+      {children}
     </div>
   )
 }
 
-const DropdownMenuItem = ({ 
-  children, 
-  className, 
+const DropdownMenuItem = ({
+  children,
+  className,
   onClick,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
@@ -105,7 +101,7 @@ const DropdownMenuItem = ({
   return (
     <div
       className={cn(
-        "block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors",
+        "block px-3 py-2 text-xs font-medium text-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors rounded-lg",
         className
       )}
       onClick={(e) => {

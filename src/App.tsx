@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import { DatePickerStyles } from './components/shared/DatePickerInput';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 // Auth pages — small, keep eager so login is instant
 import LoginPage from './features/auth/LoginPage';
@@ -202,7 +203,7 @@ function App() {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <DatePickerStyles />
       <RouterProvider router={router} />
       <Toaster />
@@ -210,7 +211,7 @@ function App() {
         isOpen={isSessionExpired}
         onLogin={handleLoginRedirect}
       />
-    </>
+    </ThemeProvider>
   );
 }
 

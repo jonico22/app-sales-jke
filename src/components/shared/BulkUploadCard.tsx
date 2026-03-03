@@ -79,35 +79,35 @@ export function BulkUploadCard({
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:p-8 h-full flex flex-col">
+    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8 h-full flex flex-col">
       <div className="flex items-center gap-4 mb-8">
-        <div className="bg-green-50 p-3 rounded-xl">
-          <FileSpreadsheet className="h-6 w-6 text-green-600" />
+        <div className="bg-primary/10 p-3 rounded-xl">
+          <FileSpreadsheet className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800 text-lg">{title}</h3>
-          <p className="text-sm text-slate-500">{description}</p>
+          <h3 className="font-bold text-foreground text-lg">{title}</h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </div>
 
       <div
         {...getRootProps()}
-        className={`flex-1 border-2 border-dashed rounded-xl bg-slate-50/50 flex flex-col items-center justify-center p-8 text-center transition-all duration-300 ${isDragActive
-            ? 'border-sky-400 bg-sky-50/50 scale-[1.02]'
-            : isUploading
-              ? 'border-slate-200 bg-slate-50'
-              : 'border-slate-200 hover:bg-slate-50 cursor-pointer group'
+        className={`flex-1 border-2 border-dashed rounded-xl bg-muted/30 flex flex-col items-center justify-center p-8 text-center transition-all duration-300 ${isDragActive
+          ? 'border-primary/50 bg-primary/5 scale-[1.02]'
+          : isUploading
+            ? 'border-border bg-muted'
+            : 'border-border hover:bg-muted/50 cursor-pointer group'
           }`}
       >
         <input {...getInputProps()} />
 
         {isUploading ? (
           <>
-            <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-              <Loader2 className="h-8 w-8 text-sky-500 animate-spin" />
+            <div className="bg-card p-4 rounded-full shadow-sm mb-4">
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
-            <h4 className="font-bold text-slate-700 mb-1">Subiendo archivo...</h4>
-            <p className="text-xs text-slate-500">{uploadedFileName}</p>
+            <h4 className="font-bold text-foreground mb-1">Subiendo archivo...</h4>
+            <p className="text-xs text-muted-foreground">{uploadedFileName}</p>
           </>
         ) : uploadedFileName ? (
           <>
@@ -115,22 +115,22 @@ export function BulkUploadCard({
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
             <h4 className="font-bold text-green-700 mb-1">¡Archivo procesado!</h4>
-            <p className="text-xs text-slate-500">{uploadedFileName}</p>
+            <p className="text-xs text-muted-foreground">{uploadedFileName}</p>
           </>
         ) : (
           <>
-            <div className={`bg-white p-4 rounded-full shadow-sm mb-4 transition-transform duration-300 ${isDragActive ? 'scale-110' : 'group-hover:scale-105'
+            <div className={`bg-card p-4 rounded-full shadow-sm mb-4 transition-transform duration-300 ${isDragActive ? 'scale-110' : 'group-hover:scale-105'
               }`}>
-              <CloudUpload className={`h-8 w-8 ${isDragActive ? 'text-sky-600' : 'text-[#0ea5e9]'}`} />
+              <CloudUpload className={`h-8 w-8 ${isDragActive ? 'text-primary' : 'text-primary/70'}`} />
             </div>
-            <h4 className="font-bold text-slate-700 mb-1">
+            <h4 className="font-bold text-foreground mb-1">
               {isDragActive ? '¡Suelta el archivo aquí!' : dragDropText}
             </h4>
-            <p className="text-xs text-slate-500 mb-6">{dragDropSubtext}</p>
+            <p className="text-xs text-muted-foreground mb-6">{dragDropSubtext}</p>
 
             <Button
               variant="outline"
-              className="bg-white border-slate-200 text-slate-700 hover:text-slate-900 group-hover:border-sky-200"
+              className="bg-card border-border text-foreground hover:text-foreground hover:bg-muted group-hover:border-primary/30"
               onClick={(e) => {
                 e.stopPropagation();
                 open();
@@ -143,15 +143,15 @@ export function BulkUploadCard({
         )}
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-2 border-t border-slate-100 pt-6">
+      <div className="mt-8 flex flex-col items-center gap-2 border-t border-border pt-6">
         <button
-          className="flex items-center gap-2 text-xs font-semibold text-[#0ea5e9] hover:text-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 text-xs font-semibold text-primary/80 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={onDownloadTemplate}
           disabled={isUploading}
         >
           <FileDown className="h-4 w-4" /> {downloadText}
         </button>
-        <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">{maxSizeText}</p>
+        <p className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">{maxSizeText}</p>
       </div>
     </div>
   );

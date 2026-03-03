@@ -94,7 +94,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-30 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out md:translate-x-0",
+          "fixed top-0 left-0 z-30 h-full bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
           isCollapsed ? "w-20" : "w-64"
         )}
@@ -102,7 +102,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         {/* Logo Section */}
         <div
           className={cn(
-            "h-16 flex items-center border-b border-slate-100 cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300",
+            "h-16 flex items-center border-b border-border/50 cursor-pointer overflow-hidden whitespace-nowrap transition-all duration-300",
             isCollapsed ? "justify-center px-0" : "px-6"
           )}
           onClick={toggleCollapse}
@@ -113,7 +113,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
           </div>
           <span
             className={cn(
-              "font-bold text-slate-700 text-lg tracking-tight ml-3 transition-opacity duration-300",
+              "font-bold text-foreground text-lg tracking-tight ml-3 transition-opacity duration-300",
               isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
             )}
           >
@@ -138,12 +138,12 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                       isCollapsed ? "justify-center px-0" : "px-3",
                       isActive
                         ? "text-sky-600"
-                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-slate-400")} />
+                      <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-muted-foreground")} />
                       <span className={cn(
                         "transition-all duration-300 whitespace-nowrap",
                         isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
@@ -152,7 +152,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                       </span>
                     </div>
                     {!isCollapsed && (
-                      <div className="text-slate-400">
+                      <div className="text-muted-foreground">
                         {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </div>
                     )}
@@ -173,8 +173,8 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                             className={cn(
                               "block py-2 text-sm font-medium transition-colors rounded-lg",
                               isChildActive
-                                ? "text-sky-600 bg-sky-50 pl-3"
-                                : "text-slate-500 hover:text-slate-900 hover:pl-2"
+                                ? "text-sky-600 bg-sky-50/50 dark:bg-sky-500/10 pl-3"
+                                : "text-muted-foreground hover:text-foreground hover:pl-2"
                             )}
                             onClick={() => window.innerWidth < 768 && onClose()}
                           >
@@ -196,13 +196,13 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                   "flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide",
                   isCollapsed ? "justify-center px-0" : "px-3",
                   isActive
-                    ? "bg-sky-50 text-sky-600"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
                 onClick={() => window.innerWidth < 768 && onClose()} // Close on mobile click
                 title={isCollapsed ? item.name : undefined}
               >
-                <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-slate-400")} />
+                <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-muted-foreground")} />
                 <span className={cn(
                   "transition-all duration-300 whitespace-nowrap",
                   isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
@@ -217,7 +217,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         {/* User Info Section */}
         {showUserInfo && user && (
           <div className={cn(
-            "p-4 border-t border-slate-100",
+            "p-4 border-t border-border/50",
             isCollapsed ? "flex justify-center" : ""
           )}>
             <div className={cn(
@@ -236,10 +236,10 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                 "transition-all duration-300 whitespace-nowrap overflow-hidden",
                 isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
               )}>
-                <p className="text-sm font-semibold text-slate-700 truncate max-w-[140px]">
+                <p className="text-sm font-semibold text-foreground truncate max-w-[140px]">
                   {user.name || 'Usuario'}
                 </p>
-                <p className="text-xs text-slate-400 truncate max-w-[140px]">
+                <p className="text-xs text-muted-foreground truncate max-w-[140px]">
                   {role?.name || 'Sin rol'}
                 </p>
               </div>
@@ -248,16 +248,16 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         )}
 
         {/* Bottom Section (Logout) */}
-        <div className="p-4 border-t border-slate-100">
+        <div className="p-4 border-t border-border/50">
           <button
             onClick={() => logout()}
             className={cn(
-              "flex items-center gap-3 py-3 w-full rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase tracking-wide",
+              "flex items-center gap-3 py-3 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors uppercase tracking-wide",
               isCollapsed ? "justify-center px-0" : "px-3"
             )}
             title={isCollapsed ? "Cerrar Sesión" : undefined}
           >
-            <LogOut className="h-5 w-5 text-slate-400 flex-shrink-0" />
+            <LogOut className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             <span className={cn(
               "transition-all duration-300 whitespace-nowrap",
               isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"

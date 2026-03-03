@@ -152,15 +152,15 @@ export default function NewCategoryPage() {
   return (
     <div className="space-y-6 max-w-[1600px]">
       {/* Header */}
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3">
         <Link to="/categories">
-          <Button variant="outline" className="h-10 w-10 p-0 flex items-center justify-center border-slate-200 shadow-sm transition-transform active:scale-95">
-            <ChevronLeft className="h-5 w-5 text-slate-600" />
+          <Button variant="outline" className="h-9 w-9 p-0 flex items-center justify-center border-border shadow-sm transition-transform active:scale-95 text-muted-foreground hover:text-foreground hover:bg-muted">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight uppercase">Categorías</h2>
-          <p className="text-sm text-slate-500 mt-1">Administre y organice las categorías de productos del sistema.</p>
+          <h2 className="text-lg font-bold text-foreground tracking-tight uppercase">Categorías</h2>
+          <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Administre y organice las categorías de productos del sistema.</p>
         </div>
       </div>
 

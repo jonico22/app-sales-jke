@@ -82,7 +82,7 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="p-8 shadow-xl border-none">
+    <Card className="p-8 shadow-xl dark:shadow-none">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold font-headings text-foreground">Iniciar Sesión</h1>
         <p className="text-sm text-muted-foreground mt-2">
@@ -118,7 +118,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? (
@@ -144,7 +144,7 @@ export default function LoginPage() {
           />
           <label
             htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground"
           >
             Recordar correo
           </label>

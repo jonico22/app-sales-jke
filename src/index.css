@@ -3,28 +3,95 @@
 
 @theme {
   /* JKE Solutions Brand Colors - Innovation Cyan & Core Dark */
-  --color-primary: #0ea5e9; /* Sky 500 */
-  --color-primary-hover: #0284c7; /* Sky 600 */
+  --color-primary: #0ea5e9;
+  /* Sky 500 */
+  --color-primary-hover: #0284c7;
+  /* Sky 600 */
   --color-primary-foreground: #ffffff;
 
   --color-secondary: #ffffff;
-  --color-secondary-hover: #f8fafc; /* Slate 50 */
-  --color-secondary-foreground: #475569; /* Slate 600 */
-  --color-secondary-border: #e2e8f0; /* Slate 200 */
+  --color-secondary-hover: #f8fafc;
+  /* Slate 50 */
+  --color-secondary-foreground: #475569;
+  /* Slate 600 */
+  --color-secondary-border: #e2e8f0;
+  /* Slate 200 */
 
-  --color-danger: #ef4444; /* Red 500 */
-  --color-danger-hover: #dc2626; /* Red 600 */
+  --color-danger: #ef4444;
+  /* Red 500 */
+  --color-danger-hover: #dc2626;
+  /* Red 600 */
   --color-danger-foreground: #ffffff;
 
-  --color-background: #f8fafc;
-  --color-foreground: #334155;
+  /* Semantic Theme Variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
 
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
   --color-accent: #e0f7ff;
   --color-success: #22c55e;
 
   /* JKE Solutions Typography */
   --font-family-headings: "Montserrat", sans-serif;
   --font-family-body: "Montserrat", sans-serif;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #334155;
+    /* slate-700 */
+    --card: #ffffff;
+    --card-foreground: #334155;
+    /* slate-700 */
+    --popover: #ffffff;
+    --popover-foreground: #334155;
+    /* slate-700 */
+    --muted: #f1f5f9;
+    /* slate-100 */
+    --muted-foreground: #64748b;
+    /* slate-500 */
+    --border: #e2e8f0;
+    /* slate-200 */
+    --input: #e2e8f0;
+    /* slate-200 */
+  }
+
+  .dark {
+    --background: #0f172a;
+    /* slate-900 */
+    --foreground: #f8fafc;
+    /* slate-50 */
+    --card: #1e293b;
+    /* slate-800 */
+    --card-foreground: #f8fafc;
+    /* slate-50 */
+    --popover: #1e293b;
+    /* slate-800 */
+    --popover-foreground: #f8fafc;
+    /* slate-50 */
+    --muted: #334155;
+    /* slate-700 */
+    --muted-foreground: #94a3b8;
+    /* slate-400 */
+    --border: #334155;
+    /* slate-700 */
+    --input: #334155;
+    /* slate-700 */
+
+    /* Tweaking brand colors for dark mode if necessary */
+    --color-secondary: #1e293b;
+    --color-secondary-hover: #334155;
+    --color-secondary-foreground: #f8fafc;
+    --color-secondary-border: #334155;
+  }
 }

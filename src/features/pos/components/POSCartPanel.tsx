@@ -117,46 +117,46 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
             />
 
             {/* Panel */}
-            <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="fixed inset-y-0 right-0 w-full max-w-md bg-card shadow-2xl border-l border-border z-50 flex flex-col animate-in slide-in-from-right duration-300">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-100">
+                <div className="flex items-center justify-between p-4 border-b border-border">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-sky-100 rounded-lg text-sky-600">
+                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
                             <ShoppingBag className="w-5 h-5" />
                         </div>
-                        <h2 className="text-lg font-bold text-slate-800">Venta Actual</h2>
+                        <h2 className="text-lg font-bold text-foreground">Venta Actual</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 min-h-[120px] custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/50 min-h-[120px] custom-scrollbar">
                     {items.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 min-h-[150px]">
+                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-4 min-h-[150px]">
                             <ShoppingBag className="w-16 h-16 opacity-10" />
                             <p className="text-sm font-medium">El carrito está vacío</p>
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.product.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                            <div key={item.product.id} className="bg-background border border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 className="font-bold text-slate-800 text-sm line-clamp-1">
+                                        <h4 className="font-bold text-foreground text-sm line-clamp-1">
                                             {item.product.name}
                                         </h4>
-                                        <p className="text-xs text-slate-400 font-medium">
+                                        <p className="text-xs text-muted-foreground font-medium">
                                             {item.product.brand || item.product.description || 'Sin detalles'}
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => removeItem(item.product.id)}
-                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -167,16 +167,16 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                     <div className="flex items-center p-1 gap-1">
                                         <button
                                             onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
-                                            className="w-8 h-8 flex items-center justify-center bg-white border-2 border-slate-100 text-slate-400 rounded-lg hover:border-slate-300 hover:text-slate-600 transition-all active:scale-95"
+                                            className="w-8 h-8 flex items-center justify-center bg-background border-2 border-input text-muted-foreground rounded-lg hover:border-border hover:text-foreground transition-all active:scale-95"
                                         >
                                             <span className="text-lg leading-none font-bold mb-0.5">−</span>
                                         </button>
-                                        <span className="w-8 text-center font-bold text-slate-700 text-sm">
+                                        <span className="w-8 text-center font-bold text-foreground text-sm">
                                             {item.quantity}
                                         </span>
                                         <button
                                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                            className="w-8 h-8 flex items-center justify-center bg-sky-600 text-white rounded-lg hover:bg-sky-700 shadow-sm shadow-sky-200 transition-all active:scale-95"
+                                            className="w-8 h-8 flex items-center justify-center bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm shadow-primary/20 transition-all active:scale-95"
                                         >
                                             <span className="text-lg leading-none font-bold mb-0.5">+</span>
                                         </button>
@@ -184,11 +184,11 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
 
                                     {/* Price Input */}
                                     <div className="text-right">
-                                        <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1 block">
+                                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
                                             Precio Unit.
                                         </label>
                                         <div className="relative group/price">
-                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-sky-600/70">
+                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/70">
                                                 {society?.mainCurrency?.symbol || 'S/'}
                                             </span>
                                             <input
@@ -197,7 +197,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                                 step="0.10"
                                                 value={item.product.price}
                                                 onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
-                                                className="w-24 pl-7 pr-2 py-1 text-right text-xs font-bold text-sky-700 bg-sky-50/50 border border-sky-100 rounded-lg focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/10 outline-none transition-all"
+                                                className="w-24 pl-7 pr-2 py-1 text-right text-xs font-bold text-primary bg-primary/5 border border-primary/20 rounded-lg focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                                             />
                                         </div>
                                     </div>
@@ -208,12 +208,12 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-4 sm:p-5 bg-white border-t border-slate-100 space-y-3 sm:space-y-4 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative shrink-0 max-h-[55vh] sm:max-h-none overflow-y-auto custom-scrollbar">
+                <div className="p-4 sm:p-5 bg-card border-t border-border space-y-3 sm:space-y-4 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative shrink-0 max-h-[55vh] sm:max-h-none overflow-y-auto custom-scrollbar">
 
                     {/* Discount & Notes */}
                     <div className="space-y-3">
                         <div>
-                            <label className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5 sm:mb-2">
+                            <label className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1.5 sm:mb-2">
                                 <span>Descuento Global</span>
                                 {discount > 0 && (
                                     <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">
@@ -222,7 +222,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                 )}
                             </label>
                             <div className="relative group">
-                                <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${discount > 0 ? 'text-orange-500' : 'text-slate-400'}`}>
+                                <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${discount > 0 ? 'text-orange-500' : 'text-muted-foreground'}`}>
                                     <ShoppingBag className="w-4 h-4 rotate-12" />
                                 </div>
                                 <input
@@ -233,7 +233,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                     onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                                     className={`w-full pl-10 pr-4 py-2 sm:py-3 text-sm font-medium border rounded-xl outline-none transition-all ${discount > 0
                                         ? 'bg-orange-50/50 border-orange-200 text-orange-700 focus:border-orange-400 focus:ring-4 focus:ring-orange-500/10 placeholder:text-orange-300'
-                                        : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10'
+                                        : 'bg-muted border-input text-foreground focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10'
                                         }`}
                                 />
                                 {discount > 0 && (
@@ -250,13 +250,13 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                 onClick={() => setShowNotes(!showNotes)}
                                 className="flex items-center justify-between w-full text-left focus:outline-none mb-1.5 sm:mb-2 group"
                             >
-                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider group-hover:text-slate-600 transition-colors">
+                                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider group-hover:text-foreground transition-colors">
                                     Comentarios {orderNotes ? '(Añadidos)' : ''}
                                 </span>
                                 {showNotes ? (
-                                    <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                                    <ChevronUp className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                                 ) : (
-                                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                                    <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                                 )}
                             </button>
                             {showNotes && (
@@ -265,7 +265,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                         value={orderNotes}
                                         onChange={(e) => setOrderNotes(e.target.value)}
                                         placeholder="Notas adicionales del pedido..."
-                                        className="w-full p-3 sm:p-4 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none resize-none h-16 sm:h-24 transition-all placeholder:text-slate-400"
+                                        className="w-full p-3 sm:p-4 text-sm bg-muted border border-input rounded-xl focus:border-primary focus:bg-background focus:ring-4 focus:ring-primary/10 outline-none resize-none h-16 sm:h-24 transition-all placeholder:text-muted-foreground"
                                     />
                                 </div>
                             )}
@@ -274,23 +274,23 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
 
                     {/* Totals */}
                     <div className="space-y-1.5 sm:space-y-2">
-                        <div className="flex justify-between text-xs sm:text-sm text-slate-500">
+                        <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
                             <span>Subtotal</span>
                             <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-between text-xs sm:text-sm text-slate-500">
+                        <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
                             <span>IGV (18%)</span>
                             <span>{society?.mainCurrency?.symbol || 'S/'} {igv.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                         {discount > 0 && (
-                            <div className="flex justify-between text-xs sm:text-sm text-orange-600 font-bold bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100">
+                            <div className="flex justify-between text-xs sm:text-sm text-orange-600 font-bold bg-orange-50 dark:bg-orange-500/10 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-500/20">
                                 <span>Descuento</span>
                                 <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-end pt-3 sm:pt-4 border-t border-slate-100">
-                            <span className="text-sm font-bold text-slate-800">TOTAL A PAGAR</span>
-                            <span className="text-2xl font-black text-slate-800 tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <div className="flex justify-between items-end pt-3 sm:pt-4 border-t border-border">
+                            <span className="text-sm font-bold text-foreground">TOTAL A PAGAR</span>
+                            <span className="text-2xl font-black text-foreground tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
 
@@ -301,7 +301,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                             onClick={() => handleProcessOrder(OrderStatus.PENDING_PAYMENT)}
                             disabled={items.length === 0 || processingStatus !== null}
                             variant="primary"
-                            className="w-full py-2.5 sm:py-3 shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 text-sm sm:text-base h-auto"
+                            className="w-full py-2.5 sm:py-3 shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-sm sm:text-base h-auto"
                         >
                             {processingStatus === OrderStatus.PENDING_PAYMENT ? (
                                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -314,7 +314,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                             onClick={() => handleProcessOrder(OrderStatus.PENDING)}
                             disabled={items.length === 0 || processingStatus !== null}
                             variant="outline"
-                            className="w-full py-2 sm:py-2.5 flex items-center justify-center gap-2 text-sm h-auto bg-white hover:bg-slate-50 border-slate-200"
+                            className="w-full py-2 sm:py-2.5 flex items-center justify-center gap-2 text-sm h-auto bg-background hover:bg-muted border-input text-foreground"
                         >
                             {processingStatus === OrderStatus.PENDING ? (
                                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />

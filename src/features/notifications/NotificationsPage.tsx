@@ -104,7 +104,7 @@ export default function NotificationsPage() {
             case NotificationType.ERROR:
                 return <XCircle className="h-5 w-5 text-red-500" />;
             case NotificationType.SYSTEM:
-                return <Download className="h-5 w-5 text-slate-600" />;
+                return <Download className="h-5 w-5 text-muted-foreground" />;
             case NotificationType.INFO:
             default:
                 return <Info className="h-5 w-5 text-blue-500" />;
@@ -113,12 +113,12 @@ export default function NotificationsPage() {
 
     const getBgColor = (type: NotificationType) => {
         switch (type) {
-            case NotificationType.WARNING: return 'bg-orange-50';
-            case NotificationType.SUCCESS: return 'bg-green-50';
-            case NotificationType.ERROR: return 'bg-red-50';
-            case NotificationType.SYSTEM: return 'bg-slate-100';
+            case NotificationType.WARNING: return 'bg-orange-500/10';
+            case NotificationType.SUCCESS: return 'bg-green-500/10';
+            case NotificationType.ERROR: return 'bg-red-500/10';
+            case NotificationType.SYSTEM: return 'bg-muted/50';
             case NotificationType.INFO:
-            default: return 'bg-blue-50';
+            default: return 'bg-blue-500/10';
         }
     };
 
@@ -162,8 +162,8 @@ export default function NotificationsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Historial de Notificaciones</h1>
-                    <p className="text-slate-500 mt-1">
+                    <h1 className="text-lg font-bold text-foreground uppercase tracking-tight">Historial de Notificaciones</h1>
+                    <p className="text-muted-foreground text-xs mt-1">
                         Revise todas las alertas, actualizaciones de pedidos y mensajes del sistema.
                     </p>
                 </div>
@@ -181,12 +181,12 @@ export default function NotificationsPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
                 <div className="lg:col-span-4 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                     <Input
                         placeholder="Buscar por titulo..."
-                        className="pl-10 bg-slate-50 border-slate-100 h-11 rounded-xl"
+                        className="pl-10 bg-muted/30 border-border h-10 text-xs rounded-xl focus:bg-background transition-colors"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -195,12 +195,12 @@ export default function NotificationsPage() {
                 <div className="lg:col-span-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full h-11 justify-between bg-slate-50 border-slate-100 rounded-xl px-4 font-normal text-slate-600">
+                            <Button variant="outline" className="w-full h-10 justify-between bg-muted/30 border-border rounded-xl px-4 text-xs text-muted-foreground hover:bg-muted">
                                 <div className="flex items-center gap-2">
-                                    <Filter className="h-4 w-4 text-slate-400" />
+                                    <Filter className="h-3.5 w-3.5 text-muted-foreground/50" />
                                     <span>{types.find(t => t.value === typeFilter)?.label}</span>
                                 </div>
-                                <ChevronRight className="h-4 w-4 text-slate-400 rotate-90" />
+                                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 rotate-90" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
@@ -237,28 +237,28 @@ export default function NotificationsPage() {
             <Card className="overflow-hidden rounded-2xl">
                 <CardContent className="p-0">
                     {loading ? (
-                        <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                        <div className="py-20 flex flex-col items-center justify-center text-muted-foreground">
                             <Loader2 className="h-10 w-10 animate-spin mb-4" />
-                            <p className="font-medium">Cargando notificaciones...</p>
+                            <p className="font-medium text-sm">Cargando notificaciones...</p>
                         </div>
                     ) : notifications.length === 0 ? (
                         <div className="py-20 flex flex-col items-center justify-center text-center px-6">
-                            <div className="bg-slate-50 p-6 rounded-full mb-4">
-                                <BellOff className="h-12 w-12 text-slate-300" />
+                            <div className="bg-muted/50 p-6 rounded-full mb-4 border border-border">
+                                <BellOff className="h-12 w-12 text-muted-foreground/30" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-700">Sin notificaciones</h3>
-                            <p className="text-slate-500 max-w-xs mx-auto mt-2">
+                            <h3 className="text-base font-bold text-foreground">Sin notificaciones</h3>
+                            <p className="text-muted-foreground text-xs max-w-xs mx-auto mt-2">
                                 No se encontraron notificaciones que coincidan con sus criterios de búsqueda.
                             </p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-border/50">
                             {notifications.map((notif) => (
                                 <div
                                     key={notif.id}
                                     onClick={() => handleNotificationAction(notif)}
                                     className={cn(
-                                        "p-6 flex gap-6 hover:bg-slate-50/50 transition-colors cursor-pointer group relative",
+                                        "p-5 flex gap-5 hover:bg-muted/30 transition-colors cursor-pointer group relative",
                                         !notif.isRead && "bg-sky-50/20"
                                     )}
                                 >
@@ -279,18 +279,18 @@ export default function NotificationsPage() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <h3 className={cn(
-                                                "text-base truncate",
-                                                !notif.isRead ? "font-bold text-slate-900" : "font-semibold text-slate-700"
+                                                "text-[12px] truncate",
+                                                !notif.isRead ? "font-bold text-foreground" : "font-semibold text-muted-foreground"
                                             )}>
                                                 {notif.title}
                                             </h3>
                                             {!notif.isRead && (
-                                                <div className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                                             )}
                                         </div>
                                         <p className={cn(
-                                            "text-sm line-clamp-2",
-                                            !notif.isRead ? "text-slate-600" : "text-slate-500"
+                                            "text-xs line-clamp-2",
+                                            !notif.isRead ? "text-foreground/80" : "text-muted-foreground"
                                         )}>
                                             {notif.message}
                                         </p>
@@ -298,8 +298,8 @@ export default function NotificationsPage() {
 
                                     {/* Time */}
                                     <div className="text-right flex-shrink-0">
-                                        <div className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md mb-2">
-                                            {format(new Date(notif.createdAt), "eee, HH:mm 'AM'", { locale: es })}
+                                        <div className="text-[10px] font-bold text-muted-foreground bg-muted/50 border border-border px-2 py-1 rounded-md mb-2">
+                                            {format(new Date(notif.createdAt), "eee, HH:mm", { locale: es })}
                                         </div>
                                     </div>
                                 </div>
@@ -312,8 +312,8 @@ export default function NotificationsPage() {
             {/* Pagination */}
             {!loading && notifications.length > 0 && (
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4">
-                    <p className="text-sm text-slate-500 font-medium">
-                        Mostrando <span className="text-slate-800 font-bold">{(page - 1) * limit + 1}-{Math.min(page * limit, total)}</span> de <span className="text-slate-800 font-bold">{total}</span> notificaciones
+                    <p className="text-xs text-muted-foreground font-medium">
+                        Mostrando <span className="text-foreground font-bold">{(page - 1) * limit + 1}-{Math.min(page * limit, total)}</span> de <span className="text-foreground font-bold">{total}</span> notificaciones
                     </p>
 
                     <div className="flex items-center gap-2">
@@ -336,8 +336,8 @@ export default function NotificationsPage() {
                                         variant={page === pageNum ? "primary" : "ghost"}
                                         size="sm"
                                         className={cn(
-                                            "h-9 w-9 rounded-lg font-bold",
-                                            page === pageNum ? "bg-sky-500 hover:bg-sky-600 shadow-md shadow-sky-200" : "text-slate-500"
+                                            "h-9 w-9 rounded-lg font-bold text-xs",
+                                            page === pageNum ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "text-muted-foreground"
                                         )}
                                         onClick={() => setPage(pageNum)}
                                     >

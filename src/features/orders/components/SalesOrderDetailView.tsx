@@ -57,7 +57,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                <p className="text-slate-500">Cargando detalles de la venta...</p>
+                <p className="text-muted-foreground text-sm">Cargando detalles de la venta...</p>
             </div>
         );
     }
@@ -68,11 +68,11 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                 <div className="bg-red-50 p-4 rounded-full mb-4">
                     <FileText className="h-8 w-8 text-red-500" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Error al cargar</h3>
-                <p className="text-slate-500 mb-6">{error || "No se encontró la venta solicitada."}</p>
+                <h3 className="text-lg font-bold text-foreground mb-2">Error al cargar</h3>
+                <p className="text-muted-foreground mb-6">{error || "No se encontró la venta solicitada."}</p>
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-card border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors"
                 >
                     <ArrowLeft size={18} />
                     <span>Volver al historial</span>
@@ -95,13 +95,13 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
             <div className="flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-slate-800 hover:bg-white rounded-lg transition-all"
+                    className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
                 >
                     <ArrowLeft size={20} />
                     <span className="font-medium">Volver</span>
                 </button>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-foreground font-medium rounded-lg hover:bg-muted transition-colors shadow-sm">
                         <Printer size={18} />
                         <span className="hidden sm:inline">Imprimir</span>
                     </button>
@@ -113,16 +113,16 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
             </div>
 
             {/* Main Content Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
                 {/* Order Status Banner */}
-                <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-muted/30 border-b border-border px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
                             <FileText size={24} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-slate-900">Venta #{order.orderCode}</h1>
-                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <h1 className="text-lg font-bold text-foreground">Venta #{order.orderCode}</h1>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Clock size={14} />
                                 <span>{order.createdAt ? format(new Date(order.createdAt), 'dd MMMM yyyy, hh:mm a', { locale: es }) : '-'}</span>
                             </div>
@@ -159,16 +159,16 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {items.map((item, index) => (
-                                            <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                            <tr key={index} className="hover:bg-muted/20 transition-colors">
                                                 <td className="px-4 py-3">
-                                                    <div className="font-medium text-slate-700">{item.product?.name || `Producto #${item.productId}`}</div>
-                                                    <div className="text-xs text-slate-400 font-mono">{item.product?.code}</div>
+                                                    <div className="font-medium text-foreground text-xs">{item.product?.name || `Producto #${item.productId}`}</div>
+                                                    <div className="text-[10px] text-muted-foreground font-mono">{item.product?.code}</div>
                                                 </td>
-                                                <td className="px-4 py-3 text-center text-slate-600">{item.quantity}</td>
-                                                <td className="px-4 py-3 text-right text-slate-600">
+                                                <td className="px-4 py-3 text-center text-muted-foreground text-xs">{item.quantity}</td>
+                                                <td className="px-4 py-3 text-right text-muted-foreground text-xs">
                                                     {currencySymbol} {Number(item.unitPrice).toFixed(2)}
                                                 </td>
-                                                <td className="px-4 py-3 text-right font-semibold text-slate-700">
+                                                <td className="px-4 py-3 text-right font-bold text-foreground text-xs">
                                                     {currencySymbol} {Number(item.total).toFixed(2)}
                                                 </td>
                                             </tr>
@@ -181,19 +181,19 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         {/* Payment Info */}
                         {order.OrderPayment && order.OrderPayment.length > 0 && (
                             <div>
-                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <FileText size={18} className="text-slate-400" />
+                                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 text-sm uppercase tracking-tight">
+                                    <FileText size={18} className="text-muted-foreground/50" />
                                     Información de Pago
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {order.OrderPayment.map((payment, idx) => (
-                                        <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div key={idx} className="bg-muted/20 p-4 rounded-xl border border-border">
                                             <div className="flex justify-between items-start mb-2">
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Método</span>
-                                                <span className="text-xs font-mono text-slate-400">{payment.createdAt ? format(new Date(payment.createdAt), 'dd/MM/yyyy HH:mm') : '-'}</span>
+                                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Método</span>
+                                                <span className="text-[10px] font-mono text-muted-foreground">{payment.createdAt ? format(new Date(payment.createdAt), 'dd/MM/yyyy HH:mm') : '-'}</span>
                                             </div>
-                                            <p className="font-bold text-slate-700 mb-1">{payment.paymentMethod}</p>
-                                            <p className="text-sm text-slate-600">Monto: {currencySymbol} {Number(payment.amount).toFixed(2)}</p>
+                                            <p className="font-bold text-foreground text-xs mb-1">{payment.paymentMethod}</p>
+                                            <p className="text-xs text-muted-foreground">Monto: {currencySymbol} {Number(payment.amount).toFixed(2)}</p>
                                             {payment.referenceCode && (
                                                 <p className="text-xs text-slate-500 mt-1">Ref: {payment.referenceCode}</p>
                                             )}
@@ -207,14 +207,14 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                     {/* Right Column: Summary & Client */}
                     <div className="space-y-6">
                         {/* Client Card */}
-                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                            <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                <User size={18} className="text-slate-400" />
+                        <div className="bg-muted/20 p-5 rounded-xl border border-border">
+                            <h3 className="font-bold text-foreground mb-3 flex items-center gap-2 text-sm uppercase tracking-tight">
+                                <User size={18} className="text-muted-foreground/50" />
                                 Cliente
                             </h3>
                             <div className="space-y-3">
                                 <div>
-                                    <p className="font-semibold text-slate-700">{clientName}</p>
+                                    <p className="font-semibold text-foreground text-xs">{clientName}</p>
                                     {order.partner?.documentNumber && (
                                         <p className="text-xs text-slate-500">{order.partner.documentType}: {order.partner.documentNumber}</p>
                                     )}
@@ -234,14 +234,14 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         </div>
 
                         {/* Order Summary */}
-                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                            <h3 className="font-bold text-slate-800 mb-4">Resumen</h3>
+                        <div className="bg-muted/20 p-5 rounded-xl border border-border">
+                            <h3 className="font-bold text-foreground mb-4 text-sm uppercase tracking-tight">Resumen</h3>
                             <div className="space-y-3">
-                                <div className="flex justify-between text-sm text-slate-600">
+                                <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>Subtotal</span>
                                     <span>{currencySymbol} {subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-sm text-slate-600">
+                                <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>IGV (18%)</span>
                                     <span>{currencySymbol} {tax.toFixed(2)}</span>
                                 </div>
@@ -251,9 +251,9 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                         <span>- {currencySymbol} {discount.toFixed(2)}</span>
                                     </div>
                                 )}
-                                <div className="pt-3 mt-3 border-t border-slate-200 flex justify-between items-center">
-                                    <span className="font-bold text-slate-800">Total</span>
-                                    <span className="text-2xl font-black text-slate-900">{currencySymbol} {total.toFixed(2)}</span>
+                                <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
+                                    <span className="font-bold text-foreground text-xs uppercase">Total</span>
+                                    <span className="text-2xl font-black text-foreground">{currencySymbol} {total.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

@@ -41,11 +41,11 @@ export function POSTopBar() {
         <div className="flex gap-3 mb-6 md:hidden">
             {/* Branch Selector */}
             <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary pointer-events-none">
                     <Store className="w-4 h-4" />
                 </div>
                 <select
-                    className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[160px]"
+                    className="appearance-none bg-background border border-input text-foreground text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer shadow-sm min-w-[160px]"
                     value={selectedBranch?.id || ''}
                     onChange={(e) => {
                         const branch = displayBranches.find(b => b.id === e.target.value);
@@ -56,18 +56,18 @@ export function POSTopBar() {
                         <option key={branch.id} value={branch.id}>{branch.name}</option>
                     ))}
                 </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
             </div>
 
             {/* Currency Selector */}
             <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary pointer-events-none">
                     <Banknote className="w-4 h-4" />
                 </div>
                 <select
-                    className="appearance-none bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-sm min-w-[100px]"
+                    className="appearance-none bg-background border border-input text-foreground text-sm font-medium rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer shadow-sm min-w-[100px]"
                     value={selectedCurrency}
                     onChange={(e) => setCurrencyId(e.target.value)}
                 >
@@ -75,7 +75,7 @@ export function POSTopBar() {
                         <option key={currency.id} value={currency.id}>{currency.name || (currency as any).code || 'PEN'}</option>
                     ))}
                 </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
             </div>

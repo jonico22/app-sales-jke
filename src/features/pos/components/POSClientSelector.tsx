@@ -79,43 +79,43 @@ export function POSClientSelector({
 
     return (
         <div ref={dropdownRef} className="relative w-full">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2 block">
                 Cliente
             </label>
             <div className="flex gap-2">
                 <div className="flex-1 relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                        <User className="h-5 w-5 text-sky-500" />
+                        <User className="h-5 w-5 text-primary" />
                     </div>
 
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className={`w-full h-12 pl-10 pr-10 text-left bg-white border rounded-xl font-medium transition-all flex items-center justify-between
-                            ${isOpen ? 'border-sky-500 ring-2 ring-sky-100' : 'border-slate-200 hover:border-slate-300'}
+                        className={`w-full h-12 pl-10 pr-10 text-left bg-background border rounded-xl font-medium transition-all flex items-center justify-between
+                            ${isOpen ? 'border-primary ring-2 ring-primary/20' : 'border-input hover:border-border'}
                         `}
                     >
-                        <span className="text-slate-700 truncate">
+                        <span className="text-foreground truncate">
                             {isLoading ? 'Cargando clientes...' : (selectedClient ? selectedClient.name : 'Seleccionar cliente...')}
                         </span>
                         {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         ) : (
-                            <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                         )}
                     </button>
 
                     {/* Dropdown Content */}
                     {isOpen && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
 
                             {/* Search Input */}
-                            <div className="p-3 border-b border-slate-50 bg-slate-50/50">
+                            <div className="p-3 border-b border-border bg-muted/50">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <input
                                         ref={searchInputRef}
                                         type="text"
-                                        className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 placeholder:text-slate-400"
+                                        className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
                                         placeholder="Buscar cliente..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -124,9 +124,9 @@ export function POSClientSelector({
                             </div>
 
                             {/* Options List */}
-                            <div className="max-h-60 overflow-y-auto overflow-x-hidden p-1.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            <div className="max-h-60 overflow-y-auto overflow-x-hidden p-1.5 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                                 {filteredClients.length === 0 ? (
-                                    <div className="px-4 py-8 text-center text-sm text-slate-500">
+                                    <div className="px-4 py-8 text-center text-sm text-muted-foreground">
                                         {searchTerm ? 'No se encontraron resultados' : 'No hay clientes disponibles'}
                                     </div>
                                 ) : (
@@ -135,19 +135,19 @@ export function POSClientSelector({
                                             key={client.id}
                                             onClick={() => handleSelect(client)}
                                             className={`w-full px-3 py-2.5 flex items-start gap-3 rounded-lg text-left transition-colors group mb-0.5
-                                                ${selectedClient?.id === client.id ? 'bg-sky-50' : 'hover:bg-slate-50'}
+                                                ${selectedClient?.id === client.id ? 'bg-primary/10' : 'hover:bg-muted'}
                                             `}
                                         >
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className={`text-sm font-semibold truncate ${selectedClient?.id === client.id ? 'text-sky-700' : 'text-slate-700'}`}>
+                                                    <span className={`text-sm font-semibold truncate ${selectedClient?.id === client.id ? 'text-primary' : 'text-foreground'}`}>
                                                         {client.name}
                                                     </span>
                                                     {selectedClient?.id === client.id && (
-                                                        <Check className="h-4 w-4 text-sky-600 flex-shrink-0" />
+                                                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
                                                     )}
                                                 </div>
-                                                <span className="text-[10px] uppercase font-medium text-slate-400 group-hover:text-slate-500">
+                                                <span className="text-[10px] uppercase font-medium text-muted-foreground group-hover:text-foreground">
                                                     DOCUMENTO - {client.documentNumber}
                                                 </span>
                                             </div>
@@ -157,10 +157,10 @@ export function POSClientSelector({
                             </div>
 
                             {/* Footer Action */}
-                            <div className="p-2 border-t border-slate-100 bg-slate-50/50">
+                            <div className="p-2 border-t border-border bg-muted/50">
                                 <button
                                     onClick={onNewClient}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-sky-600 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                                 >
                                     <UserPlus className="h-4 w-4" />
                                     Agregar cliente
@@ -173,7 +173,7 @@ export function POSClientSelector({
                 <Button
                     variant="primary"
                     size="icon"
-                    className="h-12 w-12 bg-cyan-500 hover:bg-cyan-600 rounded-xl"
+                    className="h-12 w-12 rounded-xl"
                     title="Nuevo Cliente"
                     onClick={onNewClient}
                 >
