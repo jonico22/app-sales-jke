@@ -46,6 +46,7 @@ const navItems = [
     children: [
       { name: 'Mi Perfil', href: '/profile' },
       { name: 'Seguridad y Acceso', href: '/security' },
+      { name: 'Notificaciones', href: '/notifications' }
     ]
   },
 ];
@@ -251,7 +252,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                       >
                         <div className="px-4 py-3 border-b border-border/50 mb-1 flex items-center gap-2">
                           <item.icon className="h-4 w-4 text-sky-600" />
-                          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{item.name}</span>
+                          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider whitespace-nowrap">{item.name}</span>
                         </div>
                         <div className="px-2 space-y-0.5">
                           {item.children?.map((child) => {
@@ -261,7 +262,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                                 key={child.href}
                                 to={child.href}
                                 className={cn(
-                                  "flex items-center px-3 py-2 text-[13px] font-medium transition-colors rounded-lg",
+                                  "flex items-center px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors rounded-lg",
                                   isChildActive
                                     ? "text-sky-600 bg-sky-50 dark:bg-sky-500/10 font-semibold"
                                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"

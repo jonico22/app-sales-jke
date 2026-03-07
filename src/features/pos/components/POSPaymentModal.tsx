@@ -87,9 +87,9 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-card rounded-3xl w-11/12 max-w-[400px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-2 text-foreground font-semibold">
                         <CreditCard className="w-5 h-5 text-primary" />
                         <span>Procesar Pago - #{currentOrderCode || '...'}</span>
@@ -99,11 +99,11 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-5 space-y-5">
                     {/* Total Amount */}
                     <div className="text-center space-y-1">
                         <p className="text-sm text-muted-foreground font-medium">Total a Pagar</p>
-                        <h2 className="text-4xl font-black text-foreground">S/ {total.toFixed(2)}</h2>
+                        <h2 className="text-3xl font-black text-foreground">S/ {total.toFixed(2)}</h2>
                         <span className="inline-block px-3 py-1 bg-amber-500/10 text-amber-500 text-xs font-bold rounded-full">
                             Pendiente de pago
                         </span>
@@ -273,17 +273,17 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t border-border bg-muted/50 flex gap-3">
+                <div className="p-5 border-t border-border bg-muted/50 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 text-sm font-bold text-foreground bg-background border border-input rounded-xl hover:bg-muted transition-colors"
+                        className="flex-1 py-2.5 text-sm font-bold text-foreground bg-background border border-input rounded-xl hover:bg-muted transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleConfirmPayment}
                         disabled={!isValidAmount || isProcessing}
-                        className="flex-[2] py-3 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="flex-[2] py-2.5 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -20,8 +20,17 @@ export default function NotificationDropdown() {
 
     const fetchInitialCount = async () => {
         try {
-            const countData = await notificationService.getUnreadCount();
-            setUnreadCount(countData.data.count);
+            const countData: any = await notificationService.getUnreadCount();
+
+            let count = 0;
+            // Evaluamos agresivamente dónde puede venir el número
+            if (typeof countData === 'number') count = countData;
+            else if (typeof countData?.data === 'number') count = countData.data;
+            else if (typeof countData?.data?.count === 'number') count = countData.data.count;
+            else if (typeof countData?.count === 'number') count = countData.count;
+            else if (countData?.data?.count) count = Number(countData.data.count);
+
+            setUnreadCount(count || 0);
         } catch (error) {
             console.error('Error fetching unread count:', error);
         }
@@ -194,18 +203,18 @@ export default function NotificationDropdown() {
     return (
         <div className="relative" ref={containerRef}>
             <button
-                className="relative text-muted-foreground hover:text-foreground transition-colors pt-1"
+                className="relative text-muted-foreground hover:text-foreground transition-colors pt-1 px-1"
                 onClick={handleToggle}
             >
-                <Bell className={`h-6 w-6 transition-transform ${isAnimating ? 'animate-bounce text-primary' : ''}`} />
+                <Bell className={`h-[22px] w-[22px] transition-transform ${isAnimating ? 'animate-bounce text-primary' : ''}`} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-destructive rounded-full border-2 border-background translate-x-1/4 -translate-y-1/4 animate-pulse"></span>
+                    <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                 )}
             </button>
 
             {/* Notification Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-card rounded-xl shadow-xl border border-border z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-card rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                     {/* Header */}
                     <div className="px-4 py-3 bg-card border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-2">

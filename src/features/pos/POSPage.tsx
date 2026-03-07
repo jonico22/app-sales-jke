@@ -98,15 +98,12 @@ export default function POSPage() {
 
         // Clean up state so it doesn't run again on reload
         window.history.replaceState({}, document.title);
-        console.log('[CLONE] Clone process completed, state cleaned');
 
         // Reset ref after a delay to allow re-cloning if needed (though location state is cleared)
         setTimeout(() => {
           processingCloneRef.current = null;
         }, 1000);
 
-      } else {
-        console.log('[CLONE] No cloneFromOrderId in location state');
       }
     };
 

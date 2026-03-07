@@ -1,11 +1,13 @@
 import { Store, BadgeCheck, Hash, Coins, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/auth.store';
 import { useSocietyStore } from '@/store/society.store';
 import { Button } from '@/components/ui';
 
 export function BusinessHeader() {
   const navigate = useNavigate();
   const society = useSocietyStore((state) => state.society);
+  const role = useAuthStore((state) => state.role);
 
   if (!society) {
     return null;
@@ -69,13 +71,15 @@ export function BusinessHeader() {
         </div>
 
         {/* Right: Action Button */}
-        <Button
-          variant="outline"
-          className="h-9 px-4 text-[11px] font-bold uppercase tracking-wider border-border text-muted-foreground hover:text-primary hover:border-primary/30 bg-card transition-all"
-          onClick={() => navigate('/settings')}
-        >
-          Editar Perfil
-        </Button>
+        {role?.name?.toLowerCase() === 'titular' && (
+          <Button
+            variant="outline"
+            className="h-9 px-4 text-[11px] font-bold uppercase tracking-wider border-border text-muted-foreground hover:text-primary hover:border-primary/30 bg-card transition-all"
+            onClick={() => navigate('/settings')}
+          >
+            Editar Perfil
+          </Button>
+        )}
       </div>
     </div>
   );
