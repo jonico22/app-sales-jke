@@ -53,8 +53,17 @@ export default function BillingPage() {
 
     const currentUsers = society?.totalUsers || 0;
     const currentProducts = society?.totalProducts || 0;
-    const currentStorageStr = society?.usedStorage ? parseFloat((society.usedStorage / (1024 * 1024 * 1024)).toFixed(2)) : 0; // Assuming it comes in bytes, converting to GB (or adjust if backend sends MB/GB) 
+    const currentStorageBytes = society?.usedStorage || 0;
 
+    const formatSize = (bytes: number) => {
+        if (!bytes || bytes === 0) return '0 GB';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const currentStorageStr = formatSize(currentStorageBytes);
 
     useEffect(() => {
         const fetchSubscription = async () => {
@@ -228,7 +237,9 @@ export default function BillingPage() {
 
     const userPercent = Math.min(100, (currentUsers / (society?.maxUsers || subscription.plan.maxUsers || 1)) * 100);
     const productPercent = Math.min(100, (currentProducts / (society?.maxProducts || subscription.plan.maxProducts || 1)) * 100);
-    const storagePercent = Math.min(100, (currentStorageStr / (subscription.plan.storage || 1)) * 100);
+
+    const planStorageBytes = (subscription.plan.storage || 1) * 1024 * 1024 * 1024;
+    const storagePercent = Math.min(100, (currentStorageBytes / planStorageBytes) * 100);
 
     return (
         <div className="flex-1 w-full bg-background min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6">
@@ -294,14 +305,17 @@ export default function BillingPage() {
                             </div>
 
                             {/* Usage Progress */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-border">
+                            <div className="flex flex-col gap-5 pt-6 border-t border-border">
                                 {/* Users Progress */}
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div className="flex justify-between items-end">
-                                        <span className="font-bold text-foreground text-xs uppercase">Usuarios</span>
-                                        <span className="text-xs font-medium text-muted-foreground">
-                                            {currentUsers} / {society?.maxUsers || subscription.plan.maxUsers}
-                                        </span>
+                                        <span className="font-bold text-foreground text-xs uppercase tracking-wider">Usuarios</span>
+                                        <div className="text-right">
+                                            <span className="text-sm font-bold text-foreground">{currentUsers}</span>
+                                            <span className="text-xs font-medium text-muted-foreground ml-1">
+                                                / {society?.maxUsers || subscription.plan.maxUsers}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                                         <div
@@ -309,18 +323,21 @@ export default function BillingPage() {
                                             style={{ width: `${userPercent}%` }}
                                         />
                                     </div>
-                                    <p className="text-xs text-muted-foreground italic">
+                                    <p className="text-[11px] text-muted-foreground italic">
                                         {(society?.maxUsers || subscription.plan.maxUsers) - currentUsers} espacios disponibles
                                     </p>
                                 </div>
 
                                 {/* Products Progress */}
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div className="flex justify-between items-end">
-                                        <span className="font-bold text-foreground text-xs uppercase">Productos</span>
-                                        <span className="text-xs font-medium text-muted-foreground">
-                                            {currentProducts.toLocaleString()} / {(society?.maxProducts || subscription.plan.maxProducts).toLocaleString()}
-                                        </span>
+                                        <span className="font-bold text-foreground text-xs uppercase tracking-wider">Productos</span>
+                                        <div className="text-right">
+                                            <span className="text-sm font-bold text-foreground">{currentProducts.toLocaleString()}</span>
+                                            <span className="text-xs font-medium text-muted-foreground ml-1">
+                                                / {(society?.maxProducts || subscription.plan.maxProducts).toLocaleString()}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                                         <div
@@ -328,18 +345,21 @@ export default function BillingPage() {
                                             style={{ width: `${productPercent}%` }}
                                         />
                                     </div>
-                                    <p className="text-xs text-muted-foreground italic">
-                                        {Math.round(productPercent)}% de la capacidad
+                                    <p className="text-[11px] text-muted-foreground italic">
+                                        {Math.round(productPercent)}% de la capacidad utilizada
                                     </p>
                                 </div>
 
                                 {/* Storage Progress */}
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <div className="flex justify-between items-end">
-                                        <span className="font-bold text-foreground text-xs uppercase">Almacenamiento</span>
-                                        <span className="text-xs font-medium text-muted-foreground">
-                                            {currentStorageStr} GB / {subscription.plan.storage} GB
-                                        </span>
+                                        <span className="font-bold text-foreground text-xs uppercase tracking-wider">Almacenamiento</span>
+                                        <div className="text-right">
+                                            <span className="text-sm font-bold text-foreground">{currentStorageStr}</span>
+                                            <span className="text-xs font-medium text-muted-foreground ml-1">
+                                                / {subscription.plan.storage} GB
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                                         <div
@@ -347,8 +367,8 @@ export default function BillingPage() {
                                             style={{ width: `${storagePercent}%` }}
                                         />
                                     </div>
-                                    <p className="text-xs text-muted-foreground italic">
-                                        {Math.round(storagePercent)}% de la capacidad
+                                    <p className="text-[11px] text-muted-foreground italic">
+                                        {storagePercent > 0 && storagePercent < 1 ? '< 1' : Math.round(storagePercent)}% del espacio total utilizado
                                     </p>
                                 </div>
                             </div>
@@ -482,24 +502,22 @@ export default function BillingPage() {
 
                 {/* Payment Method Card */}
                 <div>
-                    <Card className="border-slate-200 shadow-sm h-full flex flex-col overflow-hidden">
-                        <div className="p-6 pb-2 border-b border-slate-100">
-                            <h3 className="text-lg font-semibold text-slate-800 tracking-tight">Método de Pago</h3>
+                    <Card className="border-border shadow-sm flex flex-col overflow-hidden h-fit">
+                        <div className="p-6 pb-3 border-b border-border">
+                            <h3 className="text-sm font-bold text-foreground tracking-tight uppercase">Método de Pago</h3>
                         </div>
-                        <div className="flex-1 flex flex-col items-center justify-center p-6 mt-2">
-
-                            <div className="w-full border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-4">
-                                <div className="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                        <div className="p-6">
+                            <div className="w-full border-2 border-dashed border-border rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+                                <div className="h-12 w-12 bg-muted/50 rounded-full flex items-center justify-center text-muted-foreground">
                                     <CreditCard className="h-6 w-6" />
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-foreground text-xs uppercase mb-1">Sin pagos requeridos</h3>
-                                    <p className="text-xs text-muted-foreground max-w-[200px] leading-relaxed">
+                                <div className="space-y-1">
+                                    <h3 className="font-bold text-foreground text-[11px] uppercase tracking-wider">Sin pagos requeridos</h3>
+                                    <p className="text-[11px] text-muted-foreground max-w-[180px] leading-relaxed italic">
                                         Disfruta de la plataforma sin cargos durante la fase beta pública.
                                     </p>
                                 </div>
                             </div>
-
                         </div>
                     </Card>
                 </div>

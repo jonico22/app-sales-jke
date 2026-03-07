@@ -75,7 +75,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="bg-card border-b border-border py-3 px-6 flex items-center justify-between sticky top-0 z-10 transition-colors">
+    <header className="bg-card border-b border-border h-16 px-6 flex items-center justify-between sticky top-0 z-10 transition-colors">
       {/* Left: Title & Menu */}
       <div className="flex items-center gap-3">
         <button

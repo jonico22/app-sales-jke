@@ -8,11 +8,13 @@ interface AuthState {
   isAuthenticated: boolean;
   role: Role | null;
   subscription: SubscriptionInfo | null;
+  modulePermissions: Record<string, boolean> | null;
   login: (data: LoginData) => void;
   logout: () => void;
   setMustChangePassword: (must: boolean) => void;
   updateUser: (user: User) => void;
   setSubscription: (subscription: SubscriptionInfo | null) => void;
+  setModulePermissions: (permissions: Record<string, boolean> | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       role: null,
       subscription: null,
+      modulePermissions: null,
       isAuthenticated: false,
       login: (data: LoginData) => {
         set({
@@ -38,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
         // For now, let's allow the store to manage its own persistence 'auth-storage'.
       },
       logout: () => {
-        set({ token: null, user: null, role: null, subscription: null, isAuthenticated: false });
+        set({ token: null, user: null, role: null, subscription: null, modulePermissions: null, isAuthenticated: false });
         localStorage.removeItem('token'); // Clear the manual token if we still use it for interceptors
 
         // Clear all other stores
@@ -59,10 +62,13 @@ export const useAuthStore = create<AuthState>()(
       setSubscription: (subscription: SubscriptionInfo | null) => {
         set({ subscription });
       },
+      setModulePermissions: (modulePermissions: Record<string, boolean> | null) => {
+        set({ modulePermissions });
+      },
     }),
     {
       name: 'auth-storage', // name of the item in the storage (must be unique)
-      partialize: (state) => ({ token: state.token, user: state.user, role: state.role, subscription: state.subscription, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ token: state.token, user: state.user, role: state.role, subscription: state.subscription, modulePermissions: state.modulePermissions, isAuthenticated: state.isAuthenticated }),
     }
   )
 );

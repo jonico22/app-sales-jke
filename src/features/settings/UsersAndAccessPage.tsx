@@ -57,20 +57,22 @@ export default function UsersAndAccessPage() {
 
     const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-    const getRoleBadgeColor = (roleCode: string) => {
+    const getRoleBadgeColor = (fullRoleCode: string) => {
+        const roleCode = fullRoleCode.split('-')[0]; // Extract base role (e.g., SELLER from SELLER-SOC-...)
         switch (roleCode) {
             case 'OWNER':
-                return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+                return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20';
             case 'BUSINESS_MANAGER':
-                return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+                return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
             case 'SELLER':
-                return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+                return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
             default:
-                return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+                return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
         }
     };
 
-    const getRoleName = (roleCode: string) => {
+    const getRoleName = (fullRoleCode: string) => {
+        const roleCode = fullRoleCode.split('-')[0]; // Extract base role
         switch (roleCode) {
             case 'OWNER': return 'Propietario';
             case 'BUSINESS_MANAGER': return 'Administrador';
@@ -236,26 +238,26 @@ export default function UsersAndAccessPage() {
                                             </div>
                                         </td>
                                         <td className="py-3 px-5">
-                                            <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end gap-1.5">
                                                 <button
-                                                    className="p-1.5 text-primary hover:bg-primary/5 rounded-lg transition-colors active:scale-95"
+                                                    className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
                                                     title="Editar usuario"
                                                     onClick={() => {
                                                         setUserToEdit(user);
                                                         setIsEditPanelOpen(true);
                                                     }}
                                                 >
-                                                    <FileEdit className="w-3.5 h-3.5" />
+                                                    <FileEdit className="w-4 h-4 cursor-pointer" />
                                                 </button>
                                                 <button
-                                                    className="p-1.5 text-danger/70 hover:text-danger hover:bg-danger/5 rounded-lg transition-colors active:scale-95"
+                                                    className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
                                                     title="Eliminar usuario"
                                                     onClick={() => {
                                                         setUserToDelete(user.id);
                                                         setIsDeleteModalOpen(true);
                                                     }}
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-4 h-4 cursor-pointer" />
                                                 </button>
                                             </div>
                                         </td>

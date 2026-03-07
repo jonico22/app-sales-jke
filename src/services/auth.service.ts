@@ -146,6 +146,15 @@ export interface RefreshSessionResponse {
   };
 }
 
+export interface PermissionsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    views: Record<string, string[]>;
+    modules: Record<string, boolean>;
+  };
+}
+
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     const response = await api.post<LoginResponse>('/auth/login', credentials);
@@ -156,6 +165,10 @@ export const authService = {
   },
   getMe: async (): Promise<MeResponse> => {
     const response = await api.get<MeResponse>('/auth/me');
+    return response.data;
+  },
+  getPermissions: async (): Promise<PermissionsResponse> => {
+    const response = await api.get<PermissionsResponse>('/auth/me/permissions');
     return response.data;
   },
   refreshSession: async (): Promise<RefreshSessionResponse> => {

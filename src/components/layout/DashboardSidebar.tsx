@@ -1,8 +1,9 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, ChevronDown, ChevronRight, Building2, CreditCard } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
+import { usePermissions } from '@/hooks/usePermissions';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Define navigation items
 const navItems = [
@@ -23,7 +24,7 @@ const navItems = [
       { name: 'Pedidos Pendientes', href: '/orders/pending' },
     ]
   },
-  { name: 'Clientes', href: '/clients', icon: Users },
+  //{ name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Usuarios', href: '/settings/users', icon: Users },
   {
     name: 'Reportes', icon: FileText,
@@ -33,13 +34,18 @@ const navItems = [
     ]
   },
   {
+    name: 'Suscripción', icon: CreditCard,
+    children: [
+      { name: 'Suscripción y Facturación', href: '/settings/billing', icon: CreditCard },
+      { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
+    ]
+  },
+  {
     name: 'Configuración',
     icon: Settings,
     children: [
       { name: 'Mi Perfil', href: '/profile' },
       { name: 'Seguridad y Acceso', href: '/security' },
-      { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
-      { name: 'Suscripción y Facturación', href: '/settings/billing', icon: CreditCard },
     ]
   },
 ];
@@ -58,21 +64,92 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
   const subscription = useAuthStore((state) => state.subscription);
+  const { data: permissionData } = usePermissions();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos and Configuración for now
+  const [activePopover, setActivePopover] = useState<string | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number }>({ top: 0 });
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Auto-expand menu when navigating directly to a child route (e.g., after login redirect)
+  useEffect(() => {
+    const parentMenu = navItems.find((item) =>
+      item.children?.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`))
+    );
+
+    if (parentMenu) {
+      setExpandedMenus((prev) =>
+        prev.includes(parentMenu.name) ? prev : [...prev, parentMenu.name]
+      );
+    }
+  }, [pathname]);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setActivePopover(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close popover on navigation
+  useEffect(() => {
+    setActivePopover(null);
+  }, [pathname]);
 
   const isBlocked = subscription?.status === 'EXPIRED' || subscription?.status === 'INACTIVE';
 
-  const displayNavItems = isBlocked
-    ? navItems
-      .filter((item) => item.name === 'Configuración')
-      .map((item) => ({
-        ...item,
-        children: item.children?.filter((child) => child.name === 'Suscripción y Facturación'),
-      }))
-    : navItems;
+  // Map navItem names to module keys from backend
+  const moduleMap: Record<string, string> = {
+    'Dashboard': 'DASHBOARD',
+    'Inventario': 'INVENTARIO',
+    'Ventas': 'VENTAS',
+    'Usuarios': 'USUARIOS',
+    'Reportes': 'REPORTES',
+    'Suscripción': 'SUSCRIPCION',
+    'Configuración': 'CONFIGURACION'
+  };
 
-  const toggleMenu = (name: string) => {
-    if (isCollapsed) return;
+  const getPermittedNavItems = () => {
+    // If blocked, only show Configuration -> Subscription
+    if (isBlocked) {
+      return navItems
+        .filter((item) => item.name === 'Configuración')
+        .map((item) => ({
+          ...item,
+          children: item.children?.filter((child) => child.name === 'Suscripción y Facturación'),
+        }));
+    }
+
+    // Normal filtering based on permissions
+    const modules = permissionData?.modules;
+    if (!modules) return navItems; // Fallback entirely if no permissions loaded yet (or consider hiding all)
+
+    return navItems.filter(item => {
+      const moduleKey = moduleMap[item.name];
+      if (!moduleKey) return true; // Show by default if not mapped
+      return modules[moduleKey] === true;
+    });
+  };
+
+  const displayNavItems = getPermittedNavItems();
+
+  const toggleMenu = (name: string, event?: React.MouseEvent) => {
+    if (isCollapsed) {
+      if (activePopover === name) {
+        setActivePopover(null);
+      } else {
+        // Calculate position
+        const rect = event?.currentTarget.getBoundingClientRect();
+        if (rect) {
+          setPopoverPosition({ top: rect.top });
+        }
+        setActivePopover(name);
+      }
+      return;
+    };
     setExpandedMenus(prev =>
       prev.includes(name)
         ? prev.filter(item => item !== name)
@@ -132,18 +209,24 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
               return (
                 <div key={item.name} className="space-y-1">
                   <button
-                    onClick={() => isCollapsed ? null : toggleMenu(item.name)}
+                    onClick={(e) => toggleMenu(item.name, e)}
                     className={cn(
-                      "w-full flex items-center justify-between py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide group",
+                      "w-full flex items-center justify-between py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide group relative",
                       isCollapsed ? "justify-center px-0" : "px-3",
-                      isActive
-                        ? "text-sky-600"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      // Single item style for active/open collapsed items
+                      (isCollapsed && (isActive || activePopover === item.name))
+                        ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
+                        : isActive
+                          ? "text-sky-600"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-muted-foreground")} />
+                      <item.icon className={cn(
+                        "h-5 w-5 flex-shrink-0",
+                        (isActive || (isCollapsed && activePopover === item.name)) ? "text-sky-600" : "text-muted-foreground"
+                      )} />
                       <span className={cn(
                         "transition-all duration-300 whitespace-nowrap",
                         isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
@@ -154,6 +237,41 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
                     {!isCollapsed && (
                       <div className="text-muted-foreground">
                         {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </div>
+                    )}
+
+                    {/* Floating Popover for Collapsed State */}
+                    {isCollapsed && activePopover === item.name && (
+                      <div
+                        ref={popoverRef}
+                        className="fixed left-[84px] z-[100] bg-card border border-border shadow-2xl rounded-xl py-2 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
+                        style={{
+                          top: `${popoverPosition.top}px`,
+                        }}
+                      >
+                        <div className="px-4 py-3 border-b border-border/50 mb-1 flex items-center gap-2">
+                          <item.icon className="h-4 w-4 text-sky-600" />
+                          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">{item.name}</span>
+                        </div>
+                        <div className="px-2 space-y-0.5">
+                          {item.children?.map((child) => {
+                            const isChildActive = pathname === child.href;
+                            return (
+                              <Link
+                                key={child.href}
+                                to={child.href}
+                                className={cn(
+                                  "flex items-center px-3 py-2 text-[13px] font-medium transition-colors rounded-lg",
+                                  isChildActive
+                                    ? "text-sky-600 bg-sky-50 dark:bg-sky-500/10 font-semibold"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                )}
+                              >
+                                {child.name}
+                              </Link>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </button>

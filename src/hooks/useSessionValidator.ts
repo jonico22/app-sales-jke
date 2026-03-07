@@ -24,6 +24,7 @@ export function useSessionValidator() {
     const checkSession = async () => {
       try {
         const response = await authService.getMe();
+
         if (response.data) {
           if (response.data.subscription) {
             setSubscription(response.data.subscription);

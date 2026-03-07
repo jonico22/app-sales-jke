@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
@@ -14,6 +14,23 @@ export default function DashboardLayout() {
 
   // Toggle collapse on desktop, but maybe we want to keep it simple for now
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+
+  // Auto-collapse on tablet screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex">

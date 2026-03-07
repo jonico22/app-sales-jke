@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Trash2, ShoppingBag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
@@ -106,21 +106,35 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
         // Optionally show success message
     };
 
+    // Lock body scroll when cart is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     return (
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity"
+                className="fixed inset-0 bg-black/20 h-full backdrop-blur-sm z-50 transition-opacity"
                 onClick={onClose}
             />
 
             {/* Panel */}
-            <div className="fixed inset-y-0 right-0 w-full max-w-md bg-card shadow-2xl border-l border-border z-50 flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="fixed inset-y-0 right-0 h-full w-full max-w-md bg-card shadow-2xl border-l border-border z-50 flex flex-col animate-in slide-in-from-right duration-300">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center justify-between p-3 border-b border-border">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg text-primary">
                             <ShoppingBag className="w-5 h-5" />
@@ -136,7 +150,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/50 min-h-[120px] custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background min-h-[120px] custom-scrollbar">
                     {items.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-4 min-h-[150px]">
                             <ShoppingBag className="w-16 h-16 opacity-10" />
@@ -144,19 +158,22 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.product.id} className="bg-background border border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                            <div key={item.product.id} className="relative bg-transparent border border-border rounded-xl p-3 shadow-sm hover:shadow-md transition-all group">
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 className="font-bold text-foreground text-sm line-clamp-1">
+                                        <h4 className="font-bold text-foreground text-sm line-clamp-1 pr-6">
                                             {item.product.name}
                                         </h4>
-                                        <p className="text-xs text-muted-foreground font-medium">
-                                            {item.product.brand || item.product.description || 'Sin detalles'}
-                                        </p>
+                                        {(item.product.brand || item.product.description) && (
+                                            <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                                                {item.product.brand || item.product.description}
+                                            </p>
+                                        )}
                                     </div>
                                     <button
                                         onClick={() => removeItem(item.product.id)}
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
+                                        className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors absolute top-2 right-2"
+                                        title="Quitar artículo"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -188,7 +205,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                             Precio Unit.
                                         </label>
                                         <div className="relative group/price">
-                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/70">
+                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/80">
                                                 {society?.mainCurrency?.symbol || 'S/'}
                                             </span>
                                             <input
@@ -197,7 +214,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                                 step="0.10"
                                                 value={item.product.price}
                                                 onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
-                                                className="w-24 pl-7 pr-2 py-1 text-right text-xs font-bold text-primary bg-primary/5 border border-primary/20 rounded-lg focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+                                                className="w-24 pl-7 pr-2 py-1.5 text-right text-xs font-bold text-primary bg-primary/10 border border-primary/30 rounded-md hover:bg-primary/20 hover:border-primary/50 focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-text shadow-inner"
                                             />
                                         </div>
                                     </div>
@@ -208,10 +225,10 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-4 sm:p-5 bg-card border-t border-border space-y-3 sm:space-y-4 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative shrink-0 max-h-[55vh] sm:max-h-none overflow-y-auto custom-scrollbar">
+                <div className="p-4 bg-card border-t border-border flex flex-col gap-4 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-10 relative shrink-0">
 
                     {/* Discount & Notes */}
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-3">
                         <div>
                             <label className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1.5 sm:mb-2">
                                 <span>Descuento Global</span>
@@ -273,7 +290,7 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                     </div>
 
                     {/* Totals */}
-                    <div className="space-y-1.5 sm:space-y-2">
+                    <div className="flex flex-col gap-1.5 sm:gap-2">
                         <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
                             <span>Subtotal</span>
                             <span>{society?.mainCurrency?.symbol || 'S/'} {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -288,25 +305,25 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                                 <span>- {society?.mainCurrency?.symbol || 'S/'} {discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-end pt-3 sm:pt-4 border-t border-border">
+                        <div className="flex justify-between items-center pt-3 sm:pt-4 border-t border-border">
                             <span className="text-sm font-bold text-foreground">TOTAL A PAGAR</span>
-                            <span className="text-2xl font-black text-foreground tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="text-lg font-black text-foreground tracking-tight">{society?.mainCurrency?.symbol || 'S/'} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="grid gap-2 sm:gap-3 pt-1">
+                    <div className="flex flex-col gap-2 pt-1">
 
                         <Button
                             onClick={() => handleProcessOrder(OrderStatus.PENDING_PAYMENT)}
                             disabled={items.length === 0 || processingStatus !== null}
                             variant="primary"
-                            className="w-full py-2.5 sm:py-3 shadow-lg shadow-primary/25 flex items-center justify-center gap-2 text-sm sm:text-base h-auto"
+                            className="w-full h-10 shadow-md shadow-primary/20 flex items-center justify-center gap-2 text-sm"
                         >
                             {processingStatus === OrderStatus.PENDING_PAYMENT ? (
-                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <ShoppingBag className="w-4 h-4" />
                             )}
                             {processingStatus === OrderStatus.PENDING_PAYMENT ? 'Procesando...' : 'Registar Venta'}
                         </Button>
@@ -314,10 +331,10 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
                             onClick={() => handleProcessOrder(OrderStatus.PENDING)}
                             disabled={items.length === 0 || processingStatus !== null}
                             variant="outline"
-                            className="w-full py-2 sm:py-2.5 flex items-center justify-center gap-2 text-sm h-auto bg-background hover:bg-muted border-input text-foreground"
+                            className="w-full h-9 flex items-center justify-center gap-2 text-sm bg-background hover:bg-muted border-input text-foreground"
                         >
                             {processingStatus === OrderStatus.PENDING ? (
-                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin" />
                             ) : null}
                             {processingStatus === OrderStatus.PENDING ? 'Guardando...' : 'Registar Pedido'}
                         </Button>

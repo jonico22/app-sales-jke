@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import { POSHeader } from './POSHeader';
@@ -17,8 +17,25 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
+  // Auto-collapse on tablet screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       <SessionExpiredModal
         isOpen={isSessionExpired}
         onLogin={handleRedirect}
@@ -48,7 +65,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
         />
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>
