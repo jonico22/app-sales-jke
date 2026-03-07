@@ -301,10 +301,10 @@ export default function AdvancedSearchPage() {
     };
 
     return (
-        <div className="flex gap-6 h-full">
+        <div className="flex gap-6 h-full bg-background min-h-screen">
             {/* Sidebar */}
-            <aside className="w-80 flex-shrink-0 bg-white border border-slate-200 rounded-lg p-6 h-fit">
-                <h2 className="text-xl font-bold text-slate-800 mb-6">Filtros</h2>
+            <aside className="w-80 flex-shrink-0 bg-card border border-border rounded-lg p-6 h-fit shadow-sm">
+                <h2 className="text-xl font-bold text-foreground mb-6">Filtros</h2>
                 <FilterSidebar
                     filters={filters}
                     onFilterChange={handleFilterChange}
@@ -342,12 +342,12 @@ export default function AdvancedSearchPage() {
                 {/* Product Grid */}
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-2">
-                            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                 Resultados ({filteredProducts.length})
                             </h2>
                             {/* Optional: Sort dropdown */}
@@ -365,7 +365,7 @@ export default function AdvancedSearchPage() {
                         </div>
 
                         {filteredProducts.length === 0 && (
-                            <div className="text-center py-20 text-slate-400">
+                            <div className="text-center py-20 text-muted-foreground">
                                 <p>No se encontraron productos con los filtros seleccionados.</p>
                             </div>
                         )}

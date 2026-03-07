@@ -62,11 +62,11 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                             Tipo de Documento
                         </label>
                         <select
-                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                            className="w-full h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                             value={formData.documentType}
                             onChange={(e) => handleChange('documentType', e.target.value)}
                         >
@@ -77,7 +77,7 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
                         </select>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                             Número de Documento
                         </label>
                         <Input
@@ -90,7 +90,7 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                         Nombres / Razón Social
                     </label>
                     <Input
@@ -103,7 +103,7 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                             Teléfono
                         </label>
                         <Input
@@ -113,7 +113,7 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                             Correo (Opcional)
                         </label>
                         <Input
@@ -129,14 +129,14 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                         Cancelar
                     </button>
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="bg-sky-500 hover:bg-sky-600 text-white min-w-[150px]"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[150px]"
                     >
                         {isLoading ? (
                             <>

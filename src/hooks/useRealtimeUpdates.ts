@@ -44,6 +44,15 @@ export function useRealtimeUpdates() {
                 case 'VENTA':
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     break;
+                case 'DASHBOARD':
+                    queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_QUERY_KEY });
+                    queryClient.invalidateQueries({ queryKey: ['salesPerformance'] });
+                    queryClient.invalidateQueries({ queryKey: ['revenueByCategory'] });
+                    queryClient.invalidateQueries({ queryKey: ['topProducts'] });
+                    queryClient.invalidateQueries({ queryKey: ['paymentMethods'] });
+                    queryClient.invalidateQueries({ queryKey: ['branchPerformance'] });
+                    queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
+                    break;
                 default:
                     // Fallback to broad invalidation for unknown entities
                     queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });

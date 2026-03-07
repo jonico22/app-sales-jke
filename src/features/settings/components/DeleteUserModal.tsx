@@ -36,27 +36,27 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Eliminar usuario" size="sm" hideHeader>
             <div className="flex flex-col items-center text-center p-2">
-                <div className="p-3 rounded-full bg-red-50 text-red-500 mb-4">
-                    <AlertTriangle className="w-8 h-8" />
+                <div className="p-3.5 rounded-full bg-danger/10 text-danger mb-4">
+                    <AlertTriangle className="w-7 h-7" />
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-800 mb-3">
-                    ¿Confirmar eliminación de usuario?
+                <h3 className="text-base font-bold text-foreground mb-2 uppercase tracking-tight">
+                    ¿Confirmar eliminación?
                 </h3>
 
-                <p className="text-sm text-slate-500 leading-relaxed mb-6">
-                    Esta acción borrará permanentemente al usuario del sistema. Recomendamos solo eliminar si hubo un error en el ingreso de datos. Para retirar accesos de forma segura, le sugerimos usar la opción de <span className="font-bold">DESACTIVAR</span> en el listado.
+                <p className="text-[11px] text-muted-foreground leading-relaxed mb-6 font-medium">
+                    Esta acción borrará permanentemente al usuario del sistema. Recomendamos solo eliminar si hubo un error en el ingreso de datos. Para retirar accesos de forma segura, le sugerimos usar la opción de <span className="font-bold text-foreground">DESACTIVAR</span> en el listado.
                 </p>
 
-                <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col gap-2.5 w-full">
                     <Button
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="w-full bg-[#E5534B] hover:bg-[#D4423A] text-white py-2.5 h-auto text-sm font-medium"
+                        className="w-full bg-danger hover:bg-danger/90 text-white h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm shadow-danger/10 transition-all active:scale-95"
                     >
                         {isDeleting ? (
                             <>
-                                <span className="animate-spin w-4 h-4 mr-2 border-2 border-white/20 border-t-white rounded-full"></span>
+                                <span className="animate-spin w-3.5 h-3.5 mr-2 border-2 border-white/20 border-t-white rounded-full"></span>
                                 Eliminando...
                             </>
                         ) : (
@@ -67,7 +67,8 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
                     <Button
                         onClick={onClose}
                         disabled={isDeleting}
-                        className="w-full bg-white border border-slate-200 text-slate-700 py-2.5 h-auto text-sm font-medium hover:bg-slate-50"
+                        variant="ghost"
+                        className="w-full text-muted-foreground hover:text-foreground h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95"
                     >
                         Cancelar y volver
                     </Button>

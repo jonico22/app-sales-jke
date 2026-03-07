@@ -11,7 +11,8 @@ import {
   Wand2,
   Barcode,
   Tag,
-  Palette
+  Palette,
+  ChevronDown
 } from 'lucide-react';
 import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -141,29 +142,29 @@ export default function ProductForm() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 lg:p-8">
+    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="bg-sky-50 p-2.5 rounded-lg">
-          <svg className="w-6 h-6 text-[#0ea5e9]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <div className="bg-primary/10 p-2.5 rounded-lg">
+          <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
           </svg>
         </div>
         <div>
-          <h3 className="font-bold text-slate-800 text-lg">Ingreso Manual</h3>
-          <p className="text-sm text-slate-500">Registro detallado producto por producto.</p>
+          <h3 className="font-bold text-foreground text-lg">Ingreso Manual</h3>
+          <p className="text-sm text-muted-foreground">Registro detallado producto por producto.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="mb-6 border-b border-slate-100 w-full justify-start space-x-6">
-            <TabsTrigger value="basic" className="px-0 pb-3 text-sm font-bold uppercase tracking-wide data-[state=active]:text-[#0ea5e9] data-[state=active]:border-b-2 data-[state=active]:border-[#0ea5e9] text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition-all rounded-none">
+          <TabsList className="mb-6 border-b border-border w-full justify-start space-x-6 bg-transparent h-auto p-0">
+            <TabsTrigger value="basic" className="px-0 pb-3 text-[11px] font-bold uppercase tracking-wider data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground hover:text-foreground border-b-2 border-transparent transition-all rounded-none bg-transparent">
               Datos Básicos
             </TabsTrigger>
-            <TabsTrigger value="attributes" className="px-0 pb-3 text-sm font-bold uppercase tracking-wide data-[state=active]:text-[#0ea5e9] data-[state=active]:border-b-2 data-[state=active]:border-[#0ea5e9] text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition-all rounded-none">
+            <TabsTrigger value="attributes" className="px-0 pb-3 text-[11px] font-bold uppercase tracking-wider data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground hover:text-foreground border-b-2 border-transparent transition-all rounded-none bg-transparent">
               Atributos
             </TabsTrigger>
           </TabsList>
@@ -172,26 +173,26 @@ export default function ProductForm() {
           <TabsContent value="basic" className="space-y-6 animate-in slide-in-from-left-4 fade-in duration-300">
             {/* Product Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">NOMBRE DEL PRODUCTO</Label>
+              <Label htmlFor="name" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nombre del Producto</Label>
               <Input
                 id="name"
                 placeholder="Ej. Monitor UltraWide 34&quot;"
                 {...register('name')}
-                className={errors.name ? "border-destructive bg-red-50" : "bg-white"}
+                className={errors.name ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
               />
-              {errors.name && <span className="text-xs text-destructive">{errors.name.message}</span>}
+              {errors.name && <span className="text-[10px] font-medium text-destructive">{errors.name.message}</span>}
             </div>
 
             {/* Category & Action */}
             <div className="space-y-2">
-              <Label htmlFor="categoryId">CATEGORÍA</Label>
+              <Label htmlFor="categoryId" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Categoría</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <select
                     id="categoryId"
                     {...register('categoryId')}
                     disabled={isLoadingCategories}
-                    className="w-full h-10 px-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent appearance-none text-slate-600 disabled:bg-slate-50 disabled:cursor-not-allowed"
+                    className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors"
                   >
                     <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
                     {categories.map((cat) => (
@@ -200,31 +201,31 @@ export default function ProductForm() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
+                    <ChevronDown className="h-4 w-4" />
                   </div>
                 </div>
                 <Button
                   type="button"
                   size="icon"
-                  className="bg-[#0ea5e9] hover:bg-[#0284c7] rounded-lg shrink-0 aspect-square h-10 w-10"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shrink-0 h-10 w-10 flex items-center justify-center p-0 shadow-lg shadow-primary/20 transition-all active:scale-95"
                   onClick={() => setIsCategoryModalOpen(true)}
                 >
-                  <Plus className="h-5 w-5 text-white" />
+                  <Plus className="h-5 w-5" />
                 </Button>
               </div>
-              {errors.categoryId && <span className="text-xs text-destructive">{errors.categoryId.message}</span>}
+              {errors.categoryId && <span className="text-[10px] font-medium text-destructive">{errors.categoryId.message}</span>}
             </div>
 
             {/* SKU */}
             <div className="space-y-2">
-              <Label htmlFor="sku">SKU / CÓDIGO</Label>
+              <Label htmlFor="sku" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">SKU / Código</Label>
               <div className="flex gap-2">
                 <Input
                   id="sku"
                   placeholder="Ej. JKE-2024-001"
                   {...register('sku')}
-                  className={errors.sku ? "border-destructive bg-red-50" : "bg-white"}
+                  className={errors.sku ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
                 />
                 <Button
                   type="button"
@@ -232,37 +233,37 @@ export default function ProductForm() {
                   size="icon"
                   onClick={handleGenerateSku}
                   title="Generar SKU Aleatorio"
-                  className="aspect-square h-10 w-10"
+                  className="h-10 w-10 p-0 flex items-center justify-center text-muted-foreground border-border hover:bg-muted transition-all active:scale-95 shrink-0"
                 >
-                  <Wand2 className="h-4 w-4 text-slate-500" />
+                  <Wand2 className="h-4 w-4" />
                 </Button>
               </div>
-              {errors.sku && <span className="text-xs text-destructive">{errors.sku.message}</span>}
+              {errors.sku && <span className="text-[10px] font-medium text-destructive">{errors.sku.message}</span>}
             </div>
 
             {/* Stock Row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="stock">STOCK INICIAL</Label>
+                <Label htmlFor="stock" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Stock Inicial</Label>
                 <div className="relative">
-                  <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <Input
                     id="stock"
                     type="number"
-                    className="pl-9 bg-white"
+                    className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                     placeholder="0"
                     {...register('stock')}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="minStock">STOCK MÍNIMO</Label>
+                <Label htmlFor="minStock" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Stock Mínimo</Label>
                 <div className="relative">
-                  <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <Input
                     id="minStock"
                     type="number"
-                    className="pl-9 bg-white"
+                    className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                     placeholder="0"
                     {...register('minStock')}
                   />
@@ -273,32 +274,32 @@ export default function ProductForm() {
             {/* Price Row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="priceCost">PRECIO COSTO</Label>
+                <Label htmlFor="priceCost" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Precio Costo</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50">
                     {society?.mainCurrency?.symbol || 'S/'}
                   </span>
                   <Input
                     id="priceCost"
                     type="number"
                     step="0.01"
-                    className="pl-9 bg-white"
+                    className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                     placeholder="0.00"
                     {...register('priceCost')}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="price">PRECIO VENTA</Label>
+                <Label htmlFor="price" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Precio Venta</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50">
                     {society?.mainCurrency?.symbol || 'S/'}
                   </span>
                   <Input
                     id="price"
                     type="number"
                     step="0.01"
-                    className="pl-9 bg-white"
+                    className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                     placeholder="0.00"
                     {...register('price')}
                   />
@@ -307,10 +308,10 @@ export default function ProductForm() {
             </div>
 
             {/* Status */}
-            <div className="flex items-center justify-between border-t border-slate-100 pt-6">
+            <div className="flex items-center justify-between border-t border-border pt-6">
               <div>
-                <Label htmlFor="active" className="text-sm font-bold text-slate-700">ESTADO DEL PRODUCTO</Label>
-                <p className="text-[10px] text-slate-400">Habilitar visibilidad en catálogo</p>
+                <Label htmlFor="isActive" className="text-[10px] font-bold text-foreground uppercase tracking-wider">Estado del Producto</Label>
+                <p className="text-[10px] text-muted-foreground font-medium">Habilitar visibilidad en catálogo</p>
               </div>
               <Controller
                 name="isActive"
@@ -332,38 +333,38 @@ export default function ProductForm() {
 
             {/* Image Upload */}
             <div className="space-y-2">
-              <Label className="text-sm font-bold text-slate-700">IMAGEN (OPCIONAL)</Label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Imagen (Opcional)</Label>
               <div
-                className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 p-6 flex items-center justify-center gap-6 hover:bg-slate-50 transition-colors cursor-pointer group"
+                className="border-2 border-dashed border-border rounded-xl bg-muted/20 p-6 flex items-center justify-center gap-6 hover:bg-muted/30 transition-all cursor-pointer group"
                 onClick={() => setIsImageModalOpen(true)}
               >
-                <div className="h-20 w-20 bg-white border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                <div className="h-16 w-16 bg-card border border-border rounded-lg flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform shadow-sm">
                   {previewImage ? (
                     <img src={previewImage} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
-                    <Camera className="h-8 w-8 text-slate-300" />
+                    <Camera className="h-6 w-6 text-muted-foreground/30" />
                   )}
                 </div>
                 <div className="text-left">
-                  <span className="text-base font-bold text-[#0ea5e9] group-hover:underline cursor-pointer">
+                  <span className="text-sm font-bold text-primary group-hover:underline cursor-pointer">
                     Subir imagen
                   </span>
-                  <p className="text-sm text-slate-400 mt-1">PNG, JPG, WEBP hasta 5MB</p>
+                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5">PNG, JPG, WEBP hasta 5MB</p>
                 </div>
               </div>
             </div>
 
             {/* Barcode */}
             <div className="space-y-2">
-              <Label htmlFor="barcode" className="text-sm font-bold text-slate-700">CÓDIGO DE BARRAS (EAN/UPC) (OPCIONAL)</Label>
+              <Label htmlFor="barcode" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Código de Barras (EAN/UPC)</Label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <Barcode className="h-5 w-5" />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
+                  <Barcode className="h-4 w-4" />
                 </div>
                 <Input
                   id="barcode"
                   placeholder="Ej. 775000000001"
-                  className="pl-10 bg-white h-11"
+                  className="pl-10 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                   {...register('barcode')}
                 />
               </div>
@@ -371,47 +372,47 @@ export default function ProductForm() {
 
             {/* Brand */}
             <div className="space-y-2">
-              <Label htmlFor="brand" className="text-sm font-bold text-slate-700">MARCA DEL PRODUCTO (OPCIONAL)</Label>
+              <Label htmlFor="brand" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Marca del Producto (Opcional)</Label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
                   <Tag className="h-4 w-4" />
                 </div>
                 <Input
                   id="brand"
                   placeholder="Ej. Marca Premium"
-                  className="pl-10 bg-white h-11"
+                  className="pl-10 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                   {...register('brand')}
                 />
               </div>
             </div>
 
             {/* Color & Color Code Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="color" className="text-sm font-bold text-slate-700">COLOR (OPCIONAL)</Label>
+                <Label htmlFor="color" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Color (Opcional)</Label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
                     <Palette className="h-4 w-4" />
                   </div>
                   <Input
                     id="color"
                     placeholder="Ej. Azul Cobalto"
-                    className="pl-10 bg-white h-11"
+                    className="pl-10 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                     {...register('color')}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="colorCode" className="text-sm font-bold text-slate-700">CÓDIGO HEX / COLOR (OPCIONAL)</Label>
+                <Label htmlFor="colorCode" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Código Hex (Opcional)</Label>
                 <div className="flex gap-3">
                   <div className="relative flex-1">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 font-mono text-[10px]">
                       #
                     </div>
                     <Input
                       id="colorCode"
                       placeholder="FFFFFF"
-                      className="pl-8 bg-white uppercase h-11 font-mono"
+                      className="pl-7 bg-muted/30 border-border uppercase h-10 font-mono text-xs focus:bg-background transition-colors"
                       maxLength={7}
                       {...register('colorCode')}
                       onChange={(e) => {
@@ -429,7 +430,7 @@ export default function ProductForm() {
                       value={colorCode || '#ffffff'}
                     />
                     <div
-                      className="h-11 w-11 rounded-full border border-slate-300 shadow-sm ring-2 ring-white"
+                      className="h-10 w-10 rounded-full border border-border shadow-sm ring-2 ring-background transition-transform active:scale-95"
                       style={{ backgroundColor: colorCode || '#ffffff' }}
                     />
                   </div>
@@ -439,11 +440,11 @@ export default function ProductForm() {
 
             {/* Description */}
             <div className="space-y-2 pt-2">
-              <Label htmlFor="description" className="text-sm font-bold text-slate-700">DESCRIPCIÓN (OPCIONAL)</Label>
+              <Label htmlFor="description" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Descripción (Opcional)</Label>
               <Textarea
                 id="description"
                 placeholder="Ingrese las características detalladas del producto aquí..."
-                className="bg-white min-h-[120px] resize-none focus:ring-[#0ea5e9] p-4 text-slate-600"
+                className="bg-muted/30 border-border min-h-[100px] text-xs resize-none focus:bg-background transition-colors p-3 leading-relaxed"
                 {...register('description')}
               />
             </div>
@@ -455,9 +456,9 @@ export default function ProductForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white py-6 rounded-xl text-base font-bold shadow-lg shadow-sky-500/20 mt-8 transition-all active:scale-[0.99]"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 mt-8 transition-all active:scale-[0.99] uppercase tracking-wider"
         >
-          <Save className="mr-2 h-5 w-5" /> {isSubmitting ? 'Guardando...' : 'Guardar Producto'}
+          <Save className="mr-2 h-4 w-4" /> {isSubmitting ? 'Guardando...' : 'Guardar Producto'}
         </Button>
 
       </form>

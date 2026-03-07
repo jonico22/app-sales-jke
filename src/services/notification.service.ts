@@ -63,7 +63,7 @@ export interface NotificationResponse {
 export interface UnreadCountResponse {
     success: boolean;
     message: string;
-    data: {
+    data: number | {
         count: number;
     };
 }

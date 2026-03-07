@@ -111,8 +111,8 @@ export default function FileManagerPage() {
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Manejador de Archivos</h1>
-                    <p className="text-slate-500 text-sm">Gestiona y organiza todos los archivos de tu negocio.</p>
+                    <h1 className="text-2xl font-bold text-foreground">Manejador de Archivos</h1>
+                    <p className="text-muted-foreground text-sm">Gestiona y organiza todos los archivos de tu negocio.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Button
@@ -127,17 +127,17 @@ export default function FileManagerPage() {
             </div>
 
             {/* Storage Info Bar */}
-            <Card className="p-4 border-slate-100 bg-slate-50/50">
+            <Card className="p-4 border-border bg-muted/30">
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-slate-600 font-medium">
+                        <div className="flex items-center gap-2 text-foreground font-medium">
                             <Cloud className="w-4 h-4 text-sky-500" />
                             Almacenamiento en la nube
                         </div>
-                        <div className="text-slate-500">
-                            <span className="font-bold text-slate-700">{totalFiles}</span> archivos
-                            <span className="mx-2 text-slate-300">|</span>
-                            <span className="font-bold text-slate-700">{formatSize(usedSpace)}</span> de {formatSize(limitSpace)} utilizados - {storagePercentage}%
+                        <div className="text-muted-foreground">
+                            <span className="font-bold text-foreground">{totalFiles}</span> archivos
+                            <span className="mx-2 text-muted-foreground/30">|</span>
+                            <span className="font-bold text-foreground">{formatSize(usedSpace)}</span> de {formatSize(limitSpace)} utilizados - {storagePercentage}%
                         </div>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
@@ -155,36 +155,36 @@ export default function FileManagerPage() {
             {/* Filters and Controls */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar por nombre de archivo..."
-                        className="pl-10 bg-white border-slate-200"
+                        className="pl-10 bg-background border-input"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
                 <div className="flex items-center gap-3">
-                    <select className="h-10 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                    <select className="h-10 px-3 py-2 bg-background border border-input rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                         <option>Todos los tipos</option>
                         <option>Imágenes</option>
                         <option>Documentos</option>
                         <option>Hojas de cálculo</option>
                     </select>
-                    <select className="h-10 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                    <select className="h-10 px-3 py-2 bg-background border border-input rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                         <option>Más recientes</option>
                         <option>Nombre (A-Z)</option>
                         <option>Tamaño</option>
                     </select>
-                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                    <div className="flex bg-muted p-1 rounded-lg">
                         <button
                             onClick={() => setViewMode('grid')}
-                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'grid' ? "bg-white shadow-sm text-sky-600" : "text-slate-500")}
+                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'grid' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Grid className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-white shadow-sm text-sky-600" : "text-slate-500")}
+                            className={cn("p-1.5 rounded-md transition-all", viewMode === 'list' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground")}
                         >
                             <List className="w-4 h-4" />
                         </button>
@@ -199,7 +199,7 @@ export default function FileManagerPage() {
                     <p>Cargando archivos...</p>
                 </div>
             ) : files.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 text-slate-400 gap-3">
+                <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-2xl bg-muted/30 text-muted-foreground gap-3">
                     <HardDrive className="w-12 h-12 opacity-20" />
                     <p className="font-medium">No se encontraron archivos</p>
                     <p className="text-sm">Intenta subir uno nuevo o cambiar los filtros.</p>
@@ -209,10 +209,10 @@ export default function FileManagerPage() {
                     {files.map(file => (
                         <Card
                             key={file.id}
-                            className="group overflow-hidden border-slate-200 hover:border-sky-300 transition-all hover:shadow-lg cursor-pointer"
+                            className="group overflow-hidden border-border bg-card hover:border-primary/50 transition-all hover:shadow-lg cursor-pointer"
                             onClick={() => handleFileClick(file)}
                         >
-                            <div className="aspect-square bg-slate-50 flex items-center justify-center relative">
+                            <div className="aspect-square bg-muted/30 flex items-center justify-center relative">
                                 {file.mimeType.includes('image') ? (
                                     <img src={file.path} alt={file.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -222,21 +222,21 @@ export default function FileManagerPage() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-8 w-8 p-0 bg-white/80 hover:bg-white backdrop-blur shadow-sm"
+                                        className="h-8 w-8 p-0 bg-background/80 hover:bg-background backdrop-blur shadow-sm"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             window.open(file.downloadUrl || file.path, '_blank');
                                         }}
                                     >
-                                        <Download className="w-4 h-4 text-slate-600" />
+                                        <Download className="w-4 h-4 text-muted-foreground" />
                                     </Button>
                                 </div>
                             </div>
                             <div className="p-3">
-                                <p className="text-sm font-bold text-slate-700 truncate" title={file.name}>
+                                <p className="text-sm font-bold text-foreground truncate" title={file.name}>
                                     {file.name}
                                 </p>
-                                <div className="flex items-center justify-between mt-1 text-[10px] text-slate-400">
+                                <div className="flex items-center justify-between mt-1 text-[10px] text-muted-foreground">
                                     <span>{formatSize(file.size)}</span>
                                     <span>{file.uploadedAt || '-'}</span>
                                 </div>
@@ -244,7 +244,7 @@ export default function FileManagerPage() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-7 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+                                        className="h-7 text-xs text-destructive hover:text-white hover:bg-destructive"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (confirm('¿Estás seguro de eliminar este archivo?')) {
@@ -261,45 +261,45 @@ export default function FileManagerPage() {
                     ))}
                 </div>
             ) : (
-                <Card className="overflow-hidden border-slate-200">
+                <Card className="overflow-hidden border-border bg-card">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 border-b border-slate-100">
+                        <thead className="bg-muted/50 border-b border-border">
                             <tr>
-                                <th className="px-4 py-3 font-bold text-slate-700">Nombre</th>
-                                <th className="px-4 py-3 font-bold text-slate-700">Tipo</th>
-                                <th className="px-4 py-3 font-bold text-slate-700">Tamaño</th>
-                                <th className="px-4 py-3 font-bold text-slate-700">Fecha</th>
-                                <th className="px-4 py-3 font-bold text-slate-700 text-right">Acciones</th>
+                                <th className="px-4 py-3 font-bold text-muted-foreground">Nombre</th>
+                                <th className="px-4 py-3 font-bold text-muted-foreground">Tipo</th>
+                                <th className="px-4 py-3 font-bold text-muted-foreground">Tamaño</th>
+                                <th className="px-4 py-3 font-bold text-muted-foreground">Fecha</th>
+                                <th className="px-4 py-3 font-bold text-muted-foreground text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-border">
                             {files.map(file => (
                                 <tr
                                     key={file.id}
-                                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                    className="hover:bg-muted/30 transition-colors cursor-pointer"
                                     onClick={() => handleFileClick(file)}
                                 >
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                            <div className="w-8 h-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
                                                 {file.mimeType.includes('image') ? (
                                                     <img src={file.path} alt="" className="w-full h-full object-cover rounded" />
                                                 ) : (
                                                     <div className="scale-50">{getFileIcon(file.mimeType, file.name)}</div>
                                                 )}
                                             </div>
-                                            <span className="font-medium text-slate-700 truncate max-w-[200px]">{file.name}</span>
+                                            <span className="font-medium text-foreground truncate max-w-[200px]">{file.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-slate-500">{file.mimeType.split('/')[1]?.toUpperCase() || 'Archivo'}</td>
-                                    <td className="px-4 py-3 text-slate-500">{formatSize(file.size)}</td>
-                                    <td className="px-4 py-3 text-slate-500">{file.uploadedAt || '-'}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">{file.mimeType.split('/')[1]?.toUpperCase() || 'Archivo'}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">{formatSize(file.size)}</td>
+                                    <td className="px-4 py-3 text-muted-foreground">{file.uploadedAt || '-'}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center justify-end gap-2">
                                             <Button variant="ghost" size="sm" onClick={() => window.open(file.downloadUrl || file.path, '_blank')}>
-                                                <Download className="w-4 h-4 text-slate-500" />
+                                                <Download className="w-4 h-4 text-muted-foreground" />
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => {
+                                            <Button variant="ghost" size="sm" className="text-destructive hover:text-white hover:bg-destructive" onClick={() => {
                                                 if (confirm('¿Estás seguro de eliminar este archivo?')) {
                                                     handleDelete(file.id);
                                                 }

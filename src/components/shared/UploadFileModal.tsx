@@ -345,9 +345,10 @@ export function UploadFileModal({
             onClose={handleClose}
             title={title}
             size="lg"
+            contentClassName="flex flex-col max-h-[min(650px,85vh)] overflow-hidden"
         >
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
+                <TabsList className="mb-6 shrink-0">
                     <TabsTrigger value="upload" className="flex items-center gap-2">
                         <Upload className="w-4 h-4" />
                         Subir nuevo
@@ -364,251 +365,253 @@ export function UploadFileModal({
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="upload" className="space-y-6">
-                    {!selectedFile && (
-                        <div
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={() => fileInputRef.current?.click()}
-                            className={cn(
-                                "group relative border-2 border-dashed rounded-xl p-10 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 text-center",
-                                isDragging
-                                    ? "border-sky-500 bg-sky-50"
-                                    : "border-slate-200 hover:border-sky-400 hover:bg-slate-50/50"
-                            )}
-                        >
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileSelect}
-                                accept={accept}
-                                className="hidden"
-                            />
+                <TabsContent value="upload" className="flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+                        {!selectedFile && (
+                            <div
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current?.click()}
+                                className={cn(
+                                    "group relative border-2 border-dashed rounded-xl p-10 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 text-center",
+                                    isDragging
+                                        ? "border-primary bg-primary/10"
+                                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                                )}
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    accept={accept}
+                                    className="hidden"
+                                />
 
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 bg-sky-50 text-sky-500">
-                                <Upload className="w-8 h-8" />
-                            </div>
+                                <div className="w-16 h-16 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 bg-primary/10 text-primary">
+                                    <Upload className="w-8 h-8" />
+                                </div>
 
-                            <div>
-                                <p className="font-bold text-slate-700">
-                                    {uploadedFiles.length > 0 ? "Arrastra y suelta otro archivo aquí" : "Arrastra y suelta tu archivo aquí"}
+                                <div>
+                                    <p className="font-bold text-foreground">
+                                        {uploadedFiles.length > 0 ? "Arrastra y suelta otro archivo aquí" : "Arrastra y suelta tu archivo aquí"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        O haz clic para seleccionar (Máx. {maxSizeMB}MB)
+                                    </p>
+                                </div>
+
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                                    Tamaño máximo: {maxSizeMB}MB • Formatos permitidos: {accept.split(',').map(t => t.split('/')[1]?.toUpperCase()).join(', ')}
                                 </p>
-                                <p className="text-sm text-slate-500 mt-1">
-                                    O haz clic para seleccionar (Máx. {maxSizeMB}MB)
-                                </p>
                             </div>
+                        )}
 
-                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                                Tamaño máximo: {maxSizeMB}MB • Formatos permitidos: {accept.split(',').map(t => t.split('/')[1]?.toUpperCase()).join(', ')}
-                            </p>
-                        </div>
-                    )}
+                        {selectedFile && (
+                            <div className="space-y-4 pt-2">
+                                {selectedFile.type.startsWith('image/') && previewUrl ? (
+                                    <div className="flex flex-col items-center pt-2 pb-6">
+                                        <div className="relative w-full aspect-square max-w-[320px] rounded overflow-hidden bg-[#595856] mb-6 flex items-center justify-center">
+                                            <img
+                                                src={previewUrl}
+                                                alt="Preview"
+                                                className="max-w-full max-h-full object-contain z-0"
+                                                style={{
+                                                    transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                                                    transition: 'transform 0.2s ease-in-out'
+                                                }}
+                                            />
+                                            {cropShape !== 'none' && isCropping && (
+                                                <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+                                                    <div className={cn(
+                                                        "w-[85%] h-[85%] ring-[200px] ring-black/40 border-[1px] border-white/20",
+                                                        cropShape === 'round' ? "rounded-full" : "rounded-lg"
+                                                    )}></div>
+                                                    <div className="absolute top-4 left-4 w-6 h-6 border-t-[3px] border-l-[3px] border-sky-400"></div>
+                                                    <div className="absolute top-4 right-4 w-6 h-6 border-t-[3px] border-r-[3px] border-sky-400"></div>
+                                                    <div className="absolute bottom-4 left-4 w-6 h-6 border-b-[3px] border-l-[3px] border-sky-400"></div>
+                                                    <div className="absolute bottom-4 right-4 w-6 h-6 border-b-[3px] border-r-[3px] border-sky-400"></div>
+                                                </div>
+                                            )}
+                                        </div>
 
-                    {selectedFile && (
-                        <div className="space-y-4 pt-2">
-                            {selectedFile.type.startsWith('image/') && previewUrl ? (
-                                <div className="flex flex-col items-center pt-2 pb-6">
-                                    <div className="relative w-full aspect-square max-w-[320px] rounded overflow-hidden bg-[#595856] mb-6 flex items-center justify-center">
-                                        <img
-                                            src={previewUrl}
-                                            alt="Preview"
-                                            className="max-w-full max-h-full object-contain z-0"
-                                            style={{
-                                                transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                                                transition: 'transform 0.2s ease-in-out'
-                                            }}
-                                        />
-                                        {cropShape !== 'none' && isCropping && (
-                                            <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-                                                <div className={cn(
-                                                    "w-[85%] h-[85%] ring-[200px] ring-black/40 border-[1px] border-white/20",
-                                                    cropShape === 'round' ? "rounded-full" : "rounded-lg"
-                                                )}></div>
-                                                <div className="absolute top-4 left-4 w-6 h-6 border-t-[3px] border-l-[3px] border-sky-400"></div>
-                                                <div className="absolute top-4 right-4 w-6 h-6 border-t-[3px] border-r-[3px] border-sky-400"></div>
-                                                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-[3px] border-l-[3px] border-sky-400"></div>
-                                                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-[3px] border-r-[3px] border-sky-400"></div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col items-center gap-1 mb-6 text-center">
-                                        <span className="text-sm font-bold text-slate-700 truncate max-w-[280px]">
-                                            {selectedFile.name}
-                                        </span>
-                                        <span className="text-xs text-slate-500">
-                                            {formatFileSize(selectedFile.size)} • {selectedFile.type.split('/')[1].toUpperCase()}
-                                        </span>
-                                        <button
-                                            onClick={() => setSelectedFile(null)}
-                                            className="text-xs text-sky-500 font-medium hover:underline mt-1.5"
-                                        >
-                                            Cambiar archivo
-                                        </button>
-                                    </div>
-
-                                    <div className="flex flex-col items-center gap-8 w-full max-w-[280px]">
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex flex-col items-center gap-1 mb-6 text-center">
+                                            <span className="text-sm font-bold text-foreground truncate max-w-[280px]">
+                                                {selectedFile.name}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {formatFileSize(selectedFile.size)} • {selectedFile.type.split('/')[1].toUpperCase()}
+                                            </span>
                                             <button
-                                                onClick={() => setIsCropping(!isCropping)}
-                                                className={cn(
-                                                    "p-3.5 rounded-xl transition-colors border",
-                                                    isCropping
-                                                        ? "bg-[#f0f7fd] text-sky-500 border-sky-100/50"
-                                                        : "text-slate-400 hover:text-slate-600 border-transparent hover:bg-slate-50"
-                                                )}
-                                                title={cropShape === 'round' ? "Recortar (Máscara Circular)" : "Recortar"}
+                                                onClick={() => setSelectedFile(null)}
+                                                className="text-xs text-primary font-medium hover:underline mt-1.5"
                                             >
-                                                <Crop className="w-5 h-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => setRotation(r => r - 90)}
-                                                className="p-3 text-sky-500 hover:bg-sky-50 rounded-xl transition-colors"
-                                                title="Rotar a la izquierda"
-                                            >
-                                                <RotateCcw className="w-5 h-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => setRotation(r => r + 90)}
-                                                className="p-3 text-sky-500 hover:bg-sky-50 rounded-xl transition-colors"
-                                                title="Rotar a la derecha"
-                                            >
-                                                <RotateCw className="w-5 h-5" />
+                                                Cambiar archivo
                                             </button>
                                         </div>
 
-                                        {isCropping && (
-                                            <div className="flex flex-col items-center gap-2.5 w-full">
-                                                <div className="flex items-center w-full gap-4">
-                                                    <button
-                                                        onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
-                                                        className="text-slate-400 hover:text-slate-600 font-bold"
-                                                    >
-                                                        <Minus className="w-4 h-4" />
-                                                    </button>
-                                                    <div className="relative flex-1 flex items-center h-6">
-                                                        <input
-                                                            type="range"
-                                                            min="0.5"
-                                                            max="3"
-                                                            step="0.1"
-                                                            value={zoom}
-                                                            onChange={(e) => setZoom(parseFloat(e.target.value))}
-                                                            className="w-full absolute inset-0 opacity-0 cursor-pointer z-10"
-                                                        />
-                                                        <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
+                                        <div className="flex flex-col items-center gap-8 w-full max-w-[280px]">
+                                            <div className="flex items-center gap-6">
+                                                <button
+                                                    onClick={() => setIsCropping(!isCropping)}
+                                                    className={cn(
+                                                        "p-3.5 rounded-xl transition-colors border",
+                                                        isCropping
+                                                            ? "bg-primary/10 text-primary border-primary/20"
+                                                            : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted"
+                                                    )}
+                                                    title={cropShape === 'round' ? "Recortar (Máscara Circular)" : "Recortar"}
+                                                >
+                                                    <Crop className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setRotation(r => r - 90)}
+                                                    className="p-3 text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                                                    title="Rotar a la izquierda"
+                                                >
+                                                    <RotateCcw className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setRotation(r => r + 90)}
+                                                    className="p-3 text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                                                    title="Rotar a la derecha"
+                                                >
+                                                    <RotateCw className="w-5 h-5" />
+                                                </button>
+                                            </div>
+
+                                            {isCropping && (
+                                                <div className="flex flex-col items-center gap-2.5 w-full">
+                                                    <div className="flex items-center w-full gap-4">
+                                                        <button
+                                                            onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                                                            className="text-muted-foreground hover:text-foreground font-bold"
+                                                        >
+                                                            <Minus className="w-4 h-4" />
+                                                        </button>
+                                                        <div className="relative flex-1 flex items-center h-6">
+                                                            <input
+                                                                type="range"
+                                                                min="0.5"
+                                                                max="3"
+                                                                step="0.1"
+                                                                value={zoom}
+                                                                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                                                                className="w-full absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                            />
+                                                            <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-primary"
+                                                                    style={{ width: `${((zoom - 0.5) / 2.5) * 100}%` }}
+                                                                ></div>
+                                                            </div>
                                                             <div
-                                                                className="h-full bg-sky-500"
-                                                                style={{ width: `${((zoom - 0.5) / 2.5) * 100}%` }}
+                                                                className="absolute w-4 h-4 bg-primary rounded-full shadow-sm pointer-events-none transform -translate-x-1/2"
+                                                                style={{ left: `${((zoom - 0.5) / 2.5) * 100}%` }}
                                                             ></div>
                                                         </div>
-                                                        <div
-                                                            className="absolute w-4 h-4 bg-sky-500 rounded-full shadow-sm pointer-events-none transform -translate-x-1/2"
-                                                            style={{ left: `${((zoom - 0.5) / 2.5) * 100}%` }}
-                                                        ></div>
+                                                        <button
+                                                            onClick={() => setZoom(z => Math.min(3, z + 0.1))}
+                                                            className="text-muted-foreground hover:text-foreground font-bold"
+                                                        >
+                                                            <Plus className="w-4 h-4" />
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={() => setZoom(z => Math.min(3, z + 0.1))}
-                                                        className="text-slate-400 hover:text-slate-600 font-bold"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </button>
+                                                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
+                                                        ZOOM
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
-                                                    ZOOM
-                                                </span>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Archivo Seleccionado</span>
-                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] font-bold text-muted-foreground tracking-wider uppercase">Archivo Seleccionado</span>
+                                        </div>
 
-                                    <div className="border border-slate-100 rounded-xl bg-white p-4 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                                                <FileIcon className="w-6 h-6" />
+                                        <div className="border border-border rounded-xl bg-card p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                                                    <FileIcon className="w-6 h-6" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-foreground truncate max-w-[280px]">
+                                                        {selectedFile.name}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {formatFileSize(selectedFile.size)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setSelectedFile(null)}
+                                                className="p-2.5 text-muted-foreground hover:text-destructive transition-colors"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {!selectedFile && uploadedFiles.length > 0 && (
+                            <div className="space-y-3 mt-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-[11px] font-bold text-muted-foreground tracking-wider uppercase">Archivos Subidos</span>
+                                </div>
+                                {uploadedFiles.map((file, idx) => (
+                                    <div key={idx} className="border border-border rounded-xl bg-card p-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-[84px] h-[84px] rounded-xl bg-[#f5dfce] flex items-center justify-center text-orange-200/50 overflow-hidden relative">
+                                                {file.url ? (
+                                                    <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-10 h-10 border-2 border-current rounded-md flex items-center justify-center opacity-70">
+                                                        <div className="w-6 h-6 border-b-2 border-current rounded-full"></div>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-slate-700 truncate max-w-[280px]">
-                                                    {selectedFile.name}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-bold text-foreground truncate max-w-[200px]">
+                                                        {file.name}
+                                                    </span>
+                                                    <CheckCircle2 className="w-[18px] h-[18px] text-[#4caf50]" fill="currentColor" stroke="white" />
+                                                </div>
+                                                <span className="text-xs text-muted-foreground mt-1 mb-2">
+                                                    {formatFileSize(file.size)} • {file.type.split('/')[1]?.toUpperCase() || 'FILE'}
                                                 </span>
-                                                <span className="text-xs text-slate-500">
-                                                    {formatFileSize(selectedFile.size)}
-                                                </span>
+                                                <div className="inline-flex">
+                                                    <span className="px-2.5 py-0.5 rounded-full bg-[#f0f9f1] text-[#4caf50] border border-[#d2edd4] text-[10px] font-bold uppercase tracking-wider">
+                                                        ¡Carga Existosa!
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => setSelectedFile(null)}
-                                            className="p-2.5 text-slate-400 hover:text-red-500 transition-colors"
+                                            onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                            className="p-2.5 bg-muted text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    )}
-
-                    {!selectedFile && uploadedFiles.length > 0 && (
-                        <div className="space-y-3 mt-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">Archivos Subidos</span>
+                                ))}
                             </div>
-                            {uploadedFiles.map((file, idx) => (
-                                <div key={idx} className="border border-slate-100 rounded-xl bg-white p-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-[84px] h-[84px] rounded-xl bg-[#f5dfce] flex items-center justify-center text-orange-200/50 overflow-hidden relative">
-                                            {file.url ? (
-                                                <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-10 h-10 border-2 border-current rounded-md flex items-center justify-center opacity-70">
-                                                    <div className="w-6 h-6 border-b-2 border-current rounded-full"></div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">
-                                                    {file.name}
-                                                </span>
-                                                <CheckCircle2 className="w-[18px] h-[18px] text-[#4caf50]" fill="currentColor" stroke="white" />
-                                            </div>
-                                            <span className="text-xs text-slate-500 mt-1 mb-2">
-                                                {formatFileSize(file.size)} • {file.type.split('/')[1]?.toUpperCase() || 'FILE'}
-                                            </span>
-                                            <div className="inline-flex">
-                                                <span className="px-2.5 py-0.5 rounded-full bg-[#f0f9f1] text-[#4caf50] border border-[#d2edd4] text-[10px] font-bold uppercase tracking-wider">
-                                                    ¡Carga Existosa!
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setUploadedFiles(prev => prev.filter((_, i) => i !== idx))}
-                                        className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                        )}
+                    </div>
 
-                    <div className="flex flex-col items-center gap-6 pt-6 border-t border-slate-100/50 mt-6 pb-2">
-                        <p className="text-sm text-slate-500 font-medium text-center">
-                            ¿Tu imagen es muy pesada? <a href="#" className="text-sky-500 hover:underline">Optimizala aquí</a>
+                    <div className="shrink-0 flex flex-col items-center gap-6 pt-6 border-t border-border mt-4 pb-2">
+                        <p className="text-sm text-muted-foreground font-medium text-center">
+                            ¿Tu imagen es muy pesada? <a href="#" className="text-primary hover:underline">Optimizala aquí</a>
                         </p>
                         <div className="flex items-center justify-end w-full gap-3">
                             <Button
                                 variant="ghost"
                                 onClick={handleClose}
                                 disabled={isUploading}
-                                className="font-bold text-slate-500 hover:text-slate-700"
+                                className="font-bold text-muted-foreground hover:text-foreground hover:bg-muted"
                             >
                                 Cerrar
                             </Button>
@@ -641,46 +644,48 @@ export function UploadFileModal({
                     </div>
                 </TabsContent>
 
-                <TabsContent value="external" className="space-y-5">
-                    <form onSubmit={handleRegisterExternal} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="ext-name">Nombre del archivo</Label>
-                            <Input
-                                id="ext-name"
-                                placeholder="Ej: Catálogo 2024.pdf"
-                                value={externalLink.name}
-                                onChange={(e) => setExternalLink(prev => ({ ...prev, name: e.target.value }))}
-                            />
+                <TabsContent value="external" className="flex-1 flex flex-col min-h-0">
+                    <form onSubmit={handleRegisterExternal} className="flex-1 flex flex-col min-h-0">
+                        <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="ext-name">Nombre del archivo</Label>
+                                <Input
+                                    id="ext-name"
+                                    placeholder="Ej: Catálogo 2024.pdf"
+                                    value={externalLink.name}
+                                    onChange={(e) => setExternalLink(prev => ({ ...prev, name: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="ext-url">URL del archivo</Label>
+                                <Input
+                                    id="ext-url"
+                                    placeholder="https://ejemplo.com/archivo.pdf"
+                                    value={externalLink.url}
+                                    onChange={(e) => setExternalLink(prev => ({ ...prev, url: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="ext-mime">Tipo de archivo</Label>
+                                <select
+                                    id="ext-mime"
+                                    className="w-full h-10 px-3 py-2 bg-background border border-input rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                    value={externalLink.mimeType}
+                                    onChange={(e) => setExternalLink(prev => ({ ...prev, mimeType: e.target.value }))}
+                                >
+                                    <option value="application/pdf">PDF Document</option>
+                                    <option value="image/jpeg">Image (JPEG)</option>
+                                    <option value="image/png">Image (PNG)</option>
+                                    <option value="image/webp">Image (WEBP)</option>
+                                    <option value="text/csv">CSV Table</option>
+                                    <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">Excel Spreadsheet</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="ext-url">URL del archivo</Label>
-                            <Input
-                                id="ext-url"
-                                placeholder="https://ejemplo.com/archivo.pdf"
-                                value={externalLink.url}
-                                onChange={(e) => setExternalLink(prev => ({ ...prev, url: e.target.value }))}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="ext-mime">Tipo de archivo</Label>
-                            <select
-                                id="ext-mime"
-                                className="w-full h-10 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-                                value={externalLink.mimeType}
-                                onChange={(e) => setExternalLink(prev => ({ ...prev, mimeType: e.target.value }))}
-                            >
-                                <option value="application/pdf">PDF Document</option>
-                                <option value="image/jpeg">Image (JPEG)</option>
-                                <option value="image/png">Image (PNG)</option>
-                                <option value="image/webp">Image (WEBP)</option>
-                                <option value="text/csv">CSV Table</option>
-                                <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">Excel Spreadsheet</option>
-                            </select>
-                        </div>
-
-                        <div className="flex items-center justify-end gap-3 pt-6">
+                        <div className="shrink-0 flex items-center justify-end gap-3 pt-6 border-t border-border mt-4">
                             <Button
                                 variant="ghost"
                                 type="button"
@@ -705,9 +710,9 @@ export function UploadFileModal({
                         </div>
                     </form>
                 </TabsContent>
-                <TabsContent value="library" className="space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <TabsContent value="library" className="flex-1 flex flex-col min-h-0">
+                    <div className="relative shrink-0 mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                             placeholder="Buscar por nombre de archivo..."
                             value={librarySearch}
@@ -715,18 +720,18 @@ export function UploadFileModal({
                                 setLibrarySearch(e.target.value);
                                 setLibraryPage(1);
                             }}
-                            className="pl-9 bg-white"
+                            className="pl-9 bg-background border-input"
                         />
                     </div>
 
-                    <div className="min-h-[260px]">
+                    <div className="flex-1 overflow-y-auto pr-2 min-h-[260px]">
                         {isLoadingLibrary ? (
-                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-slate-400">
+                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-muted-foreground">
                                 <Loader2 className="w-6 h-6 animate-spin mb-2" />
                                 <span className="text-sm">Cargando biblioteca...</span>
                             </div>
                         ) : libraryFiles.length === 0 ? (
-                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
+                            <div className="flex flex-col flex-1 h-[260px] items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-xl">
                                 <FileIcon className="w-8 h-8 mb-2 opacity-50" />
                                 <span className="text-sm">No se encontraron archivos</span>
                             </div>
@@ -737,22 +742,22 @@ export function UploadFileModal({
                                         key={file.id}
                                         onClick={() => setSelectedLibraryFile(file)}
                                         className={cn(
-                                            "relative aspect-square border rounded-xl cursor-pointer overflow-hidden transition-all bg-slate-50 group",
+                                            "relative aspect-square border rounded-xl cursor-pointer overflow-hidden transition-all bg-muted/30 group",
                                             selectedLibraryFile?.id === file.id
-                                                ? "border-sky-500 ring-2 ring-sky-500/20 bg-orange-50/50"
-                                                : "border-slate-200 hover:border-sky-300"
+                                                ? "border-primary ring-2 ring-primary/20 bg-primary/5"
+                                                : "border-border hover:border-primary/50"
                                         )}
                                     >
                                         {file.mimeType && file.mimeType.startsWith('image/') ? (
                                             <img src={file.path || file.downloadUrl} alt={file.name} className="object-cover w-full h-full" />
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center w-full h-full text-slate-400">
+                                            <div className="flex flex-col items-center justify-center w-full h-full text-muted-foreground">
                                                 <FileIcon className="w-6 h-6 mb-1 opacity-50" />
                                                 <span className="text-[10px] uppercase truncate w-full text-center px-1">{file.mimeType ? file.mimeType.split('/')[1] : 'FILE'}</span>
                                             </div>
                                         )}
                                         {selectedLibraryFile?.id === file.id && (
-                                            <div className="absolute top-1.5 right-1.5 bg-sky-500 rounded-full text-white shadow-sm z-10 w-4 h-4 flex items-center justify-center">
+                                            <div className="absolute top-1.5 right-1.5 bg-primary rounded-full text-primary-foreground shadow-sm z-10 w-4 h-4 flex items-center justify-center">
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                             </div>
                                         )}
@@ -764,8 +769,8 @@ export function UploadFileModal({
 
                     {/* Pagination control */}
                     {libraryTotalPages > 1 && (
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100/50 mt-4">
-                            <span className="text-xs text-slate-500 font-medium">
+                        <div className="shrink-0 flex items-center justify-between pt-2 border-t border-border mt-4">
+                            <span className="text-xs text-muted-foreground font-medium">
                                 Página {libraryPage} de {libraryTotalPages}
                             </span>
                             <div className="flex items-center gap-2">
@@ -791,11 +796,11 @@ export function UploadFileModal({
                         </div>
                     )}
 
-                    <div className="flex items-center justify-end w-full gap-3 pt-6 border-t border-slate-100 mt-4">
+                    <div className="shrink-0 flex items-center justify-end w-full gap-3 pt-6 border-t border-border mt-4">
                         <Button
                             variant="ghost"
                             onClick={handleClose}
-                            className="font-bold text-slate-500 hover:text-slate-700 h-10"
+                            className="font-bold text-muted-foreground hover:text-foreground h-10 hover:bg-muted"
                         >
                             Cancelar
                         </Button>

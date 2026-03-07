@@ -98,15 +98,12 @@ export default function POSPage() {
 
         // Clean up state so it doesn't run again on reload
         window.history.replaceState({}, document.title);
-        console.log('[CLONE] Clone process completed, state cleaned');
 
         // Reset ref after a delay to allow re-cloning if needed (though location state is cleared)
         setTimeout(() => {
           processingCloneRef.current = null;
         }, 1000);
 
-      } else {
-        console.log('[CLONE] No cloneFromOrderId in location state');
       }
     };
 
@@ -137,7 +134,7 @@ export default function POSPage() {
 
 
   return (
-    <div className=" bg-white pb-24 md:pb-6 md:pt-6 p-4 md:p-6">
+    <div className=" bg-background pb-24 md:pb-6 md:pt-6 p-4 md:p-6 min-h-[calc(100vh-64px)]">
       <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
 
         {/* Top Bar */}
@@ -147,7 +144,7 @@ export default function POSPage() {
         <POSWelcomeHeader />
 
         {/* Main Card */}
-        <div className="bg-white md:rounded-2xl md:border md:border-slate-100 md:shadow-sm md:p-6 space-y-6">
+        <div className="bg-card md:rounded-2xl md:border md:border-border md:shadow-sm md:p-6 space-y-6">
           {/* Client Selector */}
           <POSClientSelector
             selectedClient={selectedClient}

@@ -117,31 +117,31 @@ export default function ProfilePage() {
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
             {/* Page Header */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Mi Perfil</h1>
-                <p className="text-slate-500 mt-1">
+                <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Mi Perfil</h1>
+                <p className="text-muted-foreground text-xs mt-1">
                     Administra tu información personal y cómo otros usuarios te ven en la plataforma.
                 </p>
             </div>
 
-            <Card className="border-slate-100 shadow-sm overflow-hidden rounded-2xl">
+            <Card className="border-border shadow-sm overflow-hidden rounded-2xl">
                 <div className="p-8 space-y-8">
                     {/* Section Header */}
-                    <div className="border-b border-slate-100 pb-4">
-                        <h2 className="text-xl font-bold text-slate-800">Información Personal</h2>
+                    <div className="border-b border-border pb-4">
+                        <h2 className="text-base font-bold text-foreground uppercase tracking-tight">Información Personal</h2>
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-12">
                         {/* Avatar Section */}
                         <div className="flex flex-col items-center space-y-4">
                             <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
-                                <div className="h-40 w-40 rounded-full bg-orange-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                                <div className="h-40 w-40 rounded-full bg-primary/10 border-4 border-background shadow-md flex items-center justify-center overflow-hidden">
                                     {avatarPreview ? (
                                         <img src={avatarPreview} alt="Profile" className="h-full w-full object-cover" />
                                     ) : (
                                         <UserIcon className="h-20 w-20 text-orange-300" />
                                     )}
                                 </div>
-                                <div className="absolute bottom-2 right-2 bg-sky-500 p-2.5 rounded-full border-4 border-white text-white shadow-lg group-hover:bg-sky-600 transition-colors">
+                                <div className="absolute bottom-2 right-2 bg-primary p-2.5 rounded-full border-4 border-background text-primary-foreground shadow-lg group-hover:bg-primary/90 transition-colors">
                                     <Camera className="h-5 w-5" />
                                 </div>
                             </div>
@@ -193,7 +193,7 @@ export default function ProfilePage() {
                                             id="email"
                                             value={user?.email || ''}
                                             disabled
-                                            className="bg-slate-50 text-slate-500 border-slate-200 pr-10 cursor-not-allowed"
+                                            className="bg-muted/30 text-muted-foreground border-border pr-10 cursor-not-allowed text-xs"
                                         />
                                         <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     </div>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                                         <select
                                             id="documentType"
                                             {...register('documentType')}
-                                            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none"
+                                            className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent appearance-none"
                                         >
                                             <option value="">Seleccione tipo</option>
                                             {user?.person?.documentType && (
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end pt-4 border-t border-slate-50 mt-8">
+                            <div className="flex justify-end pt-4 border-t border-border mt-8">
                                 <Button
                                     type="submit"
                                     variant="primary"
@@ -267,14 +267,14 @@ export default function ProfilePage() {
             {/* Bottom Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
                 {/* Role Information */}
-                <Card className="p-8 border-slate-100 shadow-sm rounded-2xl flex flex-col justify-between">
+                <Card className="p-8 border-border shadow-sm rounded-2xl flex flex-col justify-between">
                     <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-slate-800">Rol del Usuario</h3>
-                        <div className="flex items-center gap-2 bg-sky-50 text-sky-600 px-3 py-1.5 rounded-full w-fit">
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Rol del Usuario</h3>
+                        <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full w-fit border border-primary/20">
                             <Shield className="h-4 w-4" />
                             <span className="text-xs font-bold uppercase tracking-wider">{role?.name || 'Usuario'}</span>
                         </div>
-                        <p className="text-sm text-slate-500 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                             {role?.code === 'ADMIN'
                                 ? 'Tienes acceso total a todas las configuraciones y módulos del sistema.'
                                 : 'Tienes acceso a las funciones asignadas según tu nivel de permiso.'}
@@ -283,25 +283,25 @@ export default function ProfilePage() {
                 </Card>
 
                 {/* Last Connection */}
-                <Card className="p-8 border-slate-100 shadow-sm rounded-2xl space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Card className="p-8 border-border shadow-sm rounded-2xl space-y-4">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2 uppercase tracking-tight">
                         Última Conexión
                     </h3>
                     <div className="space-y-4">
                         {user?.sessions && user.sessions.length > 0 ? (
                             <>
-                                <p className="text-sm text-slate-500">Sesión actual iniciada desde:</p>
+                                <p className="text-xs text-muted-foreground">Sesión actual iniciada desde:</p>
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-bold text-slate-800">
+                                    <p className="text-2xl font-bold text-foreground">
                                         {new Date(user.sessions[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                     <div className="flex flex-col gap-2 pt-2">
-                                        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-                                            <MapPin className="h-3.5 w-3.5 text-sky-500" />
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                            <MapPin className="h-3.5 w-3.5 text-primary" />
                                             <span>IP: {user.sessions[0].ipAddress}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-                                            <Shield className="h-3.5 w-3.5 text-sky-500" />
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                            <Shield className="h-3.5 w-3.5 text-primary" />
                                             <span className="truncate max-w-[250px]">{user.sessions[0].userAgent}</span>
                                         </div>
                                     </div>

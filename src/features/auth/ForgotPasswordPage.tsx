@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
       toast.success('Si tu correo está registrado, recibirás las instrucciones pronto.');
       // Optionally redirect to login or show a success message in place
       // navigate('/login'); 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud.';
@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <Card className="p-10 shadow-xl border-none text-center">
+    <Card className="p-10 shadow-xl dark:shadow-none text-center">
       <div className="mb-8">
         <h1 className="text-2xl font-bold font-headings text-foreground mb-3">Recuperar Contraseña</h1>
         <p className="text-sm text-muted-foreground leading-relaxed px-4">
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
         <div className="space-y-2">
-          <Label htmlFor="email" className="font-medium text-slate-700">Correo Electrónico</Label>
+          <Label htmlFor="email" className="font-medium text-foreground">Correo Electrónico</Label>
           <Input
             id="email"
             type="email"
@@ -56,19 +56,19 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <Button 
-          type="submit" 
-          variant="primary" 
-          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform" 
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Enviando...' : 'Enviar Instrucciones'}
         </Button>
 
         <div className="text-center pt-4">
-          <Link 
-            to="/auth/login" 
-            className="inline-flex items-center text-sm text-slate-500 hover:text-primary transition-colors font-medium gap-2"
+          <Link
+            to="/auth/login"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al inicio de sesión

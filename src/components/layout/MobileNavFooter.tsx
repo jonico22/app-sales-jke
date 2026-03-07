@@ -17,7 +17,7 @@ function NavItem({ to, icon, label, isActive, onClick }: NavItemProps) {
     </>
   );
 
-  const className = `flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors cursor-pointer ${isActive ? 'text-[#0ea5e9]' : 'text-slate-400'
+  const className = `flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors cursor-pointer ${isActive ? 'text-[#0ea5e9]' : 'text-muted-foreground'
     }`;
 
   if (to) {
@@ -44,7 +44,7 @@ export function MobileNavFooter({ onMenuClick }: MobileNavFooterProps) {
   const currentPath = location.pathname;
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50">
       <div className="flex items-end justify-around px-2 pb-safe">
         {/* Left Items */}
         <NavItem

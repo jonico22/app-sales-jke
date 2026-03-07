@@ -20,8 +20,17 @@ export default function NotificationDropdown() {
 
     const fetchInitialCount = async () => {
         try {
-            const countData = await notificationService.getUnreadCount();
-            setUnreadCount(countData.data.count);
+            const countData: any = await notificationService.getUnreadCount();
+
+            let count = 0;
+            // Evaluamos agresivamente dónde puede venir el número
+            if (typeof countData === 'number') count = countData;
+            else if (typeof countData?.data === 'number') count = countData.data;
+            else if (typeof countData?.data?.count === 'number') count = countData.data.count;
+            else if (typeof countData?.count === 'number') count = countData.count;
+            else if (countData?.data?.count) count = Number(countData.data.count);
+
+            setUnreadCount(count || 0);
         } catch (error) {
             console.error('Error fetching unread count:', error);
         }
@@ -194,30 +203,30 @@ export default function NotificationDropdown() {
     return (
         <div className="relative" ref={containerRef}>
             <button
-                className="relative text-slate-500 hover:text-slate-700 transition-colors pt-1"
+                className="relative text-muted-foreground hover:text-foreground transition-colors pt-1 px-1"
                 onClick={handleToggle}
             >
-                <Bell className={`h-6 w-6 transition-transform ${isAnimating ? 'animate-bounce text-sky-500' : ''}`} />
+                <Bell className={`h-[22px] w-[22px] transition-transform ${isAnimating ? 'animate-bounce text-primary' : ''}`} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white translate-x-1/4 -translate-y-1/4 animate-pulse"></span>
+                    <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                 )}
             </button>
 
             {/* Notification Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-card rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                     {/* Header */}
-                    <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center justify-between">
+                    <div className="px-4 py-3 bg-card border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-slate-800 text-sm">Notificaciones</h3>
+                            <h3 className="font-bold text-foreground text-sm">Notificaciones</h3>
                             {unreadCount > 0 && (
-                                <span className="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
+                                <span className="bg-destructive/10 text-destructive text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
                             )}
                         </div>
                         {unreadCount > 0 && (
                             <button
                                 onClick={handleMarkAllAsRead}
-                                className="text-[10px] font-bold text-[#0ea5e9] hover:text-sky-700 uppercase tracking-wide"
+                                className="text-[10px] font-bold text-primary hover:text-primary/80 uppercase tracking-wide"
                             >
                                 Marcar todas como leídas
                             </button>
@@ -227,41 +236,41 @@ export default function NotificationDropdown() {
                     {/* List */}
                     <div className="max-h-[350px] overflow-y-auto">
                         {loading ? (
-                            <div className="py-8 flex flex-col items-center justify-center text-slate-400">
+                            <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
                                 <Loader2 className="h-8 w-8 animate-spin mb-2" />
                                 <p className="text-xs">Cargando notificaciones...</p>
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="py-12 px-6 flex flex-col items-center justify-center text-center">
-                                <div className="bg-slate-50 p-4 rounded-full mb-3">
-                                    <BellOff className="h-8 w-8 text-slate-300" />
+                                <div className="bg-muted p-4 rounded-full mb-3">
+                                    <BellOff className="h-8 w-8 text-muted-foreground/50" />
                                 </div>
-                                <p className="text-sm font-semibold text-slate-700 mb-1">¡Todo está tranquilo!</p>
-                                <p className="text-xs text-slate-400">No tienes nuevas notificaciones por el momento. Disfruta tu día.</p>
+                                <p className="text-sm font-semibold text-foreground mb-1">¡Todo está tranquilo!</p>
+                                <p className="text-xs text-muted-foreground">No tienes nuevas notificaciones por el momento. Disfruta tu día.</p>
                             </div>
                         ) : (
                             notifications.map((notification) => (
                                 <div
                                     key={notification.id}
                                     onClick={() => handleNotificationClick(notification)}
-                                    className={`px-4 py-3 border-b border-slate-100/60 hover:bg-slate-50 transition-colors cursor-pointer group flex gap-3 ${!notification.isRead ? 'bg-slate-50/50' : ''}`}
+                                    className={`px-4 py-3 border-b border-border/60 hover:bg-muted transition-colors cursor-pointer group flex gap-3 ${!notification.isRead ? 'bg-muted/50' : ''}`}
                                 >
                                     <div className={`${getBgColor(notification.type)} p-2 rounded-full h-fit flex-shrink-0 transition-colors`}>
                                         {getIcon(notification.type)}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-0.5">
-                                            <p className={`text-sm ${!notification.isRead ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'} truncate pr-2`}>
+                                            <p className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground'} truncate pr-2`}>
                                                 {notification.title}
                                             </p>
                                             {!notification.isRead && (
-                                                <span className="h-2 w-2 rounded-full bg-[#0ea5e9] flex-shrink-0 mt-1.5 shadow-sm shadow-sky-200"></span>
+                                                <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5 shadow-sm shadow-primary/20"></span>
                                             )}
                                         </div>
-                                        <p className={`text-xs ${!notification.isRead ? 'text-slate-600' : 'text-slate-500'} mb-1.5 line-clamp-2`}>
+                                        <p className={`text-xs ${!notification.isRead ? 'text-foreground/80' : 'text-muted-foreground'} mb-1.5 line-clamp-2`}>
                                             {notification.message}
                                         </p>
-                                        <p className="text-[10px] text-slate-400 font-medium capitalize">
+                                        <p className="text-[10px] text-muted-foreground font-medium capitalize">
                                             {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: es })}
                                         </p>
                                     </div>
@@ -272,13 +281,13 @@ export default function NotificationDropdown() {
 
                     {/* Footer */}
                     {notifications.length > 0 && (
-                        <div className="px-4 py-3 bg-slate-50/50 text-center border-t border-slate-100">
+                        <div className="px-4 py-3 bg-muted/50 text-center border-t border-border">
                             <button
                                 onClick={() => {
                                     navigate('/notifications');
                                     setIsOpen(false);
                                 }}
-                                className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                                className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 Ver historial completo
                             </button>

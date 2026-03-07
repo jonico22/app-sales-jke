@@ -15,7 +15,7 @@ const DialogContext = React.createContext<{
   onOpenChange: (open: boolean) => void
 }>({
   open: false,
-  onOpenChange: () => {},
+  onOpenChange: () => { },
 })
 
 const Dialog = ({ children, open = false, onOpenChange }: DialogProps) => {
@@ -39,7 +39,7 @@ const Dialog = ({ children, open = false, onOpenChange }: DialogProps) => {
 
 const DialogTrigger = ({ children, asChild }: { children: React.ReactNode, asChild?: boolean }) => {
   const { onOpenChange } = React.useContext(DialogContext)
-  
+
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<React.HTMLAttributes<HTMLElement>>, {
       onClick: (e: React.MouseEvent<HTMLElement>) => {
@@ -66,25 +66,25 @@ const DialogContent = React.forwardRef<
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in" 
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in"
         onClick={() => onOpenChange(false)}
       />
-      
+
       {/* Content */}
       <div
         ref={ref}
         className={cn(
-          "relative z-50 w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200",
+          "relative z-50 w-full max-w-lg rounded-2xl bg-card border border-border p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200",
           className
         )}
         {...props}
       >
         <button
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          className="absolute right-4 top-4 rounded-lg p-1.5 opacity-60 transition-all hover:opacity-100 hover:bg-muted focus:outline-none"
           onClick={() => onOpenChange(false)}
         >
-          <X className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+          <X className="h-4 w-4 text-muted-foreground" />
           <span className="sr-only">Close</span>
         </button>
         {children}
@@ -100,7 +100,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col text-center sm:text-left mb-6", // Added mb-6 for spacing
+      "flex flex-col text-center sm:text-left mb-6",
       className
     )}
     {...props}
@@ -114,7 +114,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-8 pt-4 border-t border-slate-100", // Added spacing and border
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-8 pt-4 border-t border-border",
       className
     )}
     {...props}
@@ -129,7 +129,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-xl font-bold leading-none tracking-tight text-slate-800",
+      "text-xl font-bold leading-none tracking-tight text-foreground",
       className
     )}
     {...props}
@@ -143,7 +143,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-slate-500", className)}
+    className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
 ))

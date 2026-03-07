@@ -66,22 +66,22 @@ export default function SecurityPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
             <div className="space-y-1">
-                <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Seguridad y Acceso</h1>
-                <p className="text-slate-500">
+                <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Seguridad y Acceso</h1>
+                <p className="text-muted-foreground text-xs">
                     Gestione su contraseña y la configuración de autenticación de dos factores para proteger su cuenta.
                 </p>
             </div>
 
-            <Card className="p-0 border-slate-200 overflow-hidden shadow-sm">
+            <Card className="p-0 border-border overflow-hidden shadow-sm">
                 <div className="p-6 md:p-8 space-y-8">
                     {/* Section Header */}
                     <div className="flex items-start gap-4">
-                        <div className="mt-1 bg-sky-50 p-2 rounded-lg">
-                            <Lock className="w-5 h-5 text-sky-600" />
+                        <div className="mt-1 bg-primary/10 p-2 rounded-lg border border-primary/20">
+                            <Lock className="w-5 h-5 text-primary" />
                         </div>
                         <div className="space-y-1">
-                            <h2 className="text-xl font-bold text-slate-800">Cambiar Contraseña</h2>
-                            <p className="text-sm text-slate-500 leading-relaxed">
+                            <h2 className="text-base font-bold text-foreground uppercase tracking-tight">Cambiar Contraseña</h2>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
                                 Asegúrese de que su contraseña tenga al menos 8 caracteres y combine letras y números.
                             </p>
                         </div>
@@ -102,7 +102,7 @@ export default function SecurityPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors focus:outline-none"
                                 >
                                     {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
@@ -127,7 +127,7 @@ export default function SecurityPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowNewPassword(!showNewPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors focus:outline-none"
                                     >
                                         {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                     </button>
@@ -151,7 +151,7 @@ export default function SecurityPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors focus:outline-none"
                                     >
                                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                     </button>
@@ -179,12 +179,12 @@ export default function SecurityPage() {
             </Card>
 
             {/* 2FA Placeholder (as mentioned in description text) */}
-            <Card className="p-6 md:p-8 opacity-60 border-dashed border-slate-300 bg-slate-50/50">
+            <Card className="p-6 md:p-8 opacity-60 border-dashed border-border bg-muted/20">
                 <div className="flex items-center gap-4">
-                    <Shield className="w-5 h-5 text-slate-400" />
+                    <Shield className="w-5 h-5 text-muted-foreground/50" />
                     <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-slate-600">Autenticación de Dos Factores (2FA)</h3>
-                        <p className="text-sm text-slate-500">
+                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Autenticación de Dos Factores (2FA)</h3>
+                        <p className="text-xs text-muted-foreground">
                             Próximamente: Añade una capa extra de seguridad a tu cuenta.
                         </p>
                     </div>
