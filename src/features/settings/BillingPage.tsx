@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSocietyStore } from '@/store/society.store';
 import { societyService } from '@/services/society.service';
-import { subscriptionService, type SubscriptionDetails, type SubscriptionMovement, type SubscriptionBilling } from '@/services/subscription.service';
+import { subscriptionService, type SubscriptionDetails } from '@/services/subscription.service';
 import {
     CreditCard,
     RefreshCw,
@@ -43,24 +44,34 @@ export default function BillingPage() {
     const [cancelReason, setCancelReason] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const [history, setHistory] = useState<SubscriptionMovement[]>([]);
-    const [loadingHistory, setLoadingHistory] = useState(true);
-
-    const [billingHistory, setBillingHistory] = useState<SubscriptionBilling[]>([]);
-    const [loadingBilling, setLoadingBilling] = useState(true);
-
     const [activeTab, setActiveTab] = useState<'history' | 'billing'>('history');
+
+    // React Query for History
+    const { data: history = [], isLoading: loadingHistory } = useQuery({
+        queryKey: ['subscriptionHistory', society?.subscriptionId],
+        queryFn: () => subscriptionService.getSubscriptionHistory(society!.subscriptionId!),
+        enabled: !!society?.subscriptionId && !!subscription,
+    });
+
+    // React Query for Billing (Lazy loaded when activeTab === 'billing')
+    const { data: billingHistory = [], isLoading: loadingBilling } = useQuery({
+        queryKey: ['subscriptionBilling', society?.subscriptionId],
+        queryFn: () => subscriptionService.getSubscriptionBilling(society!.subscriptionId!),
+        enabled: !!society?.subscriptionId && !!subscription && activeTab === 'billing',
+    });
 
     const currentUsers = society?.totalUsers || 0;
     const currentProducts = society?.totalProducts || 0;
     const currentStorageBytes = society?.usedStorage || 0;
 
-    const formatSize = (bytes: number) => {
-        if (!bytes || bytes === 0) return '0 GB';
+    const formatSize = (bytes: any) => {
+        const numBytes = Number(bytes);
+        if (isNaN(numBytes) || numBytes <= 0) return '0 GB';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        const i = Math.max(0, Math.floor(Math.log(numBytes) / Math.log(k)));
+        const safeIndex = Math.min(i, sizes.length - 1);
+        return parseFloat((numBytes / Math.pow(k, safeIndex)).toFixed(2)) + ' ' + sizes[safeIndex];
     };
 
     const currentStorageStr = formatSize(currentStorageBytes);
@@ -93,32 +104,6 @@ export default function BillingPage() {
             console.error('Error fetching latest society usage data:', err);
         });
     }, []);
-
-    // Fetch History and Billing
-    useEffect(() => {
-        const fetchAllHistory = async () => {
-            if (!society?.subscriptionId) return;
-            try {
-                setLoadingHistory(true);
-                setLoadingBilling(true);
-                const [historyData, billingData] = await Promise.all([
-                    subscriptionService.getSubscriptionHistory(society.subscriptionId),
-                    subscriptionService.getSubscriptionBilling(society.subscriptionId)
-                ]);
-                setHistory(historyData);
-                setBillingHistory(billingData);
-            } catch (err: any) {
-                console.error('Error al cargar historial o facturación:', err);
-            } finally {
-                setLoadingHistory(false);
-                setLoadingBilling(false);
-            }
-        };
-
-        if (subscription) {
-            fetchAllHistory();
-        }
-    }, [society?.subscriptionId, subscription]);
 
     const handleToggleAutoRenew = async () => {
         if (!subscription || !society?.subscriptionId) return;
@@ -235,11 +220,11 @@ export default function BillingPage() {
         !subscription.hasPendingPayment &&
         !isBeta;
 
-    const userPercent = Math.min(100, (currentUsers / (society?.maxUsers || subscription.plan.maxUsers || 1)) * 100);
-    const productPercent = Math.min(100, (currentProducts / (society?.maxProducts || subscription.plan.maxProducts || 1)) * 100);
+    const userPercent = Math.min(100, (Number(currentUsers) / (society?.maxUsers || subscription.plan.maxUsers || 1)) * 100) || 0;
+    const productPercent = Math.min(100, (Number(currentProducts) / (society?.maxProducts || subscription.plan.maxProducts || 1)) * 100) || 0;
 
     const planStorageBytes = (subscription.plan.storage || 1) * 1024 * 1024 * 1024;
-    const storagePercent = Math.min(100, (currentStorageBytes / planStorageBytes) * 100);
+    const storagePercent = Math.min(100, Math.max(0, (Number(currentStorageBytes) / planStorageBytes) * 100)) || 0;
 
     return (
         <div className="flex-1 w-full bg-background min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6">
