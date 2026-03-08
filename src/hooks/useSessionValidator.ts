@@ -7,10 +7,11 @@ import { AxiosError } from 'axios';
 
 export function useSessionValidator() {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { isAuthenticated, logout, token } = useAuthStore();
+  const { isAuthenticated, logout, token, setSubscription, updateUser } = useAuthStore();
   const navigate = useNavigate();
 
   const handleRedirect = useCallback(() => {
+    localStorage.setItem('redirectUrl', window.location.pathname + window.location.search);
     logout();
     navigate('/auth/login');
     setIsSessionExpired(false);
@@ -22,7 +23,16 @@ export function useSessionValidator() {
 
     const checkSession = async () => {
       try {
-        await authService.getMe();
+        const response = await authService.getMe();
+
+        if (response.data) {
+          if (response.data.subscription) {
+            setSubscription(response.data.subscription);
+          }
+          if (response.data.user) {
+            updateUser(response.data.user);
+          }
+        }
       } catch (error) {
         const err = error as AxiosError;
         // If 401 Unauthorized, session is definitely expired/invalid
@@ -36,13 +46,9 @@ export function useSessionValidator() {
     // Check on mount
     checkSession();
 
-    // Optional: Check on window focus to catch expiration that happened in other tabs/sleep
-    const handleFocus = () => checkSession();
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
+    // Removed the window.focus listener to prevent redundant /auth/me calls
+    // (e.g., when file dialogs close or clicking back into the window).
+    // The Axios interceptor already handles 401 errors gracefully.
   }, [isAuthenticated, token]);
 
   return {

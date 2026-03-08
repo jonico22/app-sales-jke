@@ -54,7 +54,7 @@ export function TagInput({
   const selectedTags = options.filter(opt => value.includes(opt.id));
 
   // Filter options based on search term
-  const filteredOptions = options.filter(opt => 
+  const filteredOptions = options.filter(opt =>
     opt.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     !value.includes(opt.id)
   );
@@ -125,24 +125,24 @@ export function TagInput({
       <div
         onClick={handleContainerClick}
         className={cn(
-          'min-h-[44px] px-3 py-1.5 rounded-xl border bg-slate-50 flex flex-wrap gap-2 items-center cursor-text transition-all',
-          'border-slate-200',
+          'min-h-[44px] px-3 py-1.5 rounded-xl border bg-muted/30 flex flex-wrap gap-2 items-center cursor-text transition-all',
+          'border-input',
           isOpen && 'ring-2 ring-primary border-transparent',
-          disabled && 'opacity-50 cursor-not-allowed bg-slate-100'
+          disabled && 'opacity-50 cursor-not-allowed bg-muted/10'
         )}
       >
         {/* Selected Tags */}
         {selectedTags.map(tag => (
           <span
             key={tag.id}
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-100 text-sky-700 text-xs font-semibold rounded-lg"
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20"
           >
             {tag.name}
             {!disabled && (
               <button
                 type="button"
                 onClick={(e) => handleRemoveTag(tag.id, e)}
-                className="hover:text-sky-900 focus:outline-none transition-colors"
+                className="hover:text-primary-hover focus:outline-none transition-colors"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -163,23 +163,23 @@ export function TagInput({
             onKeyDown={handleKeyDown}
             onFocus={() => setIsOpen(true)}
             placeholder={selectedTags.length === 0 ? placeholder : ''}
-            className="flex-1 min-w-[100px] bg-transparent border-none outline-none text-sm text-slate-600 placeholder:text-slate-400"
+            className="flex-1 min-w-[100px] bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground/60"
             disabled={disabled}
           />
         )}
 
         {/* Dropdown Arrow */}
-        <ChevronDown 
+        <ChevronDown
           className={cn(
-            'h-4 w-4 text-slate-400 ml-auto transition-transform',
+            'h-4 w-4 text-muted-foreground/50 ml-auto transition-transform',
             isOpen && 'rotate-180'
-          )} 
+          )}
         />
       </div>
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-xl max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-100 custom-scrollbar">
           {filteredOptions.length > 0 ? (
             <ul className="py-1">
               {filteredOptions.map(option => (
@@ -192,10 +192,10 @@ export function TagInput({
                   }}
                   className={cn(
                     'px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2',
-                    'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                    'text-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
-                  <span className="flex-1">{option.name}</span>
+                  <span className="flex-1 font-medium">{option.name}</span>
                   {value.includes(option.id) && (
                     <Check className="h-4 w-4 text-primary" />
                   )}
@@ -203,7 +203,7 @@ export function TagInput({
               ))}
             </ul>
           ) : (
-            <div className="px-3 py-4 text-sm text-slate-500 text-center">
+            <div className="px-3 py-4 text-sm text-muted-foreground text-center font-medium">
               {searchTerm ? (
                 allowCreate ? (
                   <button

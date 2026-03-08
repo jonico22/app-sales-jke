@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
+import { MobileNavFooter } from './MobileNavFooter';
 import { cn } from '@/lib/utils';
 import { useSessionValidator } from '@/hooks/useSessionValidator';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
@@ -14,37 +15,58 @@ export default function DashboardLayout() {
   // Toggle collapse on desktop, but maybe we want to keep it simple for now
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
+  // Auto-collapse on tablet screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <SessionExpiredModal 
-        isOpen={isSessionExpired} 
-        onLogin={handleRedirect} 
+    <div className="min-h-screen bg-background text-foreground flex">
+      <SessionExpiredModal
+        isOpen={isSessionExpired}
+        onLogin={handleRedirect}
       />
-      
+
       {/* Sidebar */}
-      <DashboardSidebar 
-        isOpen={isSidebarOpen} 
+      <DashboardSidebar
+        isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isCollapsed={isCollapsed}
         toggleCollapse={toggleCollapse}
       />
 
       {/* Main Content Wrapper */}
-      <div 
+      <div
         className={cn(
           "flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out",
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}
       >
-        
+
         {/* Header - Passing toggler */}
         <DashboardHeader onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        {/* Page Content - extra bottom padding on mobile for nav footer */}
+        <main className="flex-1 p-6 pb-24 lg:pb-6 overflow-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Navigation Footer */}
+      <MobileNavFooter onMenuClick={() => setIsSidebarOpen(true)} />
     </div>
   );
 }
+

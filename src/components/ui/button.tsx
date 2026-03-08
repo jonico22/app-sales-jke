@@ -2,7 +2,7 @@ import { type ButtonHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg' | 'icon';
 }
 
@@ -12,16 +12,19 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-2xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer',
+          'inline-flex items-center justify-center rounded-xl font-bold transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500/20 disabled:opacity-50 disabled:pointer-events-none cursor-pointer hover:shadow-md active:scale-[0.98]',
           {
-            'bg-primary text-primary-foreground hover:bg-[#0099cc]': variant === 'primary',
-            'bg-secondary text-secondary-foreground hover:bg-secondary/90': variant === 'secondary',
-            'border border-muted bg-transparent hover:bg-muted text-foreground': variant === 'outline',
-            'hover:bg-muted text-foreground': variant === 'ghost',
-            'h-9 px-4 text-sm': size === 'sm',
-            'h-11 px-8 text-base': size === 'md',
-            'h-14 px-10 text-lg': size === 'lg',
-            'h-10 w-10': size === 'icon',
+            // Variants
+            'bg-[var(--color-primary)] text-[var(--color-primary-foreground)] hover:bg-[var(--color-primary-hover)] border border-transparent': variant === 'primary',
+            'bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)] hover:bg-[var(--color-secondary-hover)] border border-[var(--color-secondary-border)]': variant === 'secondary',
+            'bg-[var(--color-danger)] text-[var(--color-danger-foreground)] hover:bg-[var(--color-danger-hover)] border border-transparent': variant === 'danger',
+            'bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-foreground)] border border-[var(--color-secondary-border)]': variant === 'outline',
+            'bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-foreground)] border border-transparent': variant === 'ghost',
+            // Sizes
+            'h-9 px-4 text-sm rounded-lg': size === 'sm',
+            'h-10 px-5 text-sm': size === 'md',
+            'h-12 px-8 text-base': size === 'lg',
+            'h-10 w-10 shrink-0 p-0 rounded-xl': size === 'icon',
           },
           className
         )}

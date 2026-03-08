@@ -6,23 +6,19 @@ export { formatDateToLima, formatDateToUTC };
 
 export const OrderPaymentMethod = {
     CASH: 'CASH',
-    CARD: 'CARD', // Added generic CARD
-    CREDIT_CARD: 'CREDIT_CARD',
-    DEBIT_CARD: 'DEBIT_CARD',
+    CARD: 'CARD',
     TRANSFER: 'TRANSFER',
-    DEPOSIT: 'DEPOSIT',
     YAPE: 'YAPE',
     PLIN: 'PLIN',
-    OTHER: 'OTHER' // Added OTHER
+    OTHER: 'OTHER'
 } as const;
 
 export type OrderPaymentMethod = (typeof OrderPaymentMethod)[keyof typeof OrderPaymentMethod];
 
 export const OrderPaymentStatus = {
     PENDING: 'PENDING',
-    CONFIRMED: 'CONFIRMED', // Added CONFIRMED
-    COMPLETED: 'COMPLETED',
-    FAILED: 'FAILED',
+    CONFIRMED: 'CONFIRMED',
+    REJECTED: 'REJECTED',
     REFUNDED: 'REFUNDED'
 } as const;
 
@@ -50,17 +46,22 @@ export interface OrderPayment {
 }
 
 export interface CreateOrderPaymentRequest {
-    orderId: string;
+    orderId?: string; // Optional per backend validation
     societyId: string;
+
+    // Financials
     amount: number;
     currencyId: string;
-    exchangeRate?: number;
-    paymentMethod?: OrderPaymentMethod;
+    exchangeRate?: number; // Defaults to 1.0 on backend
+
     paymentDate?: string;
-    referenceCode?: string;
+    paymentMethod: OrderPaymentMethod;
+
+    // Status & Evidence
     status?: OrderPaymentStatus;
-    notes?: string;
     imageId?: string;
+    referenceCode?: string;
+    notes?: string;
 }
 
 export interface UpdateOrderPaymentRequest {

@@ -77,16 +77,16 @@ export function CategoryFilterPanel({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-white">
-        <SheetHeader>
-          <SheetTitle>Filtros Avanzados</SheetTitle>
+      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-card border-l border-border shadow-2xl">
+        <SheetHeader className="p-5 border-b border-border bg-card">
+          <SheetTitle className="text-lg font-bold text-foreground uppercase tracking-tight">Filtros Avanzados</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
 
           {/* Created By */}
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Creado por (UUID)</Label>
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Creado por</Label>
             <TagInput
               options={availableUsers}
               value={filters.createdBy ? [filters.createdBy] : []}
@@ -97,8 +97,8 @@ export function CategoryFilterPanel({
           </div>
 
           {/* Creation Date Range */}
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Rango de Fecha de Creación</Label>
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Rango de Fecha de Creación</Label>
             <div className="grid grid-cols-2 gap-3">
               <DatePickerInput
                 value={filters.createdAtFrom}
@@ -118,8 +118,8 @@ export function CategoryFilterPanel({
           </div>
 
           {/* Update Date Range */}
-          <div className="space-y-3">
-            <Label className="text-sm font-bold text-slate-700">Rango de Fecha de Actualización</Label>
+          <div className="space-y-2">
+            <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">Rango de Fecha de Actualización</Label>
             <div className="grid grid-cols-2 gap-3">
               <DatePickerInput
                 value={filters.updatedAtFrom}
@@ -141,9 +141,9 @@ export function CategoryFilterPanel({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-slate-100 bg-white space-y-3">
+        <div className="p-5 border-t border-border bg-muted/20 space-y-3">
           <Button
-            className="w-full bg-[#0ea5e9] hover:bg-[#0284c7] text-white py-6 rounded-xl text-base shadow-lg shadow-sky-500/20"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 transition-all active:scale-95"
             onClick={() => {
               onApplyFilters(filters);
               onOpenChange(false);
@@ -153,7 +153,8 @@ export function CategoryFilterPanel({
           </Button>
           <Button
             variant="ghost"
-            className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-50 py-4"
+            size="sm"
+            className="w-full text-muted-foreground hover:text-foreground hover:bg-muted font-bold text-[10px] uppercase tracking-wider h-9"
             onClick={handleClear}
           >
             Limpiar Filtros

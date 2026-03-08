@@ -6,8 +6,36 @@ export interface LoginRequest {
 }
 
 export interface Role {
+  id: string;
   code: string;
   name: string;
+  isActive: boolean;
+  societyId?: string;
+}
+
+export interface DocumentType {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface Person {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  documentNumber: string | null;
+  documentType?: DocumentType;
+}
+
+export interface UserSession {
+  id: string;
+  token: string;
+  expiresAt: string;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
 }
 
 export interface User {
@@ -17,9 +45,12 @@ export interface User {
   image: string | null;
   emailVerified: boolean;
   isActive: boolean;
-  failedLoginAttempts: number;
-  lockedUntil: string | null;
+  mustChangePassword: boolean;
   role: Role;
+  person?: Person;
+  sessions?: UserSession[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Session {
@@ -35,6 +66,7 @@ export interface LoginData {
   newExpiresAt: string;
   role: Role;
   session: Session;
+  subscription?: SubscriptionInfo;
 }
 
 export interface LoginResponse {
@@ -72,6 +104,27 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  documentType?: string | null;
+  documentNumber?: string | null;
+  image?: string | null;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
+export interface SubscriptionInfo {
+  status: 'ACTIVE' | 'INACTIVE' | string;
+  planId: string;
+  endDate: string;
+}
+
 export interface MeResponse {
   success: boolean;
   message: string;
@@ -80,6 +133,7 @@ export interface MeResponse {
     role: Role;
     token: string;
     expiresAt: string;
+    subscription?: SubscriptionInfo;
   };
 }
 
@@ -89,6 +143,15 @@ export interface RefreshSessionResponse {
   data: {
     token: string;
     expiresAt: string;
+  };
+}
+
+export interface PermissionsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    views: Record<string, string[]>;
+    modules: Record<string, boolean>;
   };
 }
 
@@ -102,6 +165,10 @@ export const authService = {
   },
   getMe: async (): Promise<MeResponse> => {
     const response = await api.get<MeResponse>('/auth/me');
+    return response.data;
+  },
+  getPermissions: async (): Promise<PermissionsResponse> => {
+    const response = await api.get<PermissionsResponse>('/auth/me/permissions');
     return response.data;
   },
   refreshSession: async (): Promise<RefreshSessionResponse> => {
@@ -118,6 +185,10 @@ export const authService = {
   },
   changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
     const response = await api.post<ChangePasswordResponse>('/auth/change-password', data);
+    return response.data;
+  },
+  updateProfile: async (data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
+    const response = await api.put<UpdateProfileResponse>('/users/me', data);
     return response.data;
   },
 };

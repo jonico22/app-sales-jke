@@ -10,7 +10,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
 
-      <footer className="bg-white border-t border-muted p-6 text-center text-sm text-foreground/60">
+      <footer className="bg-card border-t border-border p-6 text-center text-xs text-muted-foreground/60">
         © {new Date().getFullYear()} JKE Solutions. All rights reserved.
       </footer>
     </div>

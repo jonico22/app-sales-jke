@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Label, Card } from '@/components/ui';
+import { Button, Input, Label, Card, Checkbox } from '@/components/ui';
 import { authService } from '@/services/auth.service';
 import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
@@ -21,17 +21,58 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
+  const [rememberMe, setRememberMe] = useState(false);
+
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Load saved email on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setValue('email', savedEmail);
+      setRememberMe(true);
+    }
+  }, [setValue]);
 
   const onSubmit = async (data: LoginSchema) => {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
       login(response.data); // Update global store
-      await societyService.getCurrent();
+
+      // Only load society data if password change is not mandatory
+      // The backend likely blocks normal endpoints until the password is changed
+      if (!response.data.user.mustChangePassword) {
+        try {
+          await societyService.getCurrent();
+        } catch (err) {
+          console.error('Failed to load initial society data', err);
+        }
+      }
+
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', data.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
-      navigate('/');
+
+      // Navigation Logic
+      const savedUrl = localStorage.getItem('redirectUrl');
+
+      if (response.data.user.mustChangePassword) {
+        navigate('/security');
+      } else {
+        if (savedUrl) {
+          localStorage.removeItem('redirectUrl');
+          navigate(savedUrl);
+        } else {
+          navigate('/');
+        }
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
@@ -41,7 +82,7 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="p-8 shadow-xl border-none">
+    <Card className="p-8 shadow-xl dark:shadow-none">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold font-headings text-foreground">Iniciar Sesión</h1>
         <p className="text-sm text-muted-foreground mt-2">
@@ -77,7 +118,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
               aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
               {showPassword ? (
@@ -92,6 +133,23 @@ export default function LoginPage() {
           )}
         </div>
 
+
+
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="remember"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <label
+            htmlFor="remember"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground"
+          >
+            Recordar correo
+          </label>
+        </div>
+
         <Button type="submit" variant="primary" className="w-full text-white font-bold" disabled={isSubmitting}>
           {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </Button>
@@ -102,6 +160,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </form>
-    </Card>
+    </Card >
   );
 }

@@ -6,6 +6,17 @@ export interface ProductCategory {
     code: string;
 }
 
+export interface Brand {
+    id: string;
+    brand: string;
+}
+
+export interface Color {
+    id: string;
+    color: string;
+    colorCode: string;
+}
+
 export interface Product {
     id: string;
     code?: string;
@@ -15,6 +26,10 @@ export interface Product {
     priceCost: string;
     stock: number;
     minStock: number;
+    barcode: string | null;
+    brand: string | null;
+    color: string | null;
+    colorCode: string | null;
     societyId: string;
     categoryId: string;
     imageId: string | null;
@@ -26,6 +41,7 @@ export interface Product {
     updatedBy: string | null;
     category: ProductCategory | null;
     image: string | null;
+    salesCount?: number;
 }
 
 export interface CreateProductRequest {
@@ -39,6 +55,10 @@ export interface CreateProductRequest {
     imageId?: string;
     isActive?: boolean;
     code: string;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface UpdateProductRequest {
@@ -51,6 +71,10 @@ export interface UpdateProductRequest {
     categoryId?: string;
     imageId?: string;
     isActive?: boolean;
+    barcode?: string;
+    brand?: string;
+    color?: string;
+    colorCode?: string;
 }
 
 export interface ProductResponse {
@@ -93,6 +117,20 @@ export interface UpdatedByUsersResponse {
     data: UserSelectOption[];
 }
 
+export interface BulkUploadResponse {
+    success: boolean;
+    message: string;
+    data: {
+        status: string;
+        message: string;
+        details: {
+            success: boolean;
+            processed: number;
+            errors: string[];
+        };
+    };
+}
+
 export const productService = {
     // Get all products
     getAll: async (params?: {
@@ -124,6 +162,11 @@ export const productService = {
         return response.data;
     },
 
+    getForSelect: async (): Promise<ProductsResponse> => {
+        const response = await api.get<ProductsResponse>('/sales/products/select');
+        return response.data;
+    },
+
     // Create new product
     create: async (data: CreateProductRequest): Promise<ProductResponse> => {
         const response = await api.post<ProductResponse>('/sales/products', data);
@@ -145,6 +188,37 @@ export const productService = {
     // Get users who created products
     getCreatedByUsers: async (): Promise<UpdatedByUsersResponse> => {
         const response = await api.get<UpdatedByUsersResponse>('/sales/products/created-by-users');
+        return response.data;
+    },
+
+    // Bulk upload products from CSV file
+    bulkUpload: async (file: File): Promise<BulkUploadResponse> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post<BulkUploadResponse>('/sales/products/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    // Advanced Search Helpers
+    getBestSellers: async (): Promise<{ success: boolean; message: string; data: Product[] }> => {
+        const response = await api.get<{ success: boolean; message: string; data: Product[] }>('/sales/products/best-sellers');
+        return response.data;
+    },
+
+    // Updated to include optional message field in response
+    getBrands: async (): Promise<{ success: boolean; message?: string; data: Brand[] }> => {
+        const response = await api.get<{ success: boolean; data: Brand[] }>('/sales/products/brands');
+        return response.data;
+    },
+
+    // Updated to include optional message field in response
+    getColors: async (): Promise<{ success: boolean; message?: string; data: Color[] }> => {
+        const response = await api.get<{ success: boolean; data: Color[] }>('/sales/products/colors');
         return response.data;
     },
 };

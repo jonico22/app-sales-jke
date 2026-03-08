@@ -13,12 +13,24 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false, // Set to true for production debugging
+    sourcemap: false,
+    // Raise warning threshold slightly — after lazy splitting 500 kB is very conservative
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Core React runtime — tiny and always needed
+          'react-vendor': ['react', 'react-dom'],
+          // Routing
+          'router': ['react-router-dom'],
+          // Form validation
           'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          // Data fetching / caching
+          'query': ['@tanstack/react-query'],
+          // Date utilities (heavy)
+          'dates': ['date-fns'],
+          // Real-time
+          'socket': ['socket.io-client'],
         },
       },
     },
