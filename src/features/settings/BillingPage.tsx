@@ -66,12 +66,9 @@ export default function BillingPage() {
 
     const formatSize = (bytes: any) => {
         const numBytes = Number(bytes);
-        if (isNaN(numBytes) || numBytes <= 0) return '0 GB';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.max(0, Math.floor(Math.log(numBytes) / Math.log(k)));
-        const safeIndex = Math.min(i, sizes.length - 1);
-        return parseFloat((numBytes / Math.pow(k, safeIndex)).toFixed(2)) + ' ' + sizes[safeIndex];
+        if (isNaN(numBytes) || numBytes <= 0) return '0 MB';
+        // Force conversion to MB
+        return parseFloat((numBytes / (1024 * 1024)).toFixed(2)) + ' MB';
     };
 
     const currentStorageStr = formatSize(currentStorageBytes);
@@ -342,7 +339,7 @@ export default function BillingPage() {
                                         <div className="text-right">
                                             <span className="text-sm font-bold text-foreground">{currentStorageStr}</span>
                                             <span className="text-xs font-medium text-muted-foreground ml-1">
-                                                / {subscription.plan.storage} GB
+                                                / {subscription.plan.storage} MB
                                             </span>
                                         </div>
                                     </div>
