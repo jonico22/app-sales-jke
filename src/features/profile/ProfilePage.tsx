@@ -85,6 +85,7 @@ export default function ProfilePage() {
                 const updatedUser = {
                     ...user,
                     ...response.data,
+                    image: avatarPreview || user?.image,
                 } as any; // Cast to bypass strict type if response has different shape
 
                 updateUser(updatedUser);
@@ -108,6 +109,7 @@ export default function ProfilePage() {
         const mergedUser = {
             ...user,
             ...updatedUser,
+            image: url, // Explicitly update image in store
         };
         updateUser(mergedUser);
     };
