@@ -56,25 +56,19 @@ export default function POSPage() {
 
 
           if (response.success && response.data && response.data.orderItems) {
-            console.log('[CLONE] Order items found:', response.data.orderItems.length);
 
             clearCurrentOrder(); // Ensure clean slate
-            console.log('[CLONE] Cart cleared');
-
             const productService = await import('@/services/product.service').then(m => m.productService);
-
             for (const item of response.data.orderItems) {
               try {
-                console.log('[CLONE] Fetching product:', item.productId);
+
                 const productRes = await productService.getById(item.productId);
 
                 if (productRes.success && productRes.data) {
                   const product = productRes.data;
-                  console.log('[CLONE] Product fetched:', product.name, 'Quantity:', item.quantity);
 
                   // Add item directly with quantity
                   addItemToCart(product, item.quantity);
-                  console.log('[CLONE] Product added to cart');
                 } else {
                   console.warn('[CLONE] Product fetch failed:', productRes);
                 }
@@ -85,7 +79,6 @@ export default function POSPage() {
 
             // Open the cart panel to show the added items
             if (response.data.orderItems.length > 0) {
-              console.log('[CLONE] Opening cart panel');
               setIsCartOpen(true);
             }
           } else {

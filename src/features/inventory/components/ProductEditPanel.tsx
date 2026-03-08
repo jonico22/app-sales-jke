@@ -115,7 +115,6 @@ export function ProductEditPanel({
       try {
         const response = await productService.getById(productId);
         const product: Product = response.data;
-        console.log(product);
         reset({
           name: product.name,
           categoryId: product.category?.code || '',
@@ -149,7 +148,6 @@ export function ProductEditPanel({
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!productId) return;
-    console.log(data);
     try {
       await productService.update(productId, {
         name: data.name,
