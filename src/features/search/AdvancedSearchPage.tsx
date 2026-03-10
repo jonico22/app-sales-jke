@@ -209,7 +209,7 @@ export default function AdvancedSearchPage() {
     // Effect to reload products when filters or search changes
     useEffect(() => {
         loadProducts();
-    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, favoriteProducts]);
+    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters]);
 
     // Simplified client-side filter for just what's loaded (pagination etc)
     // Actually, if we reload data on search, 'filteredProducts' should just be 'products'
