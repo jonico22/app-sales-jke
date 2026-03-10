@@ -131,8 +131,6 @@ export default function NotificationDropdown() {
     };
 
     const handleNotificationClick = async (notification: Notification) => {
-        console.log("[NotificationDropdown] Clicked notification:", notification);
-
         // Handle File Download for SYSTEM type
         if (notification.type === NotificationType.SYSTEM) {
             if (notification.link || notification.metadata?.downloadUrl) {
@@ -152,7 +150,6 @@ export default function NotificationDropdown() {
 
             // Navigate if link exists
             if (targetLink) {
-                console.log("[NotificationDropdown] Navigating to:", targetLink);
                 navigate(targetLink);
                 setIsOpen(false);
             } else {
