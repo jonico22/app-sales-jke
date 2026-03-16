@@ -183,6 +183,7 @@ export default function AdvancedSearchPage() {
                 search: debouncedSearchQuery || undefined,
                 categoryId: filters.categoryId || undefined,
                 brand: filters.brand || undefined,
+                branchId: selectedBranch?.id || undefined,
                 priceFrom: filters.priceFrom > 0 ? filters.priceFrom : undefined,
                 priceTo: filters.priceTo < 1000 ? filters.priceTo : undefined,
                 stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
@@ -210,10 +211,10 @@ export default function AdvancedSearchPage() {
 
 
 
-    // Effect to reload products when filters or search changes
+    // Effect to reload products when filters, search, or branch changes
     useEffect(() => {
         loadProducts();
-    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters]);
+    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, selectedBranch?.id]);
 
     // Simplified client-side filter for just what's loaded (pagination etc)
     // Actually, if we reload data on search, 'filteredProducts' should just be 'products'

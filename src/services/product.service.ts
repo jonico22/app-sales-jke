@@ -139,6 +139,7 @@ export const productService = {
         search?: string;
         isActive?: boolean;
         categoryId?: string;
+        branchId?: string;
         createdBy?: string;
         createdAtFrom?: string;
         createdAtTo?: string;

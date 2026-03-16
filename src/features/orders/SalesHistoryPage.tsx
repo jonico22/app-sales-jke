@@ -194,8 +194,8 @@ export default function SalesHistoryPage() {
     const getExcelColumns = () => [
         { header: 'ID Venta', key: 'orderCode' as keyof Order, width: 15 },
         {
-            header: 'Fecha',
-            key: (order: Order) => order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') : '-',
+            header: 'Fecha de Modificación',
+            key: (order: Order) => order.updatedAt ? format(new Date(order.updatedAt), 'dd/MM/yyyy HH:mm') : '-',
             width: 20
         },
         {
@@ -452,7 +452,7 @@ export default function SalesHistoryPage() {
                         <thead className="bg-muted/30 border-b border-border">
                             <tr>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">ID Venta</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Fecha</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Fecha de Modificación</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Total</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
@@ -486,7 +486,7 @@ export default function SalesHistoryPage() {
                                                 #{order.orderCode}
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-[11px] text-muted-foreground/80 font-medium">
-                                                {order.createdAt ? format(new Date(order.createdAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
+                                                {order.updatedAt ? format(new Date(order.updatedAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap">
                                                 <div className="flex items-center gap-2.5">
