@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Store, ChevronDown, Check } from 'lucide-react';
 import { useBranchStore } from '@/store/branch.store';
 import { type BranchOfficeSelectOption } from '@/services/branch-office.service';
@@ -12,26 +13,24 @@ interface POSHeaderProps {
 }
 
 export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderProps) {
+  const navigate = useNavigate();
   const { data: branchesData = [] } = useBranches();
   const { branches, selectedBranch, setBranches, selectBranch } = useBranchStore();
 
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Sync branches from query to store
+  // Sync branches from query to store - ONLY if store is empty
   useEffect(() => {
-    if (branchesData.length > 0) {
-      // Only update if store is empty or different?
-      // For now, just setting it ensures it's up to date.
-      // Avoid infinite loop if setBranches is stable (it is from zustand)
-      if (branches.length === 0 || branches.length !== branchesData.length) {
-        setBranches(branchesData);
-        if (!selectedBranch) {
-          selectBranch(branchesData[0]);
-        }
+    if (branchesData.length > 0 && (branches.length === 0 || branches.length !== branchesData.length)) {
+      setBranches(branchesData);
+      
+      // Also set default branch if none selected
+      if (!selectedBranch) {
+        selectBranch(branchesData[0]);
       }
     }
-  }, [branchesData, setBranches, branches.length, selectedBranch, selectBranch]);
+  }, [branchesData, setBranches]); // Only re-run when source data changes
 
   // Update time every minute
   useEffect(() => {
@@ -68,6 +67,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
       <div className="flex items-center gap-4">
         {onMenuClick && (
           <button
+            type="button"
             onClick={onMenuClick}
             className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground"
           >
@@ -84,6 +84,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
         {/* Branch Selector */}
         <div className="relative">
           <button
+            type="button"
             onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
             className="flex items-center gap-3 px-4 py-2 border border-input rounded-xl hover:bg-muted transition-colors bg-background shadow-sm"
           >
@@ -107,6 +108,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
                   {branches.map((branch) => (
                     <button
                       key={branch.id}
+                      type="button"
                       onClick={() => handleSelectBranch(branch)}
                       className={`w-full px-4 py-3 flex items-start gap-3 rounded-lg transition-colors group ${selectedBranch?.id === branch.id ? 'bg-primary/10' : 'hover:bg-muted'
                         }`}
@@ -123,17 +125,18 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
                             <Check className="h-4 w-4 text-primary" />
                           )}
                         </div>
-                        <p className={`text-xs font-medium mt-0.5 ${branch.isActive ? 'text-emerald-500' : 'text-muted-foreground'}`}>
-                          {branch.isActive ? 'Caja Abierta' : 'Caja Cerrada'}
-                        </p>
                       </div>
                     </button>
                   ))}
                 </div>
                 <div className="p-2 border-t border-border">
                   <button
-                    disabled
-                    className="w-full text-center text-xs font-bold text-primary/50 py-3 uppercase tracking-wide cursor-not-allowed flex items-center justify-center gap-2 border-t border-border mt-1 hover:bg-muted transition-colors"
+                    type="button"
+                    onClick={() => {
+                      navigate('/inventory/branches');
+                      setIsBranchDropdownOpen(false);
+                    }}
+                    className="w-full text-center text-xs font-bold text-primary py-3 uppercase tracking-wide flex items-center justify-center gap-2 hover:bg-muted transition-colors rounded-lg"
                   >
                     Gestionar Sucursales
                     <ChevronDown className="h-3 w-3 -rotate-90" />

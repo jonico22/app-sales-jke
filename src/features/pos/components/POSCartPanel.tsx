@@ -8,6 +8,8 @@ import { useBranchStore } from '@/store/branch.store';
 import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
+import { useQueryClient } from '@tanstack/react-query';
+import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
 
 
 interface POSCartPanelProps {
@@ -18,6 +20,7 @@ interface POSCartPanelProps {
 }
 
 export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
+    const queryClient = useQueryClient();
     const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, currencyId } = useCartStore();
     const society = useSocietyStore(state => state.society);
     const selectedBranch = useBranchStore(state => state.selectedBranch);
@@ -72,6 +75,9 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
             const response = await orderService.create(orderData);
 
             if (response.success && response.data) {
+                // Invalidate products cache to refresh stock in selection
+                queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+
                 // If it's PENDING_PAYMENT, we prepare for payment modal
                 if (targetStatus === OrderStatus.PENDING_PAYMENT) {
                     // Save order details to store for payment modal

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FilterSidebar } from './components/FilterSidebar';
 import { SearchHeader } from './components/SearchHeader';
 import { ProductCard } from './components/ProductCard';
@@ -7,16 +8,19 @@ import { favoritesService } from '@/services/favorites.service';
 
 import { Loader2 } from 'lucide-react';
 import { POSClientSelector } from '../pos/components/POSClientSelector';
+import { CashOpeningBanner } from '../pos/components/CashOpeningBanner';
+import { CashClosingBanner } from '../pos/components/CashClosingBanner';
+import { useBranchStore } from '@/store/branch.store';
 import { AddClientModal } from '../pos/components/AddClientModal';
 import { type ClientSelectOption } from '@/services/client.service';
 import { useCartStore } from '@/store/cart.store';
 import { POSCartPanel } from '../pos/components/POSCartPanel';
+import { useCashShift } from '@/hooks/useCashShift';
 import { POSFloatingCart } from '../pos/components/POSFloatingCart';
 import { POSPaymentModal } from '../pos/components/POSPaymentModal';
 import { POSSuccessModal } from '../pos/components/POSSuccessModal';
-
 export default function AdvancedSearchPage() {
-    // State
+    const { selectedBranch } = useBranchStore();
     const [products, setProducts] = useState<Product[]>([]);
     const [colors, setColors] = useState<Color[]>([]); // Added colors state
     const [loading, setLoading] = useState(true);
@@ -300,10 +304,13 @@ export default function AdvancedSearchPage() {
         setIsAddClientModalOpen(false);
     };
 
+    const navigate = useNavigate();
+    const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
+
     return (
-        <div className="flex gap-6 h-full bg-background min-h-screen">
+        <div className="flex flex-col md:flex-row gap-6 bg-background min-h-screen p-4 md:p-6">
             {/* Sidebar */}
-            <aside className="w-80 flex-shrink-0 bg-card border border-border rounded-lg p-6 h-fit shadow-sm">
+            <aside className="w-full md:w-80 flex-shrink-0 bg-card border border-border rounded-2xl p-6 h-fit shadow-sm">
                 <h2 className="text-xl font-bold text-foreground mb-6">Filtros</h2>
                 <FilterSidebar
                     filters={filters}
@@ -314,6 +321,17 @@ export default function AdvancedSearchPage() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col gap-6">
+                {/* Cash Banners (Opening/Closing) - Layout Stability */}
+                {isShiftLoading ? (
+                    <CashOpeningBanner isLoading={true} />
+                ) : !isShiftOpen ? (
+                    <CashOpeningBanner refreshShift={refresh} />
+                ) : (
+                    <CashClosingBanner 
+                        branchName={selectedBranch?.name}
+                        onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)} 
+                    />
+                )}
                 <SearchHeader
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}

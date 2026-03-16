@@ -79,6 +79,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       {/* Left: Title & Menu */}
       <div className="flex items-center gap-3">
         <button
+          type="button"
           className="md:hidden p-2 -ml-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
           onClick={onMenuClick}
         >

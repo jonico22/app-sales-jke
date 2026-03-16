@@ -13,7 +13,8 @@ const navItems = [
     children: [
       { name: 'Productos', href: '/inventory' },
       { name: 'Categorías', href: '/categories', icon: Tags },
-      { name: 'Manejador de Archivos', href: '/settings/files' },
+      { name: 'Sucursales', href: '/inventory/branches', icon: Building2 },
+      { name: 'Movimientos', href: '/inventory/movements' },
     ]
   },
   {
@@ -22,6 +23,7 @@ const navItems = [
     children: [
       { name: 'Puntos de Venta', href: '/pos' },
       { name: 'Pedidos Pendientes', href: '/orders/pending' },
+      { name: 'Turnos de Caja', href: '/sales/shifts' },
     ]
   },
   //{ name: 'Clientes', href: '/clients', icon: Users },
@@ -38,6 +40,7 @@ const navItems = [
     children: [
       { name: 'Suscripción y Facturación', href: '/settings/billing', icon: CreditCard },
       { name: 'Perfil del Negocio', href: '/settings', icon: Building2 },
+      { name: 'Manejador de Archivos', href: '/settings/files' },
     ]
   },
   {

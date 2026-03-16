@@ -299,7 +299,12 @@ export default function NotificationsPage() {
                                     {/* Time */}
                                     <div className="text-right flex-shrink-0">
                                         <div className="text-[10px] font-bold text-muted-foreground bg-muted/50 border border-border px-2 py-1 rounded-md mb-2">
-                                            {format(new Date(notif.createdAt), "eee, HH:mm", { locale: es })}
+                                            {(() => {
+                                                if (!notif.createdAt) return '-';
+                                                const d = new Date(notif.createdAt);
+                                                if (isNaN(d.getTime())) return '-';
+                                                return format(d, "eee, HH:mm", { locale: es });
+                                            })()}
                                         </div>
                                     </div>
                                 </div>

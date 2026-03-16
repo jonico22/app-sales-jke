@@ -1,0 +1,475 @@
+import { useState, useEffect } from 'react';
+import {
+    Plus,
+    Search,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown,
+    Loader2,
+    ArrowRightLeft,
+    Edit2,
+    Trash2,
+    History
+} from 'lucide-react';
+import {
+    Button,
+    Input,
+    Badge,
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from '@/components/ui';
+import { branchMovementService, type BranchMovement, MovementStatus } from '@/services/branch-movement.service';
+import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
+import { toast } from 'sonner';
+import { format, parse } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { alerts } from '@/utils/alerts';
+
+import { useNavigate } from 'react-router-dom';
+import { UpdateMovementStatusModal } from './components/UpdateMovementStatusModal';
+
+export default function InventoryMovementsPage() {
+    const navigate = useNavigate();
+    const [movements, setMovements] = useState<BranchMovement[]>([]);
+    const [branches, setBranches] = useState<BranchOfficeSelectOption[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    // Filters
+    const [originBranchId, setOriginBranchId] = useState<string>('all');
+    const [destinationBranchId, setDestinationBranchId] = useState<string>('all');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [pageSize] = useState(10);
+
+    const getBranchName = (id: string, type: 'origin' | 'destination') => {
+        if (id === 'all') return type === 'origin' ? 'Todas las sedes (Origen)' : 'Todas las sedes (Destino)';
+        return branches.find(b => b.id === id)?.name || (type === 'origin' ? 'Sucursal Origen' : 'Sucursal Destino');
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'all': return 'Todos los estados';
+            case 'PENDING': return 'En Tránsito';
+            case 'COMPLETED': return 'Recibido';
+            case 'CANCELLED': return 'Cancelado';
+            default: return status;
+        }
+    };
+
+    const formatDateSafe = (dateString: string | undefined | null, formatStr: string) => {
+        if (!dateString) return '-';
+        try {
+            // First try direct Date parsing (ISO)
+            let date = new Date(dateString);
+            
+            // If failed, try parsing the specific format from the snippet: DD/MM/YYYY HH:mm:ss
+            if (isNaN(date.getTime()) && dateString.includes('/')) {
+                date = parse(dateString, 'dd/MM/yyyy HH:mm:ss', new Date());
+            }
+
+            if (isNaN(date.getTime())) return '-';
+            return format(date, formatStr, { locale: es });
+        } catch (e) {
+            return '-';
+        }
+    };
+
+    useEffect(() => {
+        fetchBranches();
+    }, []);
+
+    useEffect(() => {
+        fetchMovements();
+    }, [currentPage, originBranchId, destinationBranchId, statusFilter, searchTerm]);
+
+    const fetchBranches = async () => {
+        try {
+            const response = await branchOfficeService.getForSelect();
+            if (response.success) {
+                setBranches(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+        }
+    };
+
+    // Modals
+    const [selectedMovement, setSelectedMovement] = useState<BranchMovement | null>(null);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const fetchMovements = async () => {
+        try {
+            setIsLoading(true);
+            const params = {
+                page: currentPage,
+                limit: pageSize,
+                originBranchId: originBranchId === 'all' ? undefined : originBranchId,
+                destinationBranchId: destinationBranchId === 'all' ? undefined : destinationBranchId,
+                status: statusFilter === 'all' ? undefined : (statusFilter as MovementStatus),
+            };
+
+            const response = await branchMovementService.getAll(params);
+            if (response.success) {
+                setMovements(response.data.data);
+                setTotalPages(response.data.pagination.totalPages);
+                setTotalItems(response.data.pagination.total);
+            }
+        } catch (error) {
+            toast.error('Error al cargar los movimientos');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleUpdateStatus = async (status: MovementStatus, cancellationReason?: string) => {
+        if (!selectedMovement) return;
+
+        try {
+            setIsUpdating(true);
+            const response = await branchMovementService.updateStatus(selectedMovement.id, {
+                status,
+                cancellationReason
+            });
+
+            if (response.success) {
+                toast.success(`Movimiento ${status === 'COMPLETED' ? 'completado' : 'cancelado'} exitosamente`);
+                setIsUpdateModalOpen(false);
+                fetchMovements();
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            toast.error('Error al actualizar el estado del movimiento');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDeleteMovement = async (id: string, reference: string) => {
+        const isConfirmed = await alerts.confirm({
+            title: '¿Estás seguro?',
+            text: `¿Deseas eliminar el movimiento ${reference}? Esta acción no se puede deshacer.`,
+            confirmButtonText: 'Sí, eliminar',
+            confirmButtonColor: '#ef4444'
+        });
+
+        if (!isConfirmed) return;
+
+        try {
+            const response = await branchMovementService.delete(id);
+            if (response.success) {
+                toast.success('Movimiento eliminado exitosamente');
+                fetchMovements();
+            }
+        } catch (error) {
+            console.error('Error deleting movement:', error);
+            toast.error('Error al intentar eliminar el movimiento');
+        }
+    };
+
+    const getStatusBadge = (status: MovementStatus) => {
+        switch (status) {
+            case 'PENDING':
+                return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20">En Tránsito</Badge>;
+            case 'COMPLETED':
+                return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20">Recibido</Badge>;
+            case 'CANCELLED':
+                return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20">Cancelado</Badge>;
+            default:
+                return <Badge variant="outline">{status}</Badge>;
+        }
+    };
+
+    return (
+        <div className="p-6 space-y-6 bg-background min-h-full">
+            {/* Header section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Movimientos entre Sucursales</h1>
+                    <p className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
+                        Gestione y rastree traslados internos de mercancía.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button 
+                        onClick={() => navigate('/inventory/movements/bulk')}
+                        variant="outline" 
+                        className="h-9 px-4 text-[11px] font-extrabold uppercase tracking-wider text-primary border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
+                    >
+                        <ArrowRightLeft className="w-4 h-4" />
+                        Traslado en Bloque
+                    </Button>
+                    <Button 
+                        onClick={() => navigate('/inventory/movements/new')}
+                        className="h-9 px-4 text-[11px] font-extrabold uppercase tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20 rounded-xl transition-all"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Nuevo Traslado
+                    </Button>
+                </div>
+            </div>
+            {/* Filter bar */}
+            <div className="bg-card p-3 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                <div className="relative w-full md:min-w-[300px] md:max-w-md flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                    <Input
+                        placeholder="Buscar por ID o responsable..."
+                        className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors rounded-xl font-medium w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-wrap w-full md:w-auto gap-2 items-center">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
+                                {getBranchName(originBranchId, 'origin')}
+                                <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors hover:bg-muted" onClick={() => setOriginBranchId('all')}>Todas las sedes (Origen)</DropdownMenuItem>
+                            {branches.map(branch => (
+                                <DropdownMenuItem key={branch.id} className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors hover:bg-muted" onClick={() => setOriginBranchId(branch.id)}>
+                                    {branch.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
+                                {getBranchName(destinationBranchId, 'destination')}
+                                <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors hover:bg-muted" onClick={() => setDestinationBranchId('all')}>Todas las sedes (Destino)</DropdownMenuItem>
+                            {branches.map(branch => (
+                                <DropdownMenuItem key={branch.id} className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors hover:bg-muted" onClick={() => setDestinationBranchId(branch.id)}>
+                                    {branch.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[130px] md:min-w-[160px] rounded-xl transition-all">
+                                {getStatusLabel(statusFilter)}
+                                <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[180px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors hover:bg-muted" onClick={() => setStatusFilter('all')}>Todos los estados</DropdownMenuItem>
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer text-blue-500 hover:bg-blue-500/10" onClick={() => setStatusFilter('PENDING')}>En Tránsito</DropdownMenuItem>
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer text-emerald-500 hover:bg-emerald-500/10" onClick={() => setStatusFilter('COMPLETED')}>Recibido</DropdownMenuItem>
+                            <DropdownMenuItem className="text-[10px] py-2 font-bold uppercase tracking-wider rounded-lg cursor-pointer text-rose-500 hover:bg-rose-500/10" onClick={() => setStatusFilter('CANCELLED')}>Cancelado</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Table section */}
+            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden min-h-[400px]">
+                <Table>
+                    <TableHeader className="bg-muted/30 border-b border-border">
+                        <TableRow className="hover:bg-transparent border-none">
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6">Referencia</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Fecha</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Producto</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Ruta (Origen → Destino)</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Cant.</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Observación / Motivo</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Estado</TableHead>
+                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6 text-right">Acciones</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading ? (
+                            <TableRow className="border-none">
+                                <TableCell colSpan={8} className="h-64 text-center border-none">
+                                    <div className="flex flex-col items-center justify-center gap-3">
+                                        <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
+                                        <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Sincronizando movimientos...</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : movements.length === 0 ? (
+                            <TableRow className="border-none">
+                                <TableCell colSpan={8} className="h-64 text-center border-none">
+                                    <div className="flex flex-col items-center justify-center gap-4">
+                                        <div className="p-5 bg-muted/30 rounded-full">
+                                            <History className="h-10 w-10 text-muted-foreground/30" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-foreground font-black text-xs uppercase tracking-wider">No se encontraron movimientos</p>
+                                            <p className="text-muted-foreground text-[10px] font-medium max-w-[250px] mx-auto opacity-70">Ajusta los filtros para visualizar el historial de traslados internos.</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            movements.map((movement) => (
+                                <TableRow key={movement.id} className="group hover:bg-muted/30 transition-colors border-border/40 last:border-none">
+                                    <TableCell className="px-6">
+                                        <div className="inline-flex items-center gap-1.5 py-1 px-2.5 bg-primary/5 rounded-lg border border-primary/10">
+                                            <span className="font-black text-primary text-[10px] uppercase tracking-tighter">
+                                                {movement.referenceCode || `TR-${movement.id.slice(0, 5).toUpperCase()}`}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-foreground font-extrabold text-[11px] mb-0.5">{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
+                                            <span className="text-muted-foreground text-[9px] uppercase font-bold tracking-tighter opacity-60">{formatDateSafe(movement.createdAt, 'HH:mm:ss')}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-foreground font-black text-[11px] uppercase tracking-tight">{movement.product?.name || 'Producto'}</span>
+                                            <span className="text-muted-foreground text-[9px] font-bold opacity-60">SKU-{movement.product?.code || '---'}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                                {movement.originBranch?.name || 'Origen'}
+                                            </span>
+                                            <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
+                                            <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                                {movement.destinationBranch?.name || 'Destino'}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="inline-flex items-center justify-center font-black text-foreground text-[11px] h-7 w-7 bg-muted/40 rounded-full border border-border/30">
+                                            {movement.quantityMoved}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col max-w-[200px]">
+                                            {movement.status === 'CANCELLED' ? (
+                                                <span className="text-rose-500 text-[10px] font-bold uppercase tracking-tight leading-tight italic">
+                                                    {movement.cancellationReason || 'Sin motivo de cancelación'}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground/60 text-[10px] font-medium truncate italic">
+                                                    {movement.notes || '---'}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {getStatusBadge(movement.status)}
+                                    </TableCell>
+                                    <TableCell className="text-right px-6">
+                                        <div className="flex items-center justify-end gap-1.5 transition-all duration-200">
+                                            {movement.status === 'PENDING' && (
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors border-border hover:border-primary/10"
+                                                    onClick={() => {
+                                                        setSelectedMovement(movement);
+                                                        setIsUpdateModalOpen(true);
+                                                    }}
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </Button>
+                                            )}
+                                            <Button 
+                                                variant="outline" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border-border hover:border-rose-500/10"
+                                                onClick={() => handleDeleteMovement(movement.id, movement.referenceCode || movement.id)}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+
+                {/* Pagination */}
+                <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-muted/10 border-t border-border/40 gap-4">
+                    <p className="text-muted-foreground text-[9px] font-black uppercase tracking-widest order-2 sm:order-1">
+                        Mostrando <span className="text-foreground">{movements.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)}</span> de <span className="text-foreground font-black">{totalItems}</span> registros transaccionales
+                    </p>
+                    <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-all disabled:opacity-25"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                // Simple sliding window for pagination if many pages
+                                let pageNum = i + 1;
+                                if (totalPages > 5 && currentPage > 3) {
+                                    pageNum = currentPage - 2 + i;
+                                    if (pageNum > totalPages) pageNum = totalPages - (4 - i);
+                                }
+                                return (
+                                    <Button
+                                        key={pageNum}
+                                        variant={currentPage === pageNum ? "primary" : "outline"}
+                                        size="sm"
+                                        className={`h-8 w-8 rounded-lg text-[10px] font-black transition-all ${
+                                            currentPage === pageNum 
+                                                ? "shadow-lg shadow-primary/20 ring-2 ring-primary/20 ring-offset-0" 
+                                                : "border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30"
+                                        }`}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-all disabled:opacity-25"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <UpdateMovementStatusModal
+                isOpen={isUpdateModalOpen}
+                onClose={() => setIsUpdateModalOpen(false)}
+                onConfirm={handleUpdateStatus}
+                movement={selectedMovement}
+                isLoading={isUpdating}
+            />
+        </div>
+    );
+}

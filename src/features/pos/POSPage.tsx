@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { POSWelcomeHeader } from './components/POSWelcomeHeader';
+import { CashOpeningBanner } from './components/CashOpeningBanner';
+import { CashClosingBanner } from './components/CashClosingBanner';
+import { useBranchStore } from '@/store/branch.store';
 import { POSClientSelector } from './components/POSClientSelector';
 import { POSProductSearch } from './components/POSProductSearch';
 import { POSCatalogButton } from './components/POSCatalogButton';
@@ -12,11 +15,13 @@ import { POSTopBar } from './components/POSTopBar';
 import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
 import { useCartStore } from '@/store/cart.store';
+import { useCashShift } from '@/hooks/useCashShift';
 import { AddClientModal } from './components/AddClientModal'; // Import Modal
 import type { ClientSelectOption } from '@/services/client.service';
 import type { Product } from '@/services/product.service';
 
 export default function POSPage() {
+  const { selectedBranch } = useBranchStore();
   const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
     id: 'public', // Mock ID for default
     name: 'Público General',
@@ -126,6 +131,8 @@ export default function POSPage() {
 
 
 
+  const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
+
   return (
     <div className=" bg-background pb-24 md:pb-6 md:pt-6 p-4 md:p-6 min-h-[calc(100vh-64px)]">
       <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
@@ -133,8 +140,22 @@ export default function POSPage() {
         {/* Top Bar */}
         <POSTopBar />
 
+        {/* Cash Opening Banner */}
+        {/* Cash Banners (Opening/Closing) - Layout Stability */}
+        {isShiftLoading ? (
+          <CashOpeningBanner isLoading={true} />
+        ) : !isShiftOpen ? (
+          <CashOpeningBanner refreshShift={refresh} />
+        ) : (
+          <CashClosingBanner 
+            branchName={selectedBranch?.name}
+            onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)}
+          />
+        )}
+
         {/* Header Section */}
         <POSWelcomeHeader />
+
 
         {/* Main Card */}
         <div className="bg-card md:rounded-2xl md:border md:border-border md:shadow-sm md:p-6 space-y-6">

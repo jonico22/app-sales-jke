@@ -7,56 +7,29 @@ import { notificationService, type Notification, NotificationType } from '@/serv
 import { socket } from '@/services/socket';
 import { toast } from 'sonner';
 import { downloadFileFromUrl } from '@/utils/download.utils';
+import { useUnreadCount, UNREAD_COUNT_QUERY_KEY } from '@/hooks/useUnreadCount';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function NotificationDropdown() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const { data: unreadCount = 0 } = useUnreadCount();
+
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
     const [hasFetchedList, setHasFetchedList] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const fetchInitialCount = async () => {
-        try {
-            const countData: any = await notificationService.getUnreadCount();
-
-            let count = 0;
-            // Evaluamos agresivamente dónde puede venir el número
-            if (typeof countData === 'number') count = countData;
-            else if (typeof countData?.data === 'number') count = countData.data;
-            else if (typeof countData?.data?.count === 'number') count = countData.data.count;
-            else if (typeof countData?.count === 'number') count = countData.count;
-            else if (countData?.data?.count) count = Number(countData.data.count);
-
-            setUnreadCount(count || 0);
-        } catch (error) {
-            console.error('Error fetching unread count:', error);
-        }
-    };
-
-    const fetchNotificationsList = async () => {
-        if (loading) return;
-        try {
-            setLoading(true);
-            const notifsData = await notificationService.getAll({ limit: 10, read: false });
-            setNotifications(notifsData.data.items);
-            setHasFetchedList(true);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-            toast.error('Error al cargar notificaciones');
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Initial effect for socket listeners
     useEffect(() => {
-        fetchInitialCount();
-
         // Listen for real-time notifications
         socket.on('ui_notification', (newNotification: Notification) => {
             console.log("Nueva notificación recibida:", newNotification);
+
+            // Invalidate query to get fresh count from server (deduplicated by React Query)
+            queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
 
             // Trigger animation
             setIsAnimating(true);
@@ -78,10 +51,8 @@ export default function NotificationDropdown() {
                 }
             });
 
-            // Update state: increment count, and append to list only if we've already loaded it
-            setUnreadCount(prev => prev + 1);
+            // Update local list state if it's already visible
             setNotifications(prev => {
-                // If we haven't fetched the list yet, we don't need to append. If we have, add to top.
                 if (hasFetchedList || prev.length > 0) {
                     return [newNotification, ...prev];
                 }
@@ -92,7 +63,7 @@ export default function NotificationDropdown() {
         return () => {
             socket.off('ui_notification');
         };
-    }, [navigate]);
+    }, [navigate, queryClient, hasFetchedList]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -106,14 +77,25 @@ export default function NotificationDropdown() {
         };
     }, []);
 
+    const fetchNotificationsList = async () => {
+        if (loading) return;
+        try {
+            setLoading(true);
+            const notifsData = await notificationService.getAll({ limit: 10, read: false });
+            setNotifications(notifsData.data.items);
+            setHasFetchedList(true);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            toast.error('Error al cargar notificaciones');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleToggle = () => {
         const newIsOpen = !isOpen;
         setIsOpen(newIsOpen);
-        if (newIsOpen && !hasFetchedList) {
-            // Fetch list the first time it is opened
-            fetchNotificationsList();
-        } else if (newIsOpen && unreadCount > 0) {
-            // Always refresh list if there are unread notifications to make sure they are included
+        if (newIsOpen && (!hasFetchedList || unreadCount > 0)) {
             fetchNotificationsList();
         }
     };
@@ -122,7 +104,7 @@ export default function NotificationDropdown() {
         try {
             await notificationService.markAllAsRead();
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            setUnreadCount(0);
+            queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, 0);
             toast.success('Todas las notificaciones marcadas como leídas');
         } catch (error) {
             console.error('Error marking all as read:', error);
@@ -131,29 +113,22 @@ export default function NotificationDropdown() {
     };
 
     const handleNotificationClick = async (notification: Notification) => {
-        // Handle File Download for SYSTEM type
+        // Handle action based on type
         if (notification.type === NotificationType.SYSTEM) {
-            if (notification.link || notification.metadata?.downloadUrl) {
-                const url = notification.link || notification.metadata?.downloadUrl;
-                downloadFileFromUrl(url);
-            } else {
-                toast.error('El enlace de descarga no está disponible');
-            }
-            // Close dropdown after action
+            const url = notification.link || notification.metadata?.downloadUrl;
+            if (url) downloadFileFromUrl(url);
+            else toast.error('El enlace de descarga no está disponible');
             setIsOpen(false);
         } else {
-            // Resolve target link
             let targetLink = notification.link;
             if (!targetLink && notification.metadata?.orderId) {
                 targetLink = `/orders/history?id=${notification.metadata.orderId}`;
             }
 
-            // Navigate if link exists
             if (targetLink) {
                 navigate(targetLink);
                 setIsOpen(false);
             } else {
-                console.warn("[NotificationDropdown] No link found for notification");
                 setIsOpen(false);
             }
         }
@@ -163,7 +138,8 @@ export default function NotificationDropdown() {
             try {
                 await notificationService.markAsRead(notification.id);
                 setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
-                setUnreadCount(prev => Math.max(0, prev - 1));
+                // Decerement unread count in cache
+                queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, (old: number | undefined) => Math.max(0, (old || 0) - 1));
             } catch (error) {
                 console.error('Error marking as read:', error);
             }
@@ -172,17 +148,11 @@ export default function NotificationDropdown() {
 
     const getIcon = (type: NotificationType) => {
         switch (type) {
-            case NotificationType.WARNING:
-                return <AlertTriangle className="h-5 w-5 text-orange-500" />;
-            case NotificationType.SUCCESS:
-                return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-            case NotificationType.ERROR:
-                return <XCircle className="h-5 w-5 text-red-500" />;
-            case NotificationType.SYSTEM:
-                return <Download className="h-5 w-5 text-slate-600" />;
-            case NotificationType.INFO:
-            default:
-                return <Info className="h-5 w-5 text-blue-500" />;
+            case NotificationType.WARNING: return <AlertTriangle className="h-5 w-5 text-orange-500" />;
+            case NotificationType.SUCCESS: return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+            case NotificationType.ERROR: return <XCircle className="h-5 w-5 text-red-500" />;
+            case NotificationType.SYSTEM: return <Download className="h-5 w-5 text-slate-600" />;
+            default: return <Info className="h-5 w-5 text-blue-500" />;
         }
     };
 
@@ -192,7 +162,6 @@ export default function NotificationDropdown() {
             case NotificationType.SUCCESS: return 'bg-green-50 group-hover:bg-green-100';
             case NotificationType.ERROR: return 'bg-red-50 group-hover:bg-red-100';
             case NotificationType.SYSTEM: return 'bg-slate-100 group-hover:bg-slate-200';
-            case NotificationType.INFO:
             default: return 'bg-blue-50 group-hover:bg-blue-100';
         }
     };
@@ -202,6 +171,7 @@ export default function NotificationDropdown() {
             <button
                 className="relative text-muted-foreground hover:text-foreground transition-colors pt-1 px-1"
                 onClick={handleToggle}
+                aria-label="Ver notificaciones"
             >
                 <Bell className={`h-[22px] w-[22px] transition-transform ${isAnimating ? 'animate-bounce text-primary' : ''}`} />
                 {unreadCount > 0 && (
@@ -209,13 +179,12 @@ export default function NotificationDropdown() {
                 )}
             </button>
 
-            {/* Notification Dropdown */}
             {isOpen && (
                 <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-card rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-border z-[9999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                     {/* Header */}
                     <div className="px-4 py-3 bg-card border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-foreground text-sm">Notificaciones</h3>
+                            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Notificaciones</h3>
                             {unreadCount > 0 && (
                                 <span className="bg-destructive/10 text-destructive text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
                             )}
@@ -225,7 +194,7 @@ export default function NotificationDropdown() {
                                 onClick={handleMarkAllAsRead}
                                 className="text-[10px] font-bold text-primary hover:text-primary/80 uppercase tracking-wide"
                             >
-                                Marcar todas como leídas
+                                Marcar todas
                             </button>
                         )}
                     </div>
@@ -234,16 +203,16 @@ export default function NotificationDropdown() {
                     <div className="max-h-[350px] overflow-y-auto">
                         {loading ? (
                             <div className="py-8 flex flex-col items-center justify-center text-muted-foreground">
-                                <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                                <p className="text-xs">Cargando notificaciones...</p>
+                                <Loader2 className="h-8 w-8 animate-spin mb-2 text-primary" />
+                                <p className="text-xs">Cargando...</p>
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="py-12 px-6 flex flex-col items-center justify-center text-center">
                                 <div className="bg-muted p-4 rounded-full mb-3">
-                                    <BellOff className="h-8 w-8 text-muted-foreground/50" />
+                                    <BellOff className="h-8 w-8 text-muted-foreground/30" />
                                 </div>
-                                <p className="text-sm font-semibold text-foreground mb-1">¡Todo está tranquilo!</p>
-                                <p className="text-xs text-muted-foreground">No tienes nuevas notificaciones por el momento. Disfruta tu día.</p>
+                                <p className="text-sm font-semibold text-foreground mb-1">Sin notificaciones</p>
+                                <p className="text-xs text-muted-foreground">Estás al día con todas tus novedades.</p>
                             </div>
                         ) : (
                             notifications.map((notification) => (
@@ -277,19 +246,17 @@ export default function NotificationDropdown() {
                     </div>
 
                     {/* Footer */}
-                    {notifications.length > 0 && (
-                        <div className="px-4 py-3 bg-muted/50 text-center border-t border-border">
-                            <button
-                                onClick={() => {
-                                    navigate('/notifications');
-                                    setIsOpen(false);
-                                }}
-                                className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                Ver historial completo
-                            </button>
-                        </div>
-                    )}
+                    <div className="px-4 py-3 bg-muted/50 text-center border-t border-border">
+                        <button
+                            onClick={() => {
+                                navigate('/notifications');
+                                setIsOpen(false);
+                            }}
+                            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            Ver historial completo
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

@@ -9,7 +9,10 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    Package
+    Building2,
+    MapPin,
+    Phone as PhoneIcon,
+    Mail
 } from 'lucide-react';
 import {
     Button,
@@ -26,15 +29,14 @@ import {
     DropdownMenuContent,
     DropdownMenuItem
 } from '@/components/ui';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { productService, type Product } from '@/services/product.service';
+import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { alerts } from '@/utils/alerts';
-import { ProductEditPanel } from './components/ProductEditPanel';
-import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
+import { BranchOfficeEditPanel } from './components/BranchOfficeEditPanel';
+import { BranchOfficeFilterPanel, type FilterValues } from './components/BranchOfficeFilterPanel';
 
-export default function ProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
+export default function BranchOfficesPage() {
+    const [branchOffices, setBranchOffices] = useState<BranchOffice[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -45,13 +47,6 @@ export default function ProductsPage() {
         createdAtTo: null,
         updatedAtFrom: null,
         updatedAtTo: null,
-        priceFrom: '',
-        priceTo: '',
-        priceCostFrom: '',
-        priceCostTo: '',
-        stockFrom: '',
-        stockTo: '',
-        lowStock: false,
     });
 
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -59,17 +54,22 @@ export default function ProductsPage() {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalProducts, setTotalProducts] = useState(0);
+    const [totalBranches, setTotalBranches] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const [pageSize, setPageSize] = useState(10);
 
     // Edit panel state
     const [editPanelOpen, setEditPanelOpen] = useState(false);
-    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 
-    const handleEditProduct = (productId: string) => {
-        setSelectedProductId(productId);
+    const handleEditBranch = (branchId: string) => {
+        setSelectedBranchId(branchId);
+        setEditPanelOpen(true);
+    };
+
+    const handleNewBranch = () => {
+        setSelectedBranchId(null);
         setEditPanelOpen(true);
     };
 
@@ -90,10 +90,9 @@ export default function ProductsPage() {
         setCurrentPage(1);
     }, [statusFilter]);
 
-    const fetchProducts = async () => {
+    const fetchBranches = async () => {
         try {
             setIsLoading(true);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const params: any = {
                 page: currentPage,
                 limit: pageSize,
@@ -128,40 +127,30 @@ export default function ProductsPage() {
                 params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             }
 
-            // New Filters
-            if (advancedFilters.priceFrom) params.priceFrom = Number(advancedFilters.priceFrom);
-            if (advancedFilters.priceTo) params.priceTo = Number(advancedFilters.priceTo);
-            if (advancedFilters.priceCostFrom) params.priceCostFrom = Number(advancedFilters.priceCostFrom);
-            if (advancedFilters.priceCostTo) params.priceCostTo = Number(advancedFilters.priceCostTo);
-            if (advancedFilters.stockFrom) params.stockFrom = Number(advancedFilters.stockFrom);
-            if (advancedFilters.stockTo) params.stockTo = Number(advancedFilters.stockTo);
-            if (advancedFilters.lowStock) params.lowStock = true;
+            const response = await branchOfficeService.getAll(params);
 
-            const response = await productService.getAll(params);
-
-            setProducts(response.data.data || []);
+            setBranchOffices(response.data.data || []);
             setTotalPages(response.data.pagination.totalPages);
-            setTotalProducts(response.data.pagination.total);
+            setTotalBranches(response.data.pagination.total);
             setHasNextPage(response.data.pagination.hasNextPage);
             setHasPrevPage(response.data.pagination.hasPrevPage);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            console.error('Error fetching products:', error);
-            toast.error(error.response?.data?.message || 'Error al cargar los productos');
-            setProducts([]);
+            console.error('Error fetching branch offices:', error);
+            toast.error(error.response?.data?.message || 'Error al cargar las sucursales');
+            setBranchOffices([]);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchProducts();
+        fetchBranches();
     }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize]);
 
-    const handleDeleteProduct = async (id: string) => {
+    const handleDeleteBranch = async (id: string) => {
         const isConfirmed = await alerts.confirm({
             title: '¿Estás seguro?',
-            text: '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
+            text: '¿Deseas eliminar esta sucursal? Esta acción no se puede deshacer.',
             confirmButtonText: 'Sí, eliminar',
             confirmButtonColor: '#ef4444'
         });
@@ -169,13 +158,12 @@ export default function ProductsPage() {
         if (!isConfirmed) return;
 
         try {
-            await productService.delete(id);
-            toast.success('Producto eliminado exitosamente');
-            await fetchProducts();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await branchOfficeService.delete(id);
+            toast.success('Sucursal eliminada exitosamente');
+            await fetchBranches();
         } catch (error: any) {
-            console.error('Error deleting product:', error);
-            toast.error(error.response?.data?.message || 'Error al eliminar el producto');
+            console.error('Error deleting branch office:', error);
+            toast.error(error.response?.data?.message || 'Error al eliminar la sucursal');
         }
     };
 
@@ -199,16 +187,9 @@ export default function ProductsPage() {
         }
     };
 
-    const formatCurrency = (value: string | number) => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN'
-        }).format(Number(value));
-    };
-
     const handleApplyFilters = (filters: FilterValues) => {
         setAdvancedFilters(filters);
-        setCurrentPage(1); // Reset to first page when applying filters
+        setCurrentPage(1);
         setIsFilterPanelOpen(false);
     };
 
@@ -217,14 +198,15 @@ export default function ProductsPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-base font-bold text-foreground tracking-tight uppercase">Inventario de Productos</h2>
-                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Gestione su inventario de productos y controle existencias.</p>
+                    <h2 className="text-base font-bold text-foreground tracking-tight uppercase">Sucursales</h2>
+                    <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Administra las sedes físicas de tu negocio.</p>
                 </div>
-                <Link to="/inventory/new">
-                    <Button className="h-9 px-4 text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-primary/20 flex items-center gap-2">
-                        <Plus className="h-4 w-4" /> Nuevo Producto
-                    </Button>
-                </Link>
+                <Button 
+                    onClick={handleNewBranch}
+                    className="h-9 px-4 text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-primary/20 flex items-center gap-2"
+                >
+                    <Plus className="h-4 w-4" /> Nueva Sucursal
+                </Button>
             </div>
 
             {/* Filters Bar */}
@@ -232,7 +214,7 @@ export default function ProductsPage() {
                 <div className="relative w-full sm:w-96">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                     <Input
-                        placeholder="Buscar por nombre o código..."
+                        placeholder="Buscar por nombre, código o ciudad..."
                         className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -276,61 +258,62 @@ export default function ProductsPage() {
                 <Table>
                     <TableHeader className="bg-muted/50 border-b border-border">
                         <TableRow className="hover:bg-transparent border-none">
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
-                            <TableHead className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Producto</TableHead>
-                            <TableHead className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Categoría</TableHead>
-                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Min.</TableHead>
-                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Stock</TableHead>
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">P. Venta</TableHead>
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Registro</TableHead>
+                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
+                            <TableHead className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Nombre</TableHead>
+                            <TableHead className="w-[300px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Dirección</TableHead>
+                            <TableHead className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Contacto</TableHead>
                             <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Estado</TableHead>
-                            <TableHead className="w-[100px] h-10 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
+                            <TableHead className="w-[100px] text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="h-32 text-center">
+                                <TableCell colSpan={6} className="h-32 text-center">
                                     <div className="flex items-center justify-center gap-2 text-slate-500">
                                         <Loader2 className="h-5 w-5 animate-spin" />
-                                        <span>Cargando productos...</span>
+                                        <span>Cargando sucursales...</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ) : products.length > 0 ? (
-                            products.map((product) => (
-                                <TableRow key={product.id} className="hover:bg-muted/30 border-border transition-colors group">
-                                    <TableCell className="font-mono text-[10px] text-muted-foreground">{product.code || '—'}</TableCell>
+                        ) : branchOffices.length > 0 ? (
+                            branchOffices.map((branch) => (
+                                <TableRow key={branch.id} className="hover:bg-muted/30 border-border transition-colors group">
+                                    <TableCell className="font-mono text-[10px] text-muted-foreground">{branch.code}</TableCell>
                                     <TableCell>
-                                        <div className="text-[11px] font-bold text-foreground line-clamp-1">{product.name}</div>
-                                        <div className="text-[9px] text-muted-foreground font-medium group-hover:text-primary transition-colors">{product.category?.name || 'Genérico'}</div>
-                                    </TableCell>
-                                    <TableCell className="text-[11px] font-medium text-muted-foreground">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-                                            {product.category?.name || '—'}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                                <Building2 className="h-4 w-4 text-primary" />
+                                            </div>
+                                            <div className="text-[11px] font-bold text-foreground">{branch.name}</div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-muted-foreground/60">{product.minStock}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-col items-end">
-                                            <span className={`text-[11px] font-bold ${product.stock <= product.minStock ? 'text-destructive' : 'text-primary'}`}>
-                                                {product.stock}
-                                            </span>
-                                            {product.stock <= product.minStock && (
-                                                <span className="text-[8px] font-black uppercase tracking-tighter text-destructive">Crítico</span>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <MapPin className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                                            <span className="text-[11px] line-clamp-1">{branch.address || '—'}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="space-y-1">
+                                            {branch.phone && (
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                                    <PhoneIcon className="h-3 w-3 opacity-50" />
+                                                    {branch.phone}
+                                                </div>
                                             )}
+                                            {branch.email && (
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                                    <Mail className="h-3 w-3 opacity-50" />
+                                                    {branch.email}
+                                                </div>
+                                            )}
+                                            {!branch.phone && !branch.email && <span className="text-muted-foreground/40 text-[10px]">Sin contacto</span>}
                                         </div>
-                                    </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-foreground">
-                                        {formatCurrency(product.price)}
-                                    </TableCell>
-                                    <TableCell className="text-center text-[10px] font-medium text-muted-foreground">
-                                        {product.createdAt?.split(' ')[0] || '—'}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant={product.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!product.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
-                                            {product.isActive ? 'Activo' : 'Inactivo'}
+                                        <Badge variant={branch.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!branch.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
+                                            {branch.isActive ? 'Activa' : 'Inactiva'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -339,34 +322,36 @@ export default function ProductsPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                                onClick={() => handleEditProduct(product.id)}
+                                                onClick={() => handleEditBranch(branch.id)}
                                             >
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => handleDeleteProduct(product.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {branch.code !== 'ALM-PRINCIPAL' && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => handleDeleteBranch(branch.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={9} className="h-64 text-center">
+                                <TableCell colSpan={6} className="h-64 text-center">
                                     <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
                                         <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 border border-border">
-                                            <Package className="h-8 w-8 text-muted-foreground" />
+                                            <Building2 className="h-8 w-8 text-muted-foreground" />
                                         </div>
                                         <h3 className="text-base font-bold text-foreground mb-1">
-                                            No se encontraron productos
+                                            No se encontraron sucursales
                                         </h3>
                                         <p className="text-muted-foreground max-w-sm mb-6">
-                                            No hay productos que coincidan con tu búsqueda o los filtros seleccionados.
+                                            No hay sucursales registradas o que coincidan con tu búsqueda.
                                         </p>
                                         <Button
                                             variant="outline"
@@ -379,13 +364,6 @@ export default function ProductsPage() {
                                                     createdAtTo: null,
                                                     updatedAtFrom: null,
                                                     updatedAtTo: null,
-                                                    priceFrom: '',
-                                                    priceTo: '',
-                                                    priceCostFrom: '',
-                                                    priceCostTo: '',
-                                                    stockFrom: '',
-                                                    stockTo: '',
-                                                    lowStock: false,
                                                 });
                                             }}
                                             className="border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-muted/50"
@@ -403,7 +381,7 @@ export default function ProductsPage() {
                 <div className="flex items-center justify-between p-4 border-t border-border">
                     <div className="flex items-center gap-4">
                         <div className="text-[11px] text-muted-foreground font-medium">
-                            Mostrando <span className="font-bold text-foreground">{products.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalProducts)}</span> de <span className="font-bold text-foreground">{totalProducts}</span>
+                            Mostrando <span className="font-bold text-foreground">{branchOffices.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalBranches)}</span> de <span className="font-bold text-foreground">{totalBranches}</span>
                         </div>
                         <select
                             value={pageSize}
@@ -444,15 +422,15 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {/* Edit Panel */}
-            <ProductEditPanel
+            {/* Panels */}
+            <BranchOfficeEditPanel
                 open={editPanelOpen}
                 onOpenChange={setEditPanelOpen}
-                productId={selectedProductId}
-                onSuccess={fetchProducts}
+                branchOfficeId={selectedBranchId}
+                onSuccess={fetchBranches}
             />
 
-            <ProductFilterPanel
+            <BranchOfficeFilterPanel
                 open={isFilterPanelOpen}
                 onOpenChange={setIsFilterPanelOpen}
                 onApplyFilters={handleApplyFilters}

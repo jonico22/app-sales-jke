@@ -25,8 +25,8 @@ import ResetPasswordPage from './features/auth/ResetPasswordPage';
 const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
 const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage'));
 const NewCategoryPage = lazy(() => import('./features/categories/NewCategoryPage'));
-const ProductsPage = lazy(() => import('./features/inventory/ProductsPage'));
-const NewInventoryPage = lazy(() => import('./features/inventory/NewInventoryPage'));
+const ProductsPage = lazy(() => import('@/features/inventory/ProductsPage'));
+const NewInventoryPage = lazy(() => import('@/features/inventory/NewInventoryPage'));
 const POSPage = lazy(() => import('./features/pos/POSPage'));
 const PendingOrdersPage = lazy(() => import('./features/orders/PendingOrdersPage'));
 const SalesHistoryPage = lazy(() => import('./features/orders/SalesHistoryPage'));
@@ -38,7 +38,14 @@ const GeneralSettingsPage = lazy(() => import('./features/settings/GeneralSettin
 const DownloadsPage = lazy(() => import('./features/settings/DownloadsPage'));
 const FileManagerPage = lazy(() => import('./features/settings/FileManagerPage'));
 const UsersAndAccessPage = lazy(() => import('./features/settings/UsersAndAccessPage'));
+const BranchOfficesPage = lazy(() => import('@/features/inventory/BranchOfficesPage'));
+const InventoryMovementsPage = lazy(() => import('@/features/inventory/InventoryMovementsPage'));
+const CreateInventoryMovementPage = lazy(() => import('@/features/inventory/CreateInventoryMovementPage'));
+const BulkTransferPage = lazy(() => import('@/features/inventory/BulkTransferPage'));
 const BillingPage = lazy(() => import('./features/settings/BillingPage'));
+const CashClosingPage = lazy(() => import('./features/sales/CashClosingPage'));
+const CashShiftHistoryPage = lazy(() => import('./features/sales/CashShiftHistoryPage'));
+const CashShiftDetailPage = lazy(() => import('./features/sales/CashShiftDetailPage'));
 const PendingPaymentPage = lazy(() => import('./features/onboarding/PendingPaymentPage'));
 
 // Simple loading fallback shown while a lazy chunk is being fetched
@@ -102,12 +109,36 @@ const router = createBrowserRouter([
             element: <Suspense fallback={<PageLoader />}><NewInventoryPage /></Suspense>
           },
           {
+            path: 'inventory/branches',
+            element: <Suspense fallback={<PageLoader />}><BranchOfficesPage /></Suspense>
+          },
+          {
+            path: 'inventory/movements',
+            element: <Suspense fallback={<PageLoader />}><InventoryMovementsPage /></Suspense>
+          },
+          {
+            path: 'inventory/movements/new',
+            element: <Suspense fallback={<PageLoader />}><CreateInventoryMovementPage /></Suspense>
+          },
+          {
+            path: 'inventory/movements/bulk',
+            element: <Suspense fallback={<PageLoader />}><BulkTransferPage /></Suspense>
+          },
+          {
             path: 'orders/pending',
             element: <Suspense fallback={<PageLoader />}><PendingOrdersPage /></Suspense>
           },
           {
             path: 'orders/history',
             element: <Suspense fallback={<PageLoader />}><SalesHistoryPage /></Suspense>
+          },
+          {
+            path: 'sales/shifts',
+            element: <Suspense fallback={<PageLoader />}><CashShiftHistoryPage /></Suspense>
+          },
+          {
+            path: 'sales/shifts/:shiftId',
+            element: <Suspense fallback={<PageLoader />}><CashShiftDetailPage /></Suspense>
           },
           {
             path: 'security',
@@ -154,6 +185,10 @@ const router = createBrowserRouter([
           {
             path: 'search',
             element: <Suspense fallback={<PageLoader />}><AdvancedSearchPage /></Suspense>
+          },
+          {
+            path: 'cash-closing/:shiftId',
+            element: <Suspense fallback={<PageLoader />}><CashClosingPage /></Suspense>
           }
         ]
       },

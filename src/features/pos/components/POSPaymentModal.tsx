@@ -85,6 +85,31 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
         }
     };
 
+    const generateRandomCode = (prefix: string = '') => {
+        const random = Math.floor(100000 + Math.random() * 900000).toString();
+        return prefix ? `${prefix}-${random}` : random;
+    };
+
+    const handleMethodChange = (uiMethod: PaymentMethodUI) => {
+        setMethod(uiMethod);
+        if (uiMethod === 'CASH') {
+            setSelectedPaymentMethod(OrderPaymentMethod.CASH);
+            setOperationNumber('');
+        } else if (uiMethod === 'CARD') {
+            setSelectedPaymentMethod(OrderPaymentMethod.CARD);
+            setOperationNumber('');
+        } else if (uiMethod === 'YAPE_PLIN') {
+            setSelectedPaymentMethod(OrderPaymentMethod.YAPE);
+            setOperationNumber(generateRandomCode('Y'));
+        }
+    };
+
+    const handleElectronicMethodSwitch = (paymentMethod: OrderPaymentMethod) => {
+        setSelectedPaymentMethod(paymentMethod);
+        const prefix = paymentMethod === OrderPaymentMethod.YAPE ? 'Y' : 'P';
+        setOperationNumber(generateRandomCode(prefix));
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-card rounded-3xl w-11/12 max-w-[400px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
@@ -114,31 +139,21 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Método de Pago</label>
                         <div className="grid grid-cols-3 gap-3">
                             <button
-                                onClick={() => {
-                                    setMethod('CASH');
-                                    setSelectedPaymentMethod(OrderPaymentMethod.CASH);
-                                }}
+                                onClick={() => handleMethodChange('CASH')}
                                 className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${method === 'CASH' ? 'border-primary bg-primary/10 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <Banknote className="w-6 h-6" />
                                 <span className="text-xs font-bold">Efectivo</span>
                             </button>
                             <button
-                                onClick={() => {
-                                    setMethod('CARD');
-                                    setSelectedPaymentMethod(OrderPaymentMethod.CARD);
-                                }}
+                                onClick={() => handleMethodChange('CARD')}
                                 className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${method === 'CARD' ? 'border-primary bg-primary/10 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <CreditCard className="w-6 h-6" />
                                 <span className="text-xs font-bold">Tarjeta</span>
                             </button>
                             <button
-                                onClick={() => {
-                                    setMethod('YAPE_PLIN');
-                                    // Default to YAPE, user will select specific one
-                                    setSelectedPaymentMethod(OrderPaymentMethod.YAPE);
-                                }}
+                                onClick={() => handleMethodChange('YAPE_PLIN')}
                                 className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${method === 'YAPE_PLIN' ? 'border-primary bg-primary/10 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <QrCode className="w-6 h-6" />
@@ -238,13 +253,13 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-3">
                                         <button
-                                            onClick={() => setSelectedPaymentMethod(OrderPaymentMethod.YAPE)}
+                                            onClick={() => handleElectronicMethodSwitch(OrderPaymentMethod.YAPE)}
                                             className={`py-3 text-sm font-bold border rounded-xl transition-all ${selectedPaymentMethod === OrderPaymentMethod.YAPE ? 'bg-background text-foreground border-primary shadow-sm ring-1 ring-primary' : 'bg-background text-muted-foreground border-input hover:border-border'}`}
                                         >
                                             Yape
                                         </button>
                                         <button
-                                            onClick={() => setSelectedPaymentMethod(OrderPaymentMethod.PLIN)}
+                                            onClick={() => handleElectronicMethodSwitch(OrderPaymentMethod.PLIN)}
                                             className={`py-3 text-sm font-bold border rounded-xl transition-all ${selectedPaymentMethod === OrderPaymentMethod.PLIN ? 'bg-background text-foreground border-primary shadow-sm ring-1 ring-primary' : 'bg-background text-muted-foreground border-input hover:border-border'}`}
                                         >
                                             Plin

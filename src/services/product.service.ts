@@ -162,8 +162,12 @@ export const productService = {
         return response.data;
     },
 
-    getForSelect: async (): Promise<ProductsResponse> => {
-        const response = await api.get<ProductsResponse>('/sales/products/select');
+    getForSelect: async (params?: {
+        categoryCode?: string;
+        categoryId?: string;
+        branchId?: string;
+    }): Promise<ProductsResponse> => {
+        const response = await api.get<ProductsResponse>('/sales/products/select', { params });
         return response.data;
     },
 
