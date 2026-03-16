@@ -197,7 +197,7 @@ export default function DownloadsPage() {
                                                 <div className="flex flex-col">
                                                     <span className="font-medium text-foreground/80">{genDate ? (() => {
                                                         const d = safeParseDate(genDate);
-                                                        return isValid(d) ? format(d, "d MMM yyyy, hh:mm", { locale: es }) : '-';
+                                                        return isValid(d) ? format(d, "dd/MM/yyyy HH:mm:ss", { locale: es }) : '-';
                                                     })() : '-'}</span>
                                                 </div>
                                             </td>

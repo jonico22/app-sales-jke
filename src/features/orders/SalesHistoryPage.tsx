@@ -506,7 +506,7 @@ export default function SalesHistoryPage() {
                                                 {getStatusBadge(order.status)}
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-center">
-                                                <div className="flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex justify-center gap-1.5 transition-opacity">
                                                     <button
                                                         onClick={() => {
                                                             setSearchParams({ id: order.id });
