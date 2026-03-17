@@ -27,17 +27,10 @@ import { es } from 'date-fns/locale';
 const formatCurrency = (amount: number) =>
     `S/ ${amount.toFixed(2)}`;
 
-/** Sum all INCOME movements for a given payment method */
-function sumByMethod(movements: CashShiftMovement[], method: string): number {
+/** Sum movements for a given type and payment method */
+function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE', method: string): number {
     return movements
-        .filter((m) => m.type === 'INCOME' && m.paymentMethod === method)
-        .reduce((acc, m) => acc + Number(m.amount), 0);
-}
-
-/** Sum all EXPENSE movements regardless of payment method */
-function sumExpenses(movements: CashShiftMovement[]): number {
-    return movements
-        .filter((m) => m.type === 'EXPENSE')
+        .filter((m) => m.type === type && m.paymentMethod === method)
         .reduce((acc, m) => acc + Number(m.amount), 0);
 }
 
@@ -157,13 +150,29 @@ export default function CashClosingPage() {
     const movements = shift?.movements ?? [];
     const openingBalance = Number(shift?.initialAmount ?? 0);
 
-    const systemCash = sumByMethod(movements, 'CASH');
-    const systemCard = sumByMethod(movements, 'CARD');
-    const systemYape = sumByMethod(movements, 'YAPE');
-    const systemPlin = sumByMethod(movements, 'PLIN');
-    const systemTotal = systemCash + systemCard + systemYape + systemPlin;
-    const totalExpenses = sumExpenses(movements);
-    const expectedFinal = openingBalance + systemTotal - totalExpenses;
+    // Income sums for stats cards
+    const incomeCash = sumMovements(movements, 'INCOME', 'CASH');
+    const incomeCard = sumMovements(movements, 'INCOME', 'CARD');
+    const incomeYape = sumMovements(movements, 'INCOME', 'YAPE');
+    const incomePlin = sumMovements(movements, 'INCOME', 'PLIN');
+    const totalIncome = incomeCash + incomeCard + incomeYape + incomePlin;
+
+    // Expense sums
+    const expenseCash = sumMovements(movements, 'EXPENSE', 'CASH');
+    const expenseCard = sumMovements(movements, 'EXPENSE', 'CARD');
+    const expenseYape = sumMovements(movements, 'EXPENSE', 'YAPE');
+    const expensePlin = sumMovements(movements, 'EXPENSE', 'PLIN');
+    const totalExpenses = expenseCash + expenseCard + expenseYape + expensePlin;
+
+    // Final Expected value (Total in all methods + initial)
+    const expectedFinal = openingBalance + totalIncome - totalExpenses;
+
+    // System amounts for the table (calculated per method)
+    const tableSystemCash = openingBalance + incomeCash - expenseCash;
+    const tableSystemCard = incomeCard - expenseCard;
+    const tableSystemYape = incomeYape - expenseYape;
+    const tableSystemPlin = incomePlin - expensePlin;
+    const tableSystemTotal = tableSystemCash + tableSystemCard + tableSystemYape + tableSystemPlin;
 
     const physCash = parseFloat(cashPhysical) || 0;
     const physCard = parseFloat(cardPhysical) || 0;
@@ -171,10 +180,11 @@ export default function CashClosingPage() {
     const physPlin = parseFloat(plinPhysical) || 0;
     const physTotal = physCash + physCard + physYape + physPlin;
 
-    const diffCash = physCash - systemCash;
-    const diffCard = physCard - systemCard;
-    const diffYape = physYape - systemYape;
-    const diffPlin = physPlin - systemPlin;
+    const diffCash = physCash - tableSystemCash;
+    const diffCard = physCard - tableSystemCard;
+    const diffYape = physYape - tableSystemYape;
+    const diffPlin = physPlin - tableSystemPlin;
+    const diffTotal = physTotal - tableSystemTotal;
 
     // ── Validation bullets ─────────────────────────────────────────────────
 
@@ -333,7 +343,7 @@ export default function CashClosingPage() {
                         <span className="text-[10px] font-black uppercase tracking-wider">Ventas Totales</span>
                     </div>
                     <p className="text-lg font-black text-foreground tabular-nums">
-                        {formatCurrency(systemTotal)}
+                        {formatCurrency(totalIncome)}
                     </p>
                 </div>
 
@@ -381,7 +391,7 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<Banknote className="w-4 h-4" />}
                         label="Efectivo"
-                        systemAmount={systemCash}
+                        systemAmount={tableSystemCash}
                         physicalAmount={cashPhysical}
                         onPhysicalChange={setCashPhysical}
                         onBlur={() => {
@@ -393,7 +403,7 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<CreditCard className="w-4 h-4" />}
                         label="Tarjeta"
-                        systemAmount={systemCard}
+                        systemAmount={tableSystemCard}
                         physicalAmount={cardPhysical}
                         onPhysicalChange={setCardPhysical}
                         onBlur={() => {
@@ -405,7 +415,7 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<QrCode className="w-4 h-4" />}
                         label="Yape"
-                        systemAmount={systemYape}
+                        systemAmount={tableSystemYape}
                         physicalAmount={yapePhysical}
                         onPhysicalChange={setYapePhysical}
                         onBlur={() => {
@@ -417,7 +427,7 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<QrCode className="w-4 h-4" />}
                         label="Plin"
-                        systemAmount={systemPlin}
+                        systemAmount={tableSystemPlin}
                         physicalAmount={plinPhysical}
                         onPhysicalChange={setPlinPhysical}
                         onBlur={() => {
@@ -432,19 +442,19 @@ export default function CashClosingPage() {
                     <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr] gap-3 items-center">
                         <span className="text-xs font-black text-foreground uppercase tracking-tight">Total Final</span>
                         <span className="text-sm font-black text-foreground text-right tabular-nums">
-                            {formatCurrency(systemTotal)}
+                            {formatCurrency(tableSystemTotal)}
                         </span>
                         <span className="text-sm font-black text-foreground text-right tabular-nums">
                             {formatCurrency(physTotal)}
                         </span>
                         <div className="flex justify-end">
-                            {Math.abs(physTotal - systemTotal) < 0.005 ? (
+                            {Math.abs(diffTotal) < 0.005 ? (
                                 <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
                                     {formatCurrency(0)} (OK)
                                 </span>
                             ) : (
                                 <span className="text-xs font-black text-rose-600 dark:text-rose-400 tabular-nums">
-                                    - S/ {Math.abs(physTotal - systemTotal).toFixed(2)}
+                                    {diffTotal >= 0 ? '+' : '-'} S/ {Math.abs(diffTotal).toFixed(2)}
                                 </span>
                             )}
                         </div>
