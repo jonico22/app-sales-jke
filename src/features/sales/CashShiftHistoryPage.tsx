@@ -21,7 +21,7 @@ import { AddMovementModal } from './components/AddMovementModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatCurrency = (n: number) => `S/ ${Number(n).toFixed(2)}`;
+const formatCurrency = (n: number) => `S/ ${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /** Safely parse an API date string — handles both ISO and dd/MM/yyyy HH:mm:ss formats */
 function parseDate(raw: string | null | undefined): Date | null {
@@ -267,6 +267,9 @@ export default function CashShiftHistoryPage() {
                                     Ingresos
                                 </th>
                                 <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                                    Egresos
+                                </th>
+                                <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
                                     Balance Final
                                 </th>
                                 <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
@@ -304,6 +307,10 @@ export default function CashShiftHistoryPage() {
                                     // Income totals from API fields
                                     const totalIncome = [s.incomeCash, s.incomeCard, s.incomeYape, s.incomePlin, s.incomeTransfer]
                                         .reduce((acc: number, v: any) => acc + (Number(v) || 0), 0);
+                                    
+                                    const totalExpense = Number(s.expenseCash || 0);
+                                    const initialAmt = Number(s.initialAmount ?? shift.openingBalance ?? 0);
+                                    const finalExpected = initialAmt + totalIncome - totalExpense;
 
                                     return (
                                         <tr
@@ -366,14 +373,21 @@ export default function CashShiftHistoryPage() {
                                                 </span>
                                             </td>
 
+                                            {/* Total expense */}
+                                            <td className="px-5 py-4 whitespace-nowrap text-right">
+                                                <span className="text-xs font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                                                    {totalExpense > 0 ? `-${formatCurrency(totalExpense)}` : formatCurrency(0)}
+                                                </span>
+                                            </td>
+
                                             {/* Current / closing balance */}
                                             <td className="px-5 py-4 whitespace-nowrap text-right">
-                                                <span className={`text-xs font-bold tabular-nums ${
+                                                <span className={`text-xs font-black tabular-nums ${
                                                     isOpen
-                                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                                        ? 'text-primary'
                                                         : 'text-foreground'
                                                 }`}>
-                                                    {formatCurrency(Number(s.finalReportedAmount ?? s.finalSystemAmount ?? shift.currentBalance ?? s.initialAmount ?? 0))}
+                                                    {formatCurrency(isOpen ? finalExpected : Number(s.finalReportedAmount ?? s.finalSystemAmount ?? finalExpected))}
                                                 </span>
                                             </td>
 

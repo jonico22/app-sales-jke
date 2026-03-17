@@ -327,7 +327,7 @@ export default function PendingOrdersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="font-black text-[12px] text-foreground">
-                                                {order.currency?.symbol || 'S/.'} {Number(order.totalAmount).toFixed(2)}
+                                                {order.currency?.symbol || 'S/.'} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">

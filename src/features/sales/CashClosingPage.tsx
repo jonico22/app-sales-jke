@@ -25,7 +25,7 @@ import { es } from 'date-fns/locale';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const formatCurrency = (amount: number) =>
-    `S/ ${amount.toFixed(2)}`;
+    `S/ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /** Sum movements for a given type and payment method */
 function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE', method: string): number {
@@ -39,7 +39,8 @@ function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE'
 interface PaymentRowProps {
     icon: React.ReactNode;
     label: string;
-    systemAmount: number;
+    incomeAmount: number;
+    expenseAmount: number;
     physicalAmount: string;
     onPhysicalChange: (val: string) => void;
     onBlur: () => void;
@@ -48,17 +49,19 @@ interface PaymentRowProps {
 function PaymentRow({
     icon,
     label,
-    systemAmount,
+    incomeAmount,
+    expenseAmount,
     physicalAmount,
     onPhysicalChange,
     onBlur,
 }: PaymentRowProps) {
+    const systemAmount = incomeAmount - expenseAmount;
     const physical = parseFloat(physicalAmount) || 0;
     const diff = physical - systemAmount;
     const isOk = Math.abs(diff) < 0.005;
 
     return (
-        <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr] items-center gap-3 py-4 border-b border-border last:border-0">
+        <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] items-center gap-3 py-4 border-b border-border last:border-0">
             {/* Method */}
             <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0 text-foreground/70">
@@ -67,9 +70,14 @@ function PaymentRow({
                 <span className="text-sm font-semibold text-foreground">{label}</span>
             </div>
 
-            {/* System amount */}
-            <span className="text-sm font-bold text-foreground text-right tabular-nums">
-                {formatCurrency(systemAmount)}
+            {/* Income */}
+            <span className="text-right text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                {formatCurrency(incomeAmount)}
+            </span>
+
+            {/* Expense */}
+            <span className="text-right text-[11px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                {formatCurrency(expenseAmount)}
             </span>
 
             {/* Physical input */}
@@ -81,7 +89,7 @@ function PaymentRow({
                     value={physicalAmount}
                     onChange={(e) => onPhysicalChange(e.target.value)}
                     onBlur={onBlur}
-                    className="w-28 h-9 px-3 text-right text-sm font-bold bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground placeholder:text-muted-foreground"
+                    className="w-24 h-9 px-3 text-right text-xs font-bold bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground placeholder:text-muted-foreground"
                     placeholder="0.00"
                 />
             </div>
@@ -89,12 +97,12 @@ function PaymentRow({
             {/* Difference badge */}
             <div className="flex justify-end">
                 {isOk ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black tabular-nums">
-                        S/ 0.00 (OK)
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tabular-nums">
+                        S/ 0.00
                     </span>
                 ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-black tabular-nums">
-                        {diff >= 0 ? '+' : '-'} S/ {Math.abs(diff).toFixed(2)}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black tabular-nums ${diff > 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
+                        {diff > 0 ? '+' : '-'} S/ {Math.abs(diff).toFixed(2)}
                     </span>
                 )}
             </div>
@@ -380,18 +388,20 @@ export default function CashClosingPage() {
 
                 <div className="px-5">
                     {/* Column headers */}
-                    <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr] gap-3 py-2.5 border-b border-border">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Método de Pago</span>
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Monto Sistema</span>
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Monto Físico</span>
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Diferencia</span>
+                    <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] gap-3 py-3 border-b border-border bg-muted/10 px-5 -mx-5">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Medio de Pago</span>
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Ingresos Sist.</span>
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Egresos Sist.</span>
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Declarado</span>
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Diferencia</span>
                     </div>
 
                     {/* Rows */}
                     <PaymentRow
                         icon={<Banknote className="w-4 h-4" />}
                         label="Efectivo"
-                        systemAmount={tableSystemCash}
+                        incomeAmount={openingBalance + incomeCash}
+                        expenseAmount={expenseCash}
                         physicalAmount={cashPhysical}
                         onPhysicalChange={setCashPhysical}
                         onBlur={() => {
@@ -403,7 +413,8 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<CreditCard className="w-4 h-4" />}
                         label="Tarjeta"
-                        systemAmount={tableSystemCard}
+                        incomeAmount={incomeCard}
+                        expenseAmount={expenseCard}
                         physicalAmount={cardPhysical}
                         onPhysicalChange={setCardPhysical}
                         onBlur={() => {
@@ -415,7 +426,8 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<QrCode className="w-4 h-4" />}
                         label="Yape"
-                        systemAmount={tableSystemYape}
+                        incomeAmount={incomeYape}
+                        expenseAmount={expenseYape}
                         physicalAmount={yapePhysical}
                         onPhysicalChange={setYapePhysical}
                         onBlur={() => {
@@ -427,7 +439,8 @@ export default function CashClosingPage() {
                     <PaymentRow
                         icon={<QrCode className="w-4 h-4" />}
                         label="Plin"
-                        systemAmount={tableSystemPlin}
+                        incomeAmount={incomePlin}
+                        expenseAmount={expensePlin}
                         physicalAmount={plinPhysical}
                         onPhysicalChange={setPlinPhysical}
                         onBlur={() => {
@@ -438,23 +451,29 @@ export default function CashClosingPage() {
                 </div>
 
                 {/* Totals row */}
-                <div className="px-5 py-4 border-t border-border bg-muted/30">
-                    <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.2fr] gap-3 items-center">
-                        <span className="text-xs font-black text-foreground uppercase tracking-tight">Total Final</span>
-                        <span className="text-sm font-black text-foreground text-right tabular-nums">
-                            {formatCurrency(tableSystemTotal)}
+                <div className="px-5 py-5 border-t border-border bg-muted/30">
+                    <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] gap-3 items-center">
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-foreground uppercase tracking-tight">Diferencia Total</span>
+                            <span className="text-[9px] text-muted-foreground font-medium">Reportado - (Sistema + Inicial)</span>
+                        </div>
+                        <span className="text-xs font-black text-emerald-600 text-right tabular-nums">
+                            {formatCurrency(openingBalance + totalIncome)}
+                        </span>
+                        <span className="text-xs font-black text-rose-600 text-right tabular-nums">
+                            {formatCurrency(totalExpenses)}
                         </span>
                         <span className="text-sm font-black text-foreground text-right tabular-nums">
                             {formatCurrency(physTotal)}
                         </span>
                         <div className="flex justify-end">
                             {Math.abs(diffTotal) < 0.005 ? (
-                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-                                    {formatCurrency(0)} (OK)
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black tabular-nums border border-emerald-500/20">
+                                    S/ 0.00
                                 </span>
                             ) : (
-                                <span className="text-xs font-black text-rose-600 dark:text-rose-400 tabular-nums">
-                                    {diffTotal >= 0 ? '+' : '-'} S/ {Math.abs(diffTotal).toFixed(2)}
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black tabular-nums border ${diffTotal > 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'}`}>
+                                    {diffTotal > 0 ? '+' : '-'} S/ {Math.abs(diffTotal).toFixed(2)}
                                 </span>
                             )}
                         </div>

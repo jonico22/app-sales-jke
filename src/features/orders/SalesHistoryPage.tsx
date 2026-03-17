@@ -203,7 +203,7 @@ export default function SalesHistoryPage() {
             key: (order: Order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
             width: 30
         },
-        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toFixed(2), width: 15 },
+        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), width: 15 },
         {
             header: 'Método de Pago',
             key: (order: Order) => {
@@ -497,7 +497,7 @@ export default function SalesHistoryPage() {
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-xs font-bold text-foreground">
-                                                {order.currency?.symbol} {Number(order.totalAmount).toFixed(2)}
+                                                {order.currency?.symbol} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {getPaymentBadge(payment)}

@@ -166,10 +166,10 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                                 </td>
                                                 <td className="px-4 py-3 text-center text-muted-foreground text-xs">{item.quantity}</td>
                                                 <td className="px-4 py-3 text-right text-muted-foreground text-xs">
-                                                    {currencySymbol} {Number(item.unitPrice).toFixed(2)}
+                                                    {currencySymbol} {Number(item.unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-bold text-foreground text-xs">
-                                                    {currencySymbol} {Number(item.total).toFixed(2)}
+                                                    {currencySymbol} {Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                         ))}
@@ -193,7 +193,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                                 <span className="text-[10px] font-mono text-muted-foreground">{payment.createdAt ? format(new Date(payment.createdAt), 'dd/MM/yyyy HH:mm') : '-'}</span>
                                             </div>
                                             <p className="font-bold text-foreground text-xs mb-1">{payment.paymentMethod}</p>
-                                            <p className="text-xs text-muted-foreground">Monto: {currencySymbol} {Number(payment.amount).toFixed(2)}</p>
+                                            <p className="text-xs text-muted-foreground">Monto: {currencySymbol} {Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                             {payment.referenceCode && (
                                                 <p className="text-xs text-slate-500 mt-1">Ref: {payment.referenceCode}</p>
                                             )}
@@ -239,21 +239,21 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                             <div className="space-y-3">
                                 <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>Subtotal</span>
-                                    <span>{currencySymbol} {subtotal.toFixed(2)}</span>
+                                    <span>{currencySymbol} {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>IGV (18%)</span>
-                                    <span>{currencySymbol} {tax.toFixed(2)}</span>
+                                    <span>{currencySymbol} {tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 {discount > 0 && (
                                     <div className="flex justify-between text-sm text-emerald-600 font-medium">
                                         <span>Descuento</span>
-                                        <span>- {currencySymbol} {discount.toFixed(2)}</span>
+                                        <span>- {currencySymbol} {discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
                                     <span className="font-bold text-foreground text-xs uppercase">Total</span>
-                                    <span className="text-2xl font-black text-foreground">{currencySymbol} {total.toFixed(2)}</span>
+                                    <span className="text-2xl font-black text-foreground">{currencySymbol} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </div>

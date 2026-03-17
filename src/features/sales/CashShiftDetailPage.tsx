@@ -28,8 +28,10 @@ import { AddMovementModal } from './components/AddMovementModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const fmt = (n: number | string | null | undefined) =>
-    `S/ ${Number(n ?? 0).toFixed(2)}`;
+const fmt = (n: number | string | null | undefined) => {
+    const val = Number(n ?? 0);
+    return `S/ ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 function parseDate(raw: string | null | undefined): Date | null {
     if (!raw) return null;
@@ -116,15 +118,13 @@ function IncomeRow({ icon, label, amount }: { icon: React.ReactNode; label: stri
     );
 }
 
-// ─── Movement Row ─────────────────────────────────────────────────────────────
-
 function MovementRow({ movement }: { movement: CashShiftMovement }) {
     const isIncome = movement.type === MovementType.INCOME;
     const date = parseDate(movement.createdAt);
     const timeStr = date ? format(date, 'dd/MM, hh:mm a') : '—';
 
     return (
-        <div className="grid grid-cols-[1.5fr_2fr_1fr_1fr] items-center gap-4 py-3 border-b border-border last:border-0">
+        <div className="grid grid-cols-[1.5fr_2fr_1.2fr_1fr] items-center gap-4 py-3 border-b border-border last:border-0">
             <span className="text-[11px] font-medium text-muted-foreground">{timeStr}</span>
             <div className="flex items-center gap-2 min-w-0">
                 <CircleDot
@@ -135,7 +135,15 @@ function MovementRow({ movement }: { movement: CashShiftMovement }) {
                     {movement.description || movement.paymentMethod}
                 </span>
             </div>
-            <span className="text-[11px] text-muted-foreground">—</span>
+            <div>
+                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
+                    isIncome 
+                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                }`}>
+                    {isIncome ? 'Ingreso' : 'Egreso'}
+                </span>
+            </div>
             <span className={`text-xs font-black tabular-nums text-right ${
                 isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
             }`}>
@@ -236,15 +244,52 @@ export default function CashShiftDetailPage() {
 
     // Helper for category comparison
     const categories = [
-        { label: 'Efectivo', sys: sysCash + initialAmt, rep: s.reportedCashAmount, icon: <Banknote size={14} /> },
-        { label: 'Tarjeta', sys: sysCard, rep: s.reportedCardAmount, icon: <CreditCard size={14} /> },
-        { label: 'Yape', sys: sysYape, rep: s.reportedYapeAmount, icon: <QrCode size={14} /> },
-        { label: 'Plin', sys: sysPlin, rep: s.reportedPlinAmount, icon: <QrCode size={14} /> },
-        { label: 'Transferencia', sys: sysTransfer, rep: s.reportedTransferAmount, icon: <Landmark size={14} /> },
-    ].map(c => ({
-        ...c,
-        diff: Number(c.rep ?? 0) - Number(c.sys)
-    }));
+        { 
+            label: 'Efectivo', 
+            income: initialAmt + sysCash, 
+            expense: totalExpense, // Assuming expenses are mostly cash
+            rep: s.reportedCashAmount, 
+            icon: <Banknote size={14} /> 
+        },
+        { 
+            label: 'Tarjeta', 
+            income: sysCard, 
+            expense: 0, 
+            rep: s.reportedCardAmount, 
+            icon: <CreditCard size={14} /> 
+        },
+        { 
+            label: 'Yape', 
+            income: sysYape, 
+            expense: 0, 
+            rep: s.reportedYapeAmount, 
+            icon: <QrCode size={14} /> 
+        },
+        { 
+            label: 'Plin', 
+            income: sysPlin, 
+            expense: 0, 
+            rep: s.reportedPlinAmount, 
+            icon: <QrCode size={14} /> 
+        },
+        { 
+            label: 'Transferencia', 
+            income: sysTransfer, 
+            expense: 0, 
+            rep: s.reportedTransferAmount, 
+            icon: <Landmark size={14} /> 
+        },
+    ].map(c => {
+        const sysNet = c.income - c.expense;
+        return {
+            ...c,
+            sysNet,
+            diff: Number(c.rep ?? 0) - sysNet
+        };
+    });
+
+    const totalReported = categories.reduce((acc, c) => acc + Number(c.rep ?? 0), 0);
+    const globalDiff = totalReported - sysTotalWithInit;
 
     return (
         <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5 min-h-screen bg-background pb-24">
@@ -402,10 +447,10 @@ export default function CashShiftDetailPage() {
                     {movements.length > 0 ? (
                         <>
                             {/* Column headers */}
-                            <div className="grid grid-cols-[1.5fr_2fr_1fr_1fr] gap-4 px-5 py-2 bg-muted/20">
+                            <div className="grid grid-cols-[1.5fr_2fr_1.2fr_1fr] gap-4 px-5 py-2 bg-muted/20">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Fecha / Hora</span>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Concepto</span>
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Usuario</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Tipo</span>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Monto</span>
                             </div>
                             <div className="px-5 flex-1 overflow-y-auto max-h-[360px]">
@@ -457,11 +502,12 @@ export default function CashShiftDetailPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-muted/20">
-                                    <th className="px-5 py-3 text-[10px] font-black text-muted-foreground uppercase tracking-wider">Medio de Pago</th>
-                                    <th className="px-5 py-3 text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Sistema</th>
-                                    <th className="px-5 py-3 text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Declarado</th>
-                                    <th className="px-5 py-3 text-[10px] font-black text-muted-foreground uppercase tracking-wider text-right">Diferencia</th>
+                                <tr className="bg-muted/30">
+                                    <th className="px-5 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Medio de Pago</th>
+                                    <th className="px-5 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Ingresos Sist.</th>
+                                    <th className="px-5 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Egresos Sist.</th>
+                                    <th className="px-5 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Declarado</th>
+                                    <th className="px-5 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Diferencia</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -475,16 +521,19 @@ export default function CashShiftDetailPage() {
                                                 <span className="text-xs font-bold text-foreground">{cat.label}</span>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4 text-right text-xs font-semibold text-muted-foreground tabular-nums">
-                                            {fmt(cat.sys)}
+                                        <td className="px-5 py-4 text-right text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                            {fmt(cat.income)}
+                                        </td>
+                                        <td className="px-5 py-4 text-right text-[11px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                                            {cat.expense > 0 ? `-${fmt(cat.expense)}` : fmt(0)}
                                         </td>
                                         <td className="px-5 py-4 text-right text-xs font-bold text-foreground tabular-nums">
                                             {fmt(cat.rep)}
                                         </td>
                                         <td className={`px-5 py-4 text-right text-xs font-black tabular-nums ${
-                                            cat.diff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                            cat.diff >= -0.005 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                                         }`}>
-                                            {cat.diff >= 0 ? '+' : ''}{fmt(cat.diff)}
+                                            {cat.diff > 0.005 ? '+' : cat.diff < -0.005 ? '' : ''}{fmt(cat.diff)}
                                         </td>
                                     </tr>
                                 ))}
@@ -492,23 +541,31 @@ export default function CashShiftDetailPage() {
                         </table>
                     </div>
 
-                    {s.difference != null && (
-                        <div className={`px-5 py-4 border-t border-border flex items-center justify-between ${
-                            Number(s.difference) >= 0 ? 'bg-emerald-500/5' : 'bg-rose-500/5'
-                        }`}>
-                            <div className="flex flex-col">
-                                <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">Diferencia Total</span>
-                                <span className="text-[10px] text-muted-foreground/60 font-medium">Reportado - (Sistema+Inicial)</span>
+                    <div className={`px-5 py-5 border-t border-border flex items-center justify-between ${
+                        globalDiff >= -0.005 ? 'bg-emerald-500/5' : 'bg-rose-500/5'
+                    }`}>
+                        <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-foreground uppercase tracking-widest">Diferencia Total</span>
+                            <span className="text-[9px] text-muted-foreground/60 font-medium">Reportado - (Sistema + Inicial)</span>
+                        </div>
+                        <div className="flex items-center gap-8">
+                            <div className="hidden sm:flex flex-col items-end">
+                                <span className="text-[9px] font-black text-muted-foreground uppercase">Sistema + Inicial</span>
+                                <span className="text-xs font-bold text-foreground">{fmt(sysTotalWithInit)}</span>
                             </div>
-                            <span className={`text-base font-black tabular-nums ${
-                                Number(s.difference) >= 0
-                                    ? 'text-emerald-600 dark:text-emerald-400'
-                                    : 'text-rose-600 dark:text-rose-400'
+                            <div className="hidden sm:flex flex-col items-end">
+                                <span className="text-[9px] font-black text-muted-foreground uppercase">Declarado Total</span>
+                                <span className="text-xs font-bold text-foreground">{fmt(totalReported)}</span>
+                            </div>
+                            <span className={`text-base font-black tabular-nums px-4 py-2 rounded-xl border ${
+                                globalDiff >= -0.005
+                                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                    : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20'
                             }`}>
-                                {Number(s.difference) >= 0 ? '+' : ''}{fmt(s.difference)}
+                                {globalDiff > 0.005 ? '+' : ''}{fmt(globalDiff)}
                             </span>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
