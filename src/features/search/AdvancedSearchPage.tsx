@@ -311,8 +311,8 @@ export default function AdvancedSearchPage() {
     return (
         <div className="flex flex-col md:flex-row gap-6 bg-background min-h-screen p-4 md:p-6">
             {/* Sidebar */}
-            <aside className="w-full md:w-80 flex-shrink-0 bg-card border border-border rounded-2xl p-6 h-fit shadow-sm">
-                <h2 className="text-xl font-bold text-foreground mb-6">Filtros</h2>
+            <aside className="w-full md:w-64 xl:w-80 flex-shrink-0 bg-card border border-border rounded-2xl p-4 xl:p-6 h-fit shadow-sm">
+                <h2 className="text-lg xl:text-xl font-bold text-foreground mb-4 xl:mb-6">Filtros</h2>
                 <FilterSidebar
                     filters={filters}
                     onFilterChange={handleFilterChange}
@@ -366,7 +366,7 @@ export default function AdvancedSearchPage() {
                 ) : (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-2">
-                            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                            <h2 className="text-[12px] md:text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                 Resultados ({filteredProducts.length})
                             </h2>
                             {/* Optional: Sort dropdown */}

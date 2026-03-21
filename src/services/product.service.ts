@@ -138,7 +138,9 @@ export const productService = {
         limit?: number;
         search?: string;
         isActive?: boolean;
+        categoryCode?: string;
         categoryId?: string;
+        stockStatus?: 'all' | 'out';
         branchId?: string;
         createdBy?: string;
         createdAtFrom?: string;

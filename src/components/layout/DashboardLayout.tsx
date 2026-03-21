@@ -5,6 +5,7 @@ import DashboardHeader from './DashboardHeader';
 import { MobileNavFooter } from './MobileNavFooter';
 import { cn } from '@/lib/utils';
 import { useSessionValidator } from '@/hooks/useSessionValidator';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 
 export default function DashboardLayout() {
@@ -12,25 +13,28 @@ export default function DashboardLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isSessionExpired, handleRedirect } = useSessionValidator();
 
-  // Toggle collapse on desktop, but maybe we want to keep it simple for now
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)');
+  const isDesktop = useMediaQuery('(min-width: 1025px)');
+
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   // Auto-collapse on tablet screens
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
-        setIsCollapsed(true);
-      } else if (window.innerWidth >= 1024) {
-        setIsCollapsed(false);
-      }
-    };
+    if (isTablet) {
+      setIsCollapsed(true);
+    } else if (isDesktop) {
+      setIsCollapsed(false);
+    }
+  }, [isTablet, isDesktop]);
 
-    // Run on mount
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Close sidebar when entering mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false);
+      setIsCollapsed(false);
+    }
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex">

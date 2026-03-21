@@ -40,11 +40,7 @@ export default function ProductsPage() {
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
-        createdBy: undefined,
-        createdAtFrom: null,
-        createdAtTo: null,
-        updatedAtFrom: null,
-        updatedAtTo: null,
+        categoryCode: undefined,
         priceFrom: '',
         priceTo: '',
         priceCostFrom: '',
@@ -52,6 +48,7 @@ export default function ProductsPage() {
         stockFrom: '',
         stockTo: '',
         lowStock: false,
+        stockStatus: undefined,
     });
 
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -107,25 +104,8 @@ export default function ProductsPage() {
                 params.isActive = statusFilter === 'active';
             }
 
-            // Add advanced filters
-            if (advancedFilters.createdBy) {
-                params.createdBy = advancedFilters.createdBy;
-            }
-            if (advancedFilters.createdAtFrom) {
-                const date = advancedFilters.createdAtFrom;
-                params.createdAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            }
-            if (advancedFilters.createdAtTo) {
-                const date = advancedFilters.createdAtTo;
-                params.createdAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            }
-            if (advancedFilters.updatedAtFrom) {
-                const date = advancedFilters.updatedAtFrom;
-                params.updatedAtFrom = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            }
-            if (advancedFilters.updatedAtTo) {
-                const date = advancedFilters.updatedAtTo;
-                params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            if (advancedFilters.categoryCode) {
+                params.categoryCode = advancedFilters.categoryCode;
             }
 
             // New Filters
@@ -136,6 +116,7 @@ export default function ProductsPage() {
             if (advancedFilters.stockFrom) params.stockFrom = Number(advancedFilters.stockFrom);
             if (advancedFilters.stockTo) params.stockTo = Number(advancedFilters.stockTo);
             if (advancedFilters.lowStock) params.lowStock = true;
+            if (advancedFilters.stockStatus) params.stockStatus = advancedFilters.stockStatus;
 
             const response = await productService.getAll(params);
 
@@ -374,11 +355,7 @@ export default function ProductsPage() {
                                                 setSearchTerm('');
                                                 setStatusFilter('all');
                                                 setAdvancedFilters({
-                                                    createdBy: undefined,
-                                                    createdAtFrom: null,
-                                                    createdAtTo: null,
-                                                    updatedAtFrom: null,
-                                                    updatedAtTo: null,
+                                                    categoryCode: undefined,
                                                     priceFrom: '',
                                                     priceTo: '',
                                                     priceCostFrom: '',
@@ -386,6 +363,7 @@ export default function ProductsPage() {
                                                     stockFrom: '',
                                                     stockTo: '',
                                                     lowStock: false,
+                                                    stockStatus: undefined,
                                                 });
                                             }}
                                             className="border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-muted/50"
