@@ -1,4 +1,4 @@
-import { Search, Heart, TrendingUp, ChevronDown, Check, X } from 'lucide-react';
+import { Search, Heart, TrendingUp, Check, X } from 'lucide-react';
 import type { Color } from '@/services/product.service';
 import { useState, useRef, useEffect } from 'react';
 
@@ -11,7 +11,6 @@ interface SearchHeaderProps {
     selectedColor: string;
     onColorSelect: (color: string) => void;
     onClearFilters?: () => void;
-    clientSelector?: React.ReactNode;
 }
 
 export function SearchHeader({
@@ -22,8 +21,7 @@ export function SearchHeader({
     colors,
     selectedColor,
     onColorSelect,
-    onClearFilters,
-    clientSelector
+    onClearFilters
 }: SearchHeaderProps) {
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -41,33 +39,26 @@ export function SearchHeader({
     }, []);
 
     return (
-        <div className="space-y-6 bg-card p-6 rounded-2xl border border-border shadow-sm mb-6">
-            {/* Top Row: Title & Client */}
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div>
-                    <h1 className="text-base xl:text-xl font-bold text-foreground">Búsqueda y Filtros Avanzados</h1>
-                </div>
-
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 ">
-                        {clientSelector}
-                    </div>
-                </div>
-            </div>
+        <div className="w-full space-y-5">
 
             {/* Search Input */}
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    {searchQuery ? (
+            <div className="relative w-full max-w-5xl">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+                
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 opacity-60">
+                        <span className="px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </div>
+                    {searchQuery && (
                         <button
                             onClick={() => onSearchChange('')}
-                            className="p-1 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                            className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
                         >
-                            <X className="w-4 h-4" />
+                            <X className="w-[18px] h-[18px]" />
                         </button>
-                    ) : (
-                        <span className="px-2 py-0.5 bg-muted text-muted-foreground text-[10px] font-bold rounded border border-border">F3</span>
                     )}
                 </div>
                 <input
@@ -75,22 +66,15 @@ export function SearchHeader({
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     placeholder="Buscar productos por nombre, SKU o código de barras..."
-                    className="w-full pl-12 pr-12 py-3.5 bg-muted/50 border border-input rounded-xl text-foreground placeholder:text-muted-foreground focus:bg-background focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-base"
+                    className="w-full pl-12 pr-32 py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
                 />
             </div>
 
             {/* Quick Filters */}
             <div className="flex flex-wrap items-center gap-3">
                 <button
-                    onClick={() => onToggleQuickFilter('all')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeQuickFilters.includes('all') ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}
-                >
-                    Todos
-                </button>
-
-                <button
                     onClick={() => onToggleQuickFilter('favorites')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeQuickFilters.includes('favorites') ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}
+                    className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <Heart className={`w-4 h-4 ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
                     Favoritos
@@ -98,7 +82,7 @@ export function SearchHeader({
 
                 <button
                     onClick={() => onToggleQuickFilter('bestSellers')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeQuickFilters.includes('bestSellers') ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}
+                    className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${activeQuickFilters.includes('bestSellers') ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <TrendingUp className="w-4 h-4" />
                     Más vendidos
@@ -108,10 +92,13 @@ export function SearchHeader({
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border ${selectedColor ? 'border-primary text-primary bg-primary/10' : 'border-input text-muted-foreground hover:border-border'}`}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-card border-border text-muted-foreground hover:bg-accent'}`}
                     >
-                        <span>{selectedColor ? colors.find(c => c.id === selectedColor)?.color : 'Color'}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform ${isColorDropdownOpen ? 'rotate-180' : ''}`} />
+                        {/* Paint palette icon */}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                        <span>{selectedColor ? `Color: ${colors.find(c => c.id === selectedColor)?.color}` : 'Color'}</span>
                     </button>
 
                     {/* Color Dropdown Content */}
@@ -156,10 +143,10 @@ export function SearchHeader({
                     )}
                 </div>
 
-                <div className="ml-auto">
+                <div className="ml-4 flex items-center">
                     <button
                         onClick={onClearFilters}
-                        className="text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+                        className="text-[11px] font-bold text-[#4096d8] hover:text-blue-400 transition-colors uppercase tracking-wider"
                     >
                         LIMPIAR FILTROS
                     </button>

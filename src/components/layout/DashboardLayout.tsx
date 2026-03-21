@@ -15,7 +15,7 @@ export default function DashboardLayout() {
 
   const isMobile = useMediaQuery('(max-width: 767px)');
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)');
-  const isDesktop = useMediaQuery('(min-width: 1025px)');
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 

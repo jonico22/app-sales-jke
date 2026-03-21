@@ -44,33 +44,33 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
     }
 
     return (
-        <div className={`bg-card border rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-all group ${quantity > 0 ? 'border-primary ring-1 ring-primary' : 'border-border'}`}>
+        <div className={`bg-card text-card-foreground border rounded-[12px] p-4 flex items-center justify-between gap-6 hover:shadow-md transition-all group ${quantity > 0 ? 'border-[#4096d8] shadow-sm shadow-[#4096d8]/10' : 'border-border'}`}>
             {/* Image/Icon */}
-            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center shrink-0 border border-border">
+            <div className="w-16 h-16 bg-muted/60 rounded-[8px] flex items-center justify-center shrink-0 border border-muted">
                 <Package className="w-8 h-8 text-muted-foreground/50" />
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-foreground text-base truncate">
+                <div className="flex items-center gap-2 mb-1.5">
+                    <h3 className="font-bold text-[15px] text-foreground truncate">
                         {product.name}
                         {product.color && <span className="font-normal text-muted-foreground ml-1">({product.color})</span>}
                     </h3>
                     <button
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
-                        className="focus:outline-none"
+                        className="focus:outline-none shrink-0"
                     >
-                        <Heart className={`w-4 h-4 ${isFavorite ? 'fill-primary text-primary' : 'text-muted-foreground hover:text-destructive'} transition-colors`} />
+                        <Heart className={`w-4 h-4 ${isFavorite ? 'fill-[#4096d8] text-[#4096d8]' : 'text-muted-foreground hover:text-[#4096d8]'} transition-colors`} />
                     </button>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-3 text-[13px]">
                     <span className="text-muted-foreground font-medium">SKU: {product.code || '---'}</span>
-                    <span className="px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium truncate max-w-[100px]">
+                    <span className="px-2 py-[2px] bg-muted/60 rounded text-muted-foreground font-medium truncate max-w-[120px]">
                         {product.category?.name || 'General'}
                     </span>
-                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md ${stockStatus.bg} ${stockStatus.color} font-medium`}>
+                    <span className={`flex items-center gap-1 px-2 py-[2px] rounded-md bg-transparent ${stockStatus.color} font-medium`}>
                         <div className={`w-1.5 h-1.5 rounded-full bg-current`} />
                         {stockStatus.label}
                     </span>
@@ -78,40 +78,42 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
             </div>
 
             {/* Price */}
-            <div className="text-right shrink-0">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">PRECIO</div>
-                <div className="text-xl font-bold text-primary">
+            <div className="flex flex-col items-end shrink-0 mr-4">
+                <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">PRECIO</div>
+                <div className="text-xl font-bold text-[#4096d8]">
                     {society?.mainCurrency?.symbol || 'S/'} {parseFloat(product.price).toFixed(2)}
                 </div>
             </div>
 
             {/* Action Button / Quantity Selector */}
-            {quantity > 0 ? (
-                <div className="flex items-center bg-primary/10 rounded-xl border border-primary/20 h-12 shrink-0 overflow-hidden">
-                    <button
-                        onClick={handleDecrement}
-                        className="w-10 h-full flex items-center justify-center text-primary hover:bg-primary/20 transition-colors active:bg-primary/30"
-                    >
-                        <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center font-bold text-primary text-lg">
-                        {quantity}
-                    </span>
+            <div className="shrink-0">
+                {quantity > 0 ? (
+                    <div className="flex items-center bg-[#f0f7ff] rounded-[8px] h-10 border border-[#e0f0ff] overflow-hidden">
+                        <button
+                            onClick={handleDecrement}
+                            className="w-10 h-full flex items-center justify-center text-[#4096d8] hover:bg-blue-100 transition-colors"
+                        >
+                            <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-8 text-center font-bold text-[#4096d8] text-sm">
+                            {quantity}
+                        </span>
+                        <button
+                            onClick={handleIncrement}
+                            className="w-10 h-full flex items-center justify-center text-[#4096d8] hover:bg-blue-100 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    </div>
+                ) : (
                     <button
                         onClick={handleIncrement}
-                        className="w-10 h-full flex items-center justify-center text-primary hover:bg-primary/20 transition-colors active:bg-primary/30"
+                        className="w-12 h-10 flex items-center justify-center bg-[#f0f7ff] text-[#4096d8] rounded-[8px] hover:bg-[#e0f0ff] transition-all border border-[#e0f0ff]"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                     </button>
-                </div>
-            ) : (
-                <button
-                    onClick={handleIncrement}
-                    className="w-12 h-12 flex items-center justify-center bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-primary-foreground transition-all active:scale-95 shrink-0"
-                >
-                    <Plus className="w-6 h-6" />
-                </button>
-            )}
+                )}
+            </div>
         </div>
     );
 }
