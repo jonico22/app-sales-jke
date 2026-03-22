@@ -24,9 +24,9 @@ const navItems = [
       { name: 'Puntos de Venta', href: '/pos' },
       { name: 'Pedidos Pendientes', href: '/orders/pending' },
       { name: 'Turnos de Caja', href: '/sales/shifts' },
+      { name: 'Clientes', href: '/sales/clients' },
     ]
   },
-  //{ name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Usuarios', href: '/settings/users', icon: Users },
   {
     name: 'Reportes', icon: FileText,

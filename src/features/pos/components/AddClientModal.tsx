@@ -34,8 +34,8 @@ export function AddClientModal({ isOpen, onClose, onClientRegistered }: AddClien
                 // Map the full client response to ClientSelectOption
                 const newClientOption: ClientSelectOption = {
                     id: response.data.id,
-                    name: response.data.name,
-                    documentNumber: response.data.documentNumber
+                    name: response.data.name || '',
+                    documentNumber: response.data.documentNumber || ''
                 };
                 onClientRegistered(newClientOption);
                 onClose();

@@ -46,6 +46,7 @@ const BillingPage = lazy(() => import('./features/settings/BillingPage'));
 const CashClosingPage = lazy(() => import('./features/sales/CashClosingPage'));
 const CashShiftHistoryPage = lazy(() => import('./features/sales/CashShiftHistoryPage'));
 const CashShiftDetailPage = lazy(() => import('./features/sales/CashShiftDetailPage'));
+const ClientsPage = lazy(() => import('./features/sales/clients/ClientsPage'));
 const PendingPaymentPage = lazy(() => import('./features/onboarding/PendingPaymentPage'));
 
 // Simple loading fallback shown while a lazy chunk is being fetched
@@ -139,6 +140,10 @@ const router = createBrowserRouter([
           {
             path: 'sales/shifts/:shiftId',
             element: <Suspense fallback={<PageLoader />}><CashShiftDetailPage /></Suspense>
+          },
+          {
+            path: 'sales/clients',
+            element: <Suspense fallback={<PageLoader />}><ClientsPage /></Suspense>
           },
           {
             path: 'security',

@@ -2,8 +2,15 @@ import api from './api.client';
 
 export interface Client {
     id: string;
-    name: string;
-    documentNumber: string;
+    name?: string; // Optional as it might not be in the raw response
+    firstName: string | null;
+    lastName: string | null;
+    middleName: string | null;
+    companyName: string | null;
+    tradeName: string | null;
+    type: string;
+    typeBP: 'PERSON' | 'LEGAL_ENTITY' | string;
+    documentNumber: string | null;
     documentType: string | null;
     email: string | null;
     phone: string | null;
@@ -12,12 +19,19 @@ export interface Client {
     isDeleted: boolean;
     createdAt: string;
     updatedAt: string;
-    createdBy: string;
+    createdBy: string | null;
     updatedBy: string | null;
 }
 
 export interface CreateClientRequest {
-    name: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    middleName?: string;
+    companyName?: string;
+    tradeName?: string;
+    type?: string;
+    typeBP?: 'PERSON' | 'LEGAL_ENTITY' | string;
     documentNumber: string;
     documentType?: string;
     email?: string;
@@ -28,6 +42,13 @@ export interface CreateClientRequest {
 
 export interface UpdateClientRequest {
     name?: string;
+    firstName?: string;
+    lastName?: string;
+    middleName?: string;
+    companyName?: string;
+    tradeName?: string;
+    type?: string;
+    typeBP?: 'PERSON' | 'LEGAL_ENTITY' | string;
     documentNumber?: string;
     documentType?: string;
     email?: string;
