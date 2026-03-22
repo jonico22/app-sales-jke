@@ -54,13 +54,13 @@ function fmtDate(raw: string | null | undefined, pattern = "dd/MM/yyyy, hh:mm a"
 
 function InfoCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
     return (
-        <div className="flex items-center gap-3 bg-card border border-border rounded-2xl px-4 py-3 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+        <div className="flex items-center gap-2.5 sm:gap-3 bg-card border border-border rounded-2xl px-3 sm:px-4 py-3 shadow-sm">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
                 {icon}
             </div>
-            <div className="min-w-0">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{label}</p>
-                <p className="text-sm font-bold text-foreground truncate">{value}</p>
+            <div className="min-w-0 flex-1">
+                <p className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tight sm:tracking-wider leading-none mb-1">{label}</p>
+                <p className="text-[13px] sm:text-sm font-bold text-foreground leading-tight break-words">{value}</p>
             </div>
         </div>
     );
@@ -90,12 +90,12 @@ function StatCard({ label, value, icon, variant = 'default' }: StatCardProps) {
     };
 
     return (
-        <div className={`rounded-2xl border p-5 shadow-sm ${styles[variant]}`}>
-            <div className={`flex items-center gap-2 mb-2 text-[10px] font-black uppercase tracking-wider ${labelStyle[variant]}`}>
+        <div className={`rounded-2xl border p-4 sm:p-5 shadow-sm ${styles[variant]}`}>
+            <div className={`flex items-center gap-2 mb-2 text-[10px] font-black uppercase tracking-tight sm:tracking-wider ${labelStyle[variant]}`}>
                 {icon}
                 {label}
             </div>
-            <p className={`text-xl font-black tabular-nums ${variant === 'primary' ? 'text-primary-foreground' : ''}`}>
+            <p className={`text-lg sm:text-xl font-black tabular-nums leading-tight ${variant === 'primary' ? 'text-primary-foreground' : ''}`}>
                 {value}
             </p>
         </div>
@@ -121,34 +121,53 @@ function IncomeRow({ icon, label, amount }: { icon: React.ReactNode; label: stri
 function MovementRow({ movement }: { movement: CashShiftMovement }) {
     const isIncome = movement.type === MovementType.INCOME;
     const date = parseDate(movement.createdAt);
-    const timeStr = date ? format(date, 'dd/MM, hh:mm a') : '—';
-
+    const timeStr = date ? format(date, 'HH:mm') : '—';
     return (
-        <div className="grid grid-cols-[1.5fr_2fr_1.2fr_1fr] items-center gap-4 py-3 border-b border-border last:border-0">
-            <span className="text-[11px] font-medium text-muted-foreground">{timeStr}</span>
+        <div className="flex flex-col sm:grid sm:grid-cols-[1.5fr_2fr_1.2fr_1fr] sm:items-center gap-2 sm:gap-4 py-3 sm:py-4 border-b border-border last:border-0 group transition-colors hover:bg-muted/5">
+            {/* Mobile Header: Time + Type Badge */}
+            <div className="flex items-center justify-between sm:contents">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight sm:text-[11px] sm:font-medium sm:normal-case sm:tracking-normal">
+                    {date ? format(date, 'dd/MM, ') : ''}{timeStr}
+                </span>
+
+                <div className="sm:hidden">
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isIncome
+                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                        }`}>
+                        {isIncome ? 'Ingreso' : 'Egreso'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Concept / Payment Method */}
             <div className="flex items-center gap-2 min-w-0">
                 <CircleDot
                     size={10}
                     className={`shrink-0 ${isIncome ? 'text-emerald-500' : 'text-rose-500'}`}
                 />
-                <span className="text-xs font-semibold text-foreground truncate">
+                <span className="text-[13px] sm:text-xs font-bold sm:font-semibold text-foreground truncate">
                     {movement.description || movement.paymentMethod}
                 </span>
             </div>
-            <div>
-                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
-                    isIncome 
-                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
-                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                }`}>
+
+            {/* Desktop-only Type Badge */}
+            <div className="hidden sm:block">
+                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isIncome
+                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                    }`}>
                     {isIncome ? 'Ingreso' : 'Egreso'}
                 </span>
             </div>
-            <span className={`text-xs font-black tabular-nums text-right ${
-                isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-            }`}>
-                {isIncome ? '+' : '-'}{fmt(movement.amount)}
-            </span>
+
+            {/* Amount (Styled differently on mobile) */}
+            <div className="flex items-baseline justify-end sm:contents">
+                <span className={`text-[15px] sm:text-xs font-black tabular-nums text-right ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                    }`}>
+                    {isIncome ? '+' : '-'}{fmt(movement.amount)}
+                </span>
+            </div>
         </div>
     );
 }
@@ -235,7 +254,7 @@ export default function CashShiftDetailPage() {
     // Difference and system balance logic
     // Usually finalSystemAmount is just Initial + Cash from many APIs
     const sysTotalWithInit = initialAmt + totalIncome - totalExpense;
-    
+
     const finalBalance = s.finalReportedAmount != null
         ? Number(s.finalReportedAmount)
         : s.finalSystemAmount != null
@@ -244,40 +263,40 @@ export default function CashShiftDetailPage() {
 
     // Helper for category comparison
     const categories = [
-        { 
-            label: 'Efectivo', 
-            income: initialAmt + sysCash, 
+        {
+            label: 'Efectivo',
+            income: initialAmt + sysCash,
             expense: totalExpense, // Assuming expenses are mostly cash
-            rep: s.reportedCashAmount, 
-            icon: <Banknote size={14} /> 
+            rep: s.reportedCashAmount,
+            icon: <Banknote size={14} />
         },
-        { 
-            label: 'Tarjeta', 
-            income: sysCard, 
-            expense: 0, 
-            rep: s.reportedCardAmount, 
-            icon: <CreditCard size={14} /> 
+        {
+            label: 'Tarjeta',
+            income: sysCard,
+            expense: 0,
+            rep: s.reportedCardAmount,
+            icon: <CreditCard size={14} />
         },
-        { 
-            label: 'Yape', 
-            income: sysYape, 
-            expense: 0, 
-            rep: s.reportedYapeAmount, 
-            icon: <QrCode size={14} /> 
+        {
+            label: 'Yape',
+            income: sysYape,
+            expense: 0,
+            rep: s.reportedYapeAmount,
+            icon: <QrCode size={14} />
         },
-        { 
-            label: 'Plin', 
-            income: sysPlin, 
-            expense: 0, 
-            rep: s.reportedPlinAmount, 
-            icon: <QrCode size={14} /> 
+        {
+            label: 'Plin',
+            income: sysPlin,
+            expense: 0,
+            rep: s.reportedPlinAmount,
+            icon: <QrCode size={14} />
         },
-        { 
-            label: 'Transferencia', 
-            income: sysTransfer, 
-            expense: 0, 
-            rep: s.reportedTransferAmount, 
-            icon: <Landmark size={14} /> 
+        {
+            label: 'Transferencia',
+            income: sysTransfer,
+            expense: 0,
+            rep: s.reportedTransferAmount,
+            icon: <Landmark size={14} />
         },
     ].map(c => {
         const sysNet = c.income - c.expense;
@@ -292,7 +311,7 @@ export default function CashShiftDetailPage() {
     const globalDiff = totalReported - sysTotalWithInit;
 
     return (
-        <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5 min-h-screen bg-background pb-24">
+        <div className="md:px-6  md:py-6 max-w-5xl mx-auto space-y-4 md:space-y-6 bg-background pb-5">
 
             {/* ── Header ───────────────────────────────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -326,10 +345,10 @@ export default function CashShiftDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
                     <button
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 px-3 py-2 border border-border bg-card text-foreground hover:bg-muted text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all active:scale-95"
+                        className="flex items-center justify-center gap-2 px-4 py-3 sm:py-2 border border-border bg-card text-foreground hover:bg-muted text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all active:scale-95 w-full sm:w-auto"
                     >
                         <Printer size={14} />
                         Imprimir Reporte
@@ -337,7 +356,7 @@ export default function CashShiftDetailPage() {
                     {isOpen && (
                         <button
                             onClick={() => navigate(`/pos/cash-closing/${shift.id}`)}
-                            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl shadow-sm shadow-primary/20 text-[11px] font-black uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-primary text-primary-foreground rounded-xl shadow-sm shadow-primary/20 text-[11px] font-black uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto"
                         >
                             <Lock size={14} />
                             Cerrar Turno
@@ -347,7 +366,7 @@ export default function CashShiftDetailPage() {
             </div>
 
             {/* ── Info Cards ────────────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 <InfoCard
                     icon={<Building2 size={16} />}
                     label="Sucursal"
@@ -372,10 +391,10 @@ export default function CashShiftDetailPage() {
 
             {/* ── Financial Summary ─────────────────────────────────────────── */}
             <div>
-                <h2 className="text-sm font-black text-foreground uppercase tracking-tight mb-3">
+                <h2 className="text-sm font-black text-foreground uppercase tracking-tight mb-2 md:mb-3">
                     Resumen Financiero
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                     <StatCard
                         label="Monto Inicial"
                         value={fmt(initialAmt)}
@@ -446,8 +465,8 @@ export default function CashShiftDetailPage() {
 
                     {movements.length > 0 ? (
                         <>
-                            {/* Column headers */}
-                            <div className="grid grid-cols-[1.5fr_2fr_1.2fr_1fr] gap-4 px-5 py-2 bg-muted/20">
+                            {/* Column headers - Visible only on Desktop */}
+                            <div className="hidden sm:grid grid-cols-[1.5fr_2fr_1.2fr_1fr] gap-4 px-5 py-2 bg-muted/20">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Fecha / Hora</span>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Concepto</span>
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">Tipo</span>
@@ -498,8 +517,8 @@ export default function CashShiftDetailPage() {
                             Arqueo de Caja vs Sistema
                         </h3>
                     </div>
-                    
-                    <div className="overflow-x-auto">
+
+                    <div className="hidden sm:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-muted/30">
@@ -530,9 +549,8 @@ export default function CashShiftDetailPage() {
                                         <td className="px-5 py-4 text-right text-xs font-bold text-foreground tabular-nums">
                                             {fmt(cat.rep)}
                                         </td>
-                                        <td className={`px-5 py-4 text-right text-xs font-black tabular-nums ${
-                                            cat.diff >= -0.005 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                                        }`}>
+                                        <td className={`px-5 py-4 text-right text-xs font-black tabular-nums ${cat.diff >= -0.005 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                            }`}>
                                             {cat.diff > 0.005 ? '+' : cat.diff < -0.005 ? '' : ''}{fmt(cat.diff)}
                                         </td>
                                     </tr>
@@ -541,9 +559,43 @@ export default function CashShiftDetailPage() {
                         </table>
                     </div>
 
-                    <div className={`px-5 py-5 border-t border-border flex items-center justify-between ${
-                        globalDiff >= -0.005 ? 'bg-emerald-500/5' : 'bg-rose-500/5'
-                    }`}>
+                    {/* Mobile Arqueo View */}
+                    <div className="sm:hidden divide-y divide-border">
+                        {categories.map((cat) => (
+                            <div key={cat.label} className="p-4 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                                            {cat.icon}
+                                        </div>
+                                        <span className="text-[13px] font-black text-foreground uppercase tracking-tight">{cat.label}</span>
+                                    </div>
+                                    <div className={`px-3 py-1 rounded-lg border text-[11px] font-black tabular-nums ${cat.diff >= -0.005 ? 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10' : 'text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-500/10'
+                                        }`}>
+                                        {cat.diff > 0.005 ? '+' : ''}{fmt(cat.diff)}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="flex flex-col bg-muted/30 p-2 rounded-xl border border-border/40">
+                                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Sist. Ing.</span>
+                                        <span className="text-[11px] font-bold text-emerald-600 tabular-nums">{fmt(cat.income)}</span>
+                                    </div>
+                                    <div className="flex flex-col bg-muted/30 p-2 rounded-xl border border-border/40">
+                                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Sist. Egr.</span>
+                                        <span className="text-[11px] font-bold text-rose-600 tabular-nums">{cat.expense > 0 ? `-${fmt(cat.expense)}` : '0.00'}</span>
+                                    </div>
+                                    <div className="flex flex-col bg-muted/30 p-2 rounded-xl border border-border/40">
+                                        <span className="text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Declarado</span>
+                                        <span className="text-[11px] font-black text-foreground tabular-nums">{fmt(cat.rep)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={`px-5 py-5 border-t border-border flex items-center justify-between ${globalDiff >= -0.005 ? 'bg-emerald-500/5' : 'bg-rose-500/5'
+                        }`}>
                         <div className="flex flex-col">
                             <span className="text-[11px] font-black text-foreground uppercase tracking-widest">Diferencia Total</span>
                             <span className="text-[9px] text-muted-foreground/60 font-medium">Reportado - (Sistema + Inicial)</span>
@@ -557,11 +609,10 @@ export default function CashShiftDetailPage() {
                                 <span className="text-[9px] font-black text-muted-foreground uppercase">Declarado Total</span>
                                 <span className="text-xs font-bold text-foreground">{fmt(totalReported)}</span>
                             </div>
-                            <span className={`text-base font-black tabular-nums px-4 py-2 rounded-xl border ${
-                                globalDiff >= -0.005
-                                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                                    : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20'
-                            }`}>
+                            <span className={`text-base font-black tabular-nums px-4 py-2 rounded-xl border ${globalDiff >= -0.005
+                                ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                                : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20'
+                                }`}>
                                 {globalDiff > 0.005 ? '+' : ''}{fmt(globalDiff)}
                             </span>
                         </div>

@@ -94,8 +94,8 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
                         <Wallet className="h-6 w-6 text-white" />
                     </div>
                     <div className="space-y-1">
-                        <h2 className="text-lg font-bold text-slate-800 uppercase tracking-tight">Apertura de Caja Chica</h2>
-                        <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                        <h2 className="text-lg font-bold text-foreground dark:text-white uppercase tracking-tight">Apertura de Caja Chica</h2>
+                        <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
                             Registre el monto inicial para comenzar las operaciones del día.
                         </p>
                     </div>
@@ -109,7 +109,7 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
                             <select
                                 value={branchId}
                                 onChange={(e) => setBranchId(e.target.value)}
-                                className="w-full h-14 pl-4 pr-10 bg-slate-50/50 border border-slate-200 rounded-2xl appearance-none focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-slate-700 font-semibold text-sm"
+                                className="w-full h-14 pl-4 pr-10 bg-muted/30 dark:bg-slate-800/50 border border-border rounded-2xl appearance-none focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-foreground font-semibold text-sm"
                             >
                                 <option value="" disabled>Seleccionar sucursal</option>
                                 {branches.map((branch) => (
@@ -145,23 +145,23 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
                                     setInitialAmount(num.toFixed(2));
                                 }}
                                 placeholder="0.00"
-                                className="w-full h-14 pl-12 pr-4 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-xl font-bold text-slate-700"
+                                className="w-full h-14 pl-12 pr-4 bg-background dark:bg-slate-900/50 border border-border rounded-2xl focus:outline-none focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-xl font-bold text-foreground"
                             />
                         </div>
                     </div>
 
                     {/* Meta Info: Date & Time */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-slate-50/80 rounded-2xl p-4 space-y-1 border border-slate-100/50">
+                        <div className="bg-muted/50 dark:bg-slate-800/30 rounded-2xl p-4 space-y-1 border border-border/50">
                             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Fecha de apertura</span>
-                            <div className="flex items-center gap-2 text-slate-700">
+                            <div className="flex items-center gap-2 text-foreground">
                                 <Calendar className="h-4 w-4 text-[#00BFFF]" />
                                 <span className="text-sm font-bold">{formattedDate}</span>
                             </div>
                         </div>
-                        <div className="bg-slate-50/80 rounded-2xl p-4 space-y-1 border border-slate-100/50">
+                        <div className="bg-muted/50 dark:bg-slate-800/30 rounded-2xl p-4 space-y-1 border border-border/50">
                             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Hora de apertura</span>
-                            <div className="flex items-center gap-2 text-slate-700">
+                            <div className="flex items-center gap-2 text-foreground">
                                 <Clock className="h-4 w-4 text-[#00BFFF]" />
                                 <span className="text-sm font-bold">{formattedTime}</span>
                             </div>
@@ -174,7 +174,7 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
                     <Button
                         variant="outline"
                         onClick={onClose}
-                        className="flex-1 h-12 rounded-2xl border-slate-200 text-slate-600 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all active:scale-95"
+                        className="flex-1 h-12 rounded-2xl border-border text-muted-foreground font-bold uppercase text-[10px] tracking-widest hover:bg-muted transition-all active:scale-95"
                     >
                         Cancelar
                     </Button>

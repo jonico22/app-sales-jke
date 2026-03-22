@@ -63,6 +63,22 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
         }
     }, [isOpen]);
 
+    // Robust role selection: Sync form when both user and roles are available
+    useEffect(() => {
+        if (user && roles.length > 0) {
+            const currentRoleCode = user.role?.code || '';
+            const baseRoleCode = currentRoleCode.split('-')[0];
+            
+            // Try to find exact match first, then base match
+            const matchedRole = roles.find(r => r.code === currentRoleCode) || 
+                               roles.find(r => r.code === baseRoleCode);
+            
+            if (matchedRole) {
+                setValue('roleCode', matchedRole.code);
+            }
+        }
+    }, [user, roles, setValue]);
+
     const fetchRoles = async () => {
         try {
             setIsLoadingRoles(true);

@@ -15,6 +15,7 @@ const navItems = [
       { name: 'Categorías', href: '/categories', icon: Tags },
       { name: 'Sucursales', href: '/inventory/branches', icon: Building2 },
       { name: 'Movimientos', href: '/inventory/movements' },
+      { name: 'Kardex / Historial', href: '/inventory/kardex' },
     ]
   },
   {

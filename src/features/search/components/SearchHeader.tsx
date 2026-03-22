@@ -71,11 +71,11 @@ export function SearchHeader({
             </div>
 
             {/* Quick Filters */}
-            <div className="flex flex-nowrap overflow-x-auto items-center gap-3 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 custom-scrollbar-hide">
+            <div className="flex flex-nowrap lg:overflow-visible overflow-x-auto items-center gap-3 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 custom-scrollbar-hide">
                 {/* Filtros Button - Mobile Only */}
                 <button
                     onClick={onOpenFilters}
-                    className="lg:hidden flex items-center gap-2 px-5 py-2.5 rounded-[12px] text-[13px] font-bold transition-all border border-border bg-white text-[#334155] shadow-sm hover:bg-slate-50 shrink-0"
+                    className="lg:hidden flex items-center gap-2 px-5 py-2.5 rounded-[12px] text-[13px] font-bold transition-all border border-border bg-card text-foreground shadow-sm hover:bg-accent shrink-0"
                 >
                     <SlidersHorizontal className="w-4 h-4" />
                     Filtros
@@ -84,7 +84,7 @@ export function SearchHeader({
                 {/* Todos Button - Desktop Only */}
                 <button
                     onClick={onClearFilters}
-                    className="hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border border-border bg-white text-slate-500 hover:bg-slate-50 shrink-0"
+                    className={`hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('all') && !selectedColor ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     Todos
                 </button>
@@ -93,7 +93,7 @@ export function SearchHeader({
 
                 <button
                     onClick={() => onToggleQuickFilter('favorites')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-white text-slate-500 border-border hover:bg-slate-50'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <Heart className={`w-[14px] h-[14px] ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
                     Favoritos
@@ -101,7 +101,7 @@ export function SearchHeader({
 
                 <button
                     onClick={() => onToggleQuickFilter('bestSellers')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${activeQuickFilters.includes('bestSellers') ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20' : 'bg-white text-slate-500 border-border hover:bg-slate-50'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${activeQuickFilters.includes('bestSellers') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <TrendingUp className="w-[14px] h-[14px]" />
                     Más vendidos
@@ -111,7 +111,7 @@ export function SearchHeader({
                 <div className="relative shrink-0" ref={dropdownRef}>
                     <button
                         onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-white border-border text-slate-500 hover:bg-slate-50'}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-card border-border text-muted-foreground hover:bg-accent'}`}
                     >
                         {/* Paint palette icon */}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

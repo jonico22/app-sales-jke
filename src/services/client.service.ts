@@ -10,6 +10,7 @@ export interface Client {
     tradeName: string | null;
     type: string;
     typeBP: 'PERSON' | 'LEGAL_ENTITY' | string;
+    societyId: string | null;
     documentNumber: string | null;
     documentType: string | null;
     email: string | null;

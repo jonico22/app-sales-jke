@@ -169,7 +169,7 @@ export default function CreateInventoryMovementPage() {
     const isStep1Valid = originBranchId && destinationBranchId && selectedProduct && quantity > 0 && originBranchId !== destinationBranchId;
 
     return (
-        <div className="min-h-screen bg-background p-6 space-y-8">
+        <div className="min-h-screen bg-background space-y-4 md:p-2">
             {/* Header section */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -204,7 +204,7 @@ export default function CreateInventoryMovementPage() {
                 </div>
             </div>
 
-            <main className="max-w-4xl mx-auto space-y-8">
+            <main className="max-w-4xl mx-auto space-y-4">
                 {currentStep === 1 ? (
                     <>
                         {/* Progress Tracking */}
@@ -220,19 +220,19 @@ export default function CreateInventoryMovementPage() {
                         </div>
 
                         {/* Main Form Card */}
-                        <Card className="bg-card border-border shadow-sm rounded-[2rem] overflow-hidden">
-                            <div className="p-8 pb-6 border-b border-border/40">
-                                <h2 className="text-xl font-black text-foreground tracking-tight leading-none mb-2 uppercase">Detalles</h2>
+                        <Card className="bg-card border-border shadow-sm rounded-3xl overflow-hidden">
+                            <div className="p-4 px-6 border-b border-border/40">
+                                <h2 className="text-lg font-black text-foreground tracking-tight leading-none uppercase">Detalles</h2>
                             </div>
 
-                            <div className="p-8 space-y-8">
+                            <div className="p-6 space-y-6">
                                 {/* Source & Destination */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] ml-1">Sucursal de Origen</label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full justify-between h-14 px-6 rounded-2xl bg-muted/20 border-border hover:bg-muted text-[11px] font-black uppercase tracking-widest text-foreground transition-all">
+                                                <Button variant="outline" className="w-full justify-between h-12 px-4 rounded-xl bg-muted/20 border-border hover:bg-muted text-[11px] font-black uppercase tracking-widest text-foreground transition-all">
                                                     {getBranchName(originBranchId)}
                                                     <ChevronDown className="w-3.5 h-3.5 opacity-40" />
                                                 </Button>
@@ -258,7 +258,7 @@ export default function CreateInventoryMovementPage() {
                                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] ml-1">Sucursal de Destino</label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full justify-between h-14 px-6 rounded-2xl bg-muted/20 border-border hover:bg-muted text-[11px] font-black uppercase tracking-widest text-foreground transition-all">
+                                                <Button variant="outline" className="w-full justify-between h-12 px-4 rounded-xl bg-muted/20 border-border hover:bg-muted text-[11px] font-black uppercase tracking-widest text-foreground transition-all">
                                                     {getBranchName(destinationBranchId)}
                                                     <ChevronDown className="w-3.5 h-3.5 opacity-40" />
                                                 </Button>
@@ -286,7 +286,7 @@ export default function CreateInventoryMovementPage() {
                                             placeholder="Buscar producto..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="h-14 pl-12 pr-5 rounded-2xl bg-muted/20 border-border focus:bg-card focus:ring-2 focus:ring-primary/20 text-sm font-bold transition-all"
+                                            className="h-12 pl-12 pr-5 rounded-xl bg-muted/20 border-border focus:bg-card focus:ring-2 focus:ring-primary/20 text-sm font-bold transition-all"
                                             disabled={!originBranchId}
                                         />
                                         {isSearching && <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />}
@@ -323,7 +323,7 @@ export default function CreateInventoryMovementPage() {
 
                                 {/* Selected Product Info Card */}
                                 {selectedProduct && (
-                                    <div className="rounded-[1.5rem] bg-primary/5 border border-primary/10 p-6 space-y-6">
+                                    <div className="rounded-2xl bg-primary/5 border border-primary/10 p-5 space-y-4">
                                         <div className="flex items-start justify-between">
                                             <div className="flex items-center gap-5">
                                                 <div className="w-14 h-14 rounded-2xl bg-card shadow-sm border border-border/40 flex items-center justify-center p-1">
@@ -343,8 +343,8 @@ export default function CreateInventoryMovementPage() {
                                                 <p className="text-sm font-black text-primary uppercase tracking-tighter leading-none">{selectedProduct.stock} unidades</p>
                                             </div>
                                         </div>
-                                        <div className="pt-6 border-t border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                            <div className="flex-1 max-w-xs space-y-3">
+                                        <div className="pt-4 border-t border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div className="flex-1 max-w-xs space-y-2">
                                                 <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest ml-1 opacity-50">Cantidad a Mover</label>
                                                 <Input
                                                     type="number"
@@ -352,11 +352,11 @@ export default function CreateInventoryMovementPage() {
                                                     max={selectedProduct.stock}
                                                     value={quantity}
                                                     onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-                                                    className="h-14 rounded-2xl bg-card border-border focus:ring-primary/10 text-center font-black text-base shadow-sm"
+                                                    className="h-12 rounded-xl bg-card border-border focus:ring-primary/10 text-center font-black text-base shadow-sm"
                                                 />
                                             </div>
 
-                                            <div className="flex items-center gap-6 px-8 h-16 rounded-[1.5rem] bg-card border-2 border-primary/5 shadow-lg shadow-primary/5 transition-all hover:border-primary/20 hover:scale-[1.01] active:scale-[0.99] group/switch">
+                                            <div className="flex items-center gap-4 px-6 h-12 rounded-xl bg-card border-2 border-primary/5 shadow-lg shadow-primary/5 transition-all hover:border-primary/20 hover:scale-[1.01] active:scale-[0.99] group/switch">
                                                 <Switch
                                                     checked={isReserved}
                                                     onCheckedChange={setIsReserved}
@@ -374,7 +374,7 @@ export default function CreateInventoryMovementPage() {
                                     <Input
                                         value={referenceCode}
                                         onChange={(e) => setReferenceCode(e.target.value)}
-                                        className="h-14 px-6 rounded-2xl bg-muted/20 border-border focus:bg-card text-[11px] font-black text-primary uppercase tracking-widest transition-all"
+                                        className="h-12 px-4 rounded-xl bg-muted/20 border-border focus:bg-card text-[11px] font-black text-primary uppercase tracking-widest transition-all"
                                     />
                                 </div>
 
@@ -385,23 +385,23 @@ export default function CreateInventoryMovementPage() {
                                         placeholder="Escriba aquí los detalles del traslado..."
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
-                                        className="min-h-[120px] p-6 rounded-[1.5rem] bg-muted/20 border-border focus:bg-card text-sm font-medium resize-none transition-all leading-relaxed"
+                                        className="min-h-[80px] p-4 rounded-xl bg-muted/20 border-border focus:bg-card text-sm font-medium resize-none transition-all leading-relaxed"
                                     />
                                 </div>
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="p-8 bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="p-4 px-6 bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <button
                                     onClick={() => navigate('/inventory/movements')}
-                                    className="px-8 py-3 text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                                    className="px-6 py-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={isLoading || !isStep1Valid}
-                                    className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 flex items-center justify-center gap-4 text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     {isLoading ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -416,8 +416,8 @@ export default function CreateInventoryMovementPage() {
                         </Card>
 
                         {/* Info Alert */}
-                        <div className="flex items-start gap-5 p-6 rounded-[1.5rem] bg-primary/5 border border-primary/10 text-primary transition-all hover:bg-primary/10 active:scale-[0.99]">
-                            <div className="p-2.5 bg-primary/10 rounded-xl shrink-0">
+                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/10 text-primary transition-all hover:bg-primary/10 active:scale-[0.99]">
+                            <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                                 <Info className="w-5 h-5" />
                             </div>
                             <div className="space-y-1">
@@ -429,15 +429,15 @@ export default function CreateInventoryMovementPage() {
                         </div>
                     </>
                 ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-4">
                         {/* Summary Header */}
-                        <div className="bg-card border-border border shadow-sm rounded-[2rem] overflow-hidden">
-                            <div className="p-8 border-b border-border/40 flex items-center justify-between">
+                        <div className="bg-card border-border border shadow-sm rounded-3xl overflow-hidden">
+                            <div className="p-4 px-6 border-b border-border/40 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                        <Check className="w-5 h-5" />
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <Check className="w-4 h-4" />
                                     </div>
-                                    <h2 className="text-xl font-black text-foreground tracking-tight uppercase">Resumen del Traslado</h2>
+                                    <h2 className="text-lg font-black text-foreground tracking-tight uppercase">Resumen del Traslado</h2>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-black text-muted-foreground uppercase opacity-50">REF:</span>
@@ -447,59 +447,59 @@ export default function CreateInventoryMovementPage() {
                                 </div>
                             </div>
 
-                            <div className="p-10">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative">
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative">
                                     {/* Connection Line */}
-                                    <div className="hidden lg:block absolute left-[2.25rem] top-[5.5rem] bottom-[5.5rem] w-px bg-gradient-to-b from-primary/40 via-primary/20 to-primary/40 border-l border-dashed border-primary/30" />
+                                    <div className="hidden lg:block absolute left-[1.75rem] top-[4rem] bottom-[4rem] w-px bg-gradient-to-b from-primary/40 via-primary/20 to-primary/40 border-l border-dashed border-primary/30" />
 
                                     {/* Locations Column */}
-                                    <div className="space-y-16">
+                                    <div className="space-y-8">
                                         {/* Origin */}
-                                        <div className="flex gap-8 relative">
-                                            <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-card border-2 border-primary/20 flex items-center justify-center shrink-0 shadow-sm z-10">
-                                                <div className="w-4 h-4 rounded-full border-4 border-primary/40" />
+                                        <div className="flex gap-6 relative">
+                                            <div className="w-14 h-14 rounded-full bg-card border-2 border-primary/20 flex items-center justify-center shrink-0 shadow-sm z-10">
+                                                <div className="w-3 h-3 rounded-full border-[3px] border-primary/40" />
                                             </div>
-                                            <div className="space-y-1.5 py-4">
+                                            <div className="space-y-1 py-1">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-60">Origen</p>
-                                                <h3 className="text-lg font-black text-foreground uppercase tracking-tight leading-none">{getBranchName(originBranchId)}</h3>
-                                                <p className="text-xs text-muted-foreground font-medium opacity-60">{getBranchAddress(originBranchId)}</p>
+                                                <h3 className="text-base font-black text-foreground uppercase tracking-tight leading-none">{getBranchName(originBranchId)}</h3>
+                                                <p className="text-[11px] text-muted-foreground font-medium opacity-60">{getBranchAddress(originBranchId)}</p>
                                             </div>
                                         </div>
 
                                         {/* Destination */}
-                                        <div className="flex gap-8 relative">
-                                            <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-primary flex items-center justify-center shrink-0 shadow-xl shadow-primary/20 z-10">
-                                                <div className="w-4 h-4 rounded-full border-4 border-white" />
+                                        <div className="flex gap-6 relative">
+                                            <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-xl shadow-primary/20 z-10">
+                                                <div className="w-3 h-3 rounded-full border-[3px] border-white" />
                                             </div>
-                                            <div className="space-y-1.5 py-4">
+                                            <div className="space-y-1 py-1">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-60">Destino</p>
-                                                <h3 className="text-lg font-black text-foreground uppercase tracking-tight leading-none">{getBranchName(destinationBranchId)}</h3>
-                                                <p className="text-xs text-muted-foreground font-medium opacity-60">{getBranchAddress(destinationBranchId)}</p>
+                                                <h3 className="text-base font-black text-foreground uppercase tracking-tight leading-none">{getBranchName(destinationBranchId)}</h3>
+                                                <p className="text-[11px] text-muted-foreground font-medium opacity-60">{getBranchAddress(destinationBranchId)}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Product Details Card */}
-                                    <div className="lg:pl-8">
-                                        <div className="bg-muted/10 border border-border/40 rounded-[2.5rem] p-8 space-y-8">
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-20 h-20 rounded-3xl bg-card border border-border shadow-sm flex items-center justify-center p-2">
+                                    <div className="lg:pl-4">
+                                        <div className="bg-muted/10 border border-border/40 rounded-3xl p-6 space-y-6">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-16 h-16 rounded-2xl bg-card border border-border shadow-sm flex items-center justify-center p-2">
                                                     {selectedProduct?.image ? (
-                                                        <img src={selectedProduct.image} className="w-full h-full object-cover rounded-2xl" />
+                                                        <img src={selectedProduct.image} className="w-full h-full object-cover rounded-xl" />
                                                     ) : (
-                                                        <Package className="w-8 h-8 text-primary/40" />
+                                                        <Package className="w-6 h-6 text-primary/40" />
                                                     )}
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Producto a Trasladar</p>
-                                                    <h4 className="text-base font-black text-foreground uppercase tracking-tight leading-tight">{selectedProduct?.name}</h4>
-                                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-40">SKU-{selectedProduct?.code || '---'}</p>
+                                                    <h4 className="text-sm font-black text-foreground uppercase tracking-tight leading-tight">{selectedProduct?.name}</h4>
+                                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40">SKU-{selectedProduct?.code || '---'}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="pt-8 border-t border-border/40 flex items-center justify-between">
+                                            <div className="pt-6 border-t border-border/40 flex items-center justify-between">
                                                 <div className="flex items-baseline gap-2">
-                                                    <span className="text-4xl font-black text-foreground tracking-tighter">{quantity}</span>
+                                                    <span className="text-3xl font-black text-foreground tracking-tighter">{quantity}</span>
                                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">UNID.</span>
                                                 </div>
                                                 <div className="max-w-[140px] text-right">
@@ -515,11 +515,11 @@ export default function CreateInventoryMovementPage() {
                         </div>
 
                         {/* Navigation Actions */}
-                        <div className="flex flex-col sm:flex-row items-center justify-end gap-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 mt-4">
                             <Button
                                 onClick={handleComplete}
                                 disabled={isLoading}
-                                className="w-full sm:w-auto h-16 px-12 rounded-[1.5rem] bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />

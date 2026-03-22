@@ -127,7 +127,7 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                     <div className="text-center space-y-1">
                         <p className="text-sm text-muted-foreground font-medium">Total a Pagar</p>
                         <h2 className="text-3xl font-black text-foreground">S/ {total.toFixed(2)}</h2>
-                        <span className="inline-block px-3 py-1 bg-amber-50 text-amber-500 text-[10px] font-bold rounded-full">
+                        <span className="inline-block px-3 py-1 bg-amber-500/10 text-amber-500 text-[10px] font-bold rounded-full">
                             Pendiente de pago
                         </span>
                     </div>
@@ -248,14 +248,14 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                 <div className="p-5 border-t border-border bg-muted/50 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-2.5 text-sm font-bold text-foreground bg-white border border-input rounded-xl hover:bg-muted transition-colors"
+                        className="flex-1 py-2.5 text-sm font-bold text-foreground bg-background dark:bg-slate-800/50 border border-input rounded-xl hover:bg-muted transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleConfirmPayment}
                         disabled={!isValidAmount || isProcessing}
-                        className="flex-[2] py-2.5 text-sm font-bold text-white bg-[#8bc7f2] hover:bg-[#4096d8] rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="flex-[2] py-2.5 text-sm font-bold text-white bg-[#4096d8] hover:bg-[#0099CC] rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

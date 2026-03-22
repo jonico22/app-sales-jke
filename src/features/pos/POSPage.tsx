@@ -15,8 +15,8 @@ import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
 import { useCartStore } from '@/store/cart.store';
 import { useCashShift } from '@/hooks/useCashShift';
-import { AddClientModal } from './components/AddClientModal'; // Import Modal
-import type { ClientSelectOption } from '@/services/client.service';
+import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
+import type { Client, ClientSelectOption } from '@/services/client.service';
 import type { Product } from '@/services/product.service';
 
 export default function POSPage() {
@@ -108,7 +108,13 @@ export default function POSPage() {
   }, [location]);
 
 
-  const handleClientRegistered = (newClient: ClientSelectOption) => {
+  const handleClientSuccess = (client: Client) => {
+    // Map full Client to ClientSelectOption for POS
+    const newClient: ClientSelectOption = {
+      id: client.id,
+      name: client.name || `${client.firstName} ${client.lastName}`.trim(),
+      documentNumber: client.documentNumber || ''
+    };
     setSelectedClient(newClient);
     setIsAddClientModalOpen(false);
   };
@@ -246,11 +252,13 @@ export default function POSPage() {
 
 
 
-        {/* Add Client Modal */}
-        <AddClientModal
-          isOpen={isAddClientModalOpen}
-          onClose={() => setIsAddClientModalOpen(false)}
-          onClientRegistered={handleClientRegistered}
+        {/* Client Edit/Add Modal */}
+        <ClientEditModal
+          open={isAddClientModalOpen}
+          onOpenChange={setIsAddClientModalOpen}
+          client={null}
+          onSave={() => {}}
+          onSuccess={handleClientSuccess}
         />
 
       </div>

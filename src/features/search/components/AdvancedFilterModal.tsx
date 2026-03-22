@@ -69,18 +69,18 @@ export function AdvancedFilterModal({
     if (!isOpen) return null;
 
     return (
-        <div className="flex flex-col h-full bg-white">
+        <div className="flex flex-col h-full bg-card">
             {/* Handle Bar */}
             <div className="flex justify-center pt-2">
-                <div className="w-12 h-1 bg-slate-200 rounded-full" />
+                <div className="w-12 h-1 bg-muted rounded-full" />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Filtros Avanzados</h2>
+                <h2 className="text-lg font-black text-foreground uppercase tracking-tight">Filtros Avanzados</h2>
                 <button 
                     onClick={onClose}
-                    className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                    className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>
@@ -96,7 +96,7 @@ export function AdvancedFilterModal({
                             placeholder="Buscar categoría..."
                             value={categorySearch}
                             onChange={(e) => setCategorySearch(e.target.value)}
-                            className="pl-10 h-11 bg-slate-50 border-none rounded-xl text-sm placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400"
+                            className="pl-10 h-11 bg-muted/50 border-none rounded-xl text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-blue-400 text-foreground"
                         />
                     </div>
                     <div className="flex flex-wrap gap-2 max-h-[160px] overflow-y-auto pr-1">
@@ -110,7 +110,7 @@ export function AdvancedFilterModal({
                                         "px-4 py-2 rounded-lg text-xs font-bold transition-all border shrink-0 flex items-center gap-1.5",
                                         isSelected 
                                             ? "bg-[#5fa5d9] border-[#5fa5d9] text-white shadow-sm" 
-                                            : "bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100"
+                                            : "bg-muted/50 border-transparent text-muted-foreground hover:bg-accent"
                                     )}
                                 >
                                     {cat.name}
@@ -134,19 +134,19 @@ export function AdvancedFilterModal({
                                     className={cn(
                                         "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
                                         isSelected 
-                                            ? "border-[#5fa5d9] bg-blue-50/30" 
-                                            : "border-slate-100 bg-white hover:border-slate-200"
+                                            ? "border-[#5fa5d9] bg-blue-500/10" 
+                                            : "border-border bg-background dark:bg-slate-900/40 hover:border-slate-400"
                                     )}
                                 >
                                     <div className={cn(
                                         "w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors",
-                                        isSelected ? "bg-[#5fa5d9] border-[#5fa5d9]" : "border-slate-300 bg-white"
+                                        isSelected ? "bg-[#5fa5d9] border-[#5fa5d9]" : "border-input bg-background"
                                     )}>
                                         {isSelected && <Check className="w-3 h-3 text-white stroke-[4]" />}
                                     </div>
                                     <span className={cn(
                                         "text-[13px] font-bold",
-                                        isSelected ? "text-slate-900" : "text-slate-600"
+                                        isSelected ? "text-foreground" : "text-muted-foreground"
                                     )}>{brand.brand}</span>
                                 </button>
                             );
@@ -156,8 +156,8 @@ export function AdvancedFilterModal({
 
                 {/* STOCK STATUS SECTION */}
                 <section className="space-y-4">
-                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">Estado de Stock</h3>
-                    <div className="flex p-1 bg-slate-100 rounded-xl">
+                    <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.1em]">Estado de Stock</h3>
+                    <div className="flex p-1 bg-muted rounded-xl">
                         {[
                             { id: 'all', label: 'Todos' },
                             { id: 'available', label: 'En Stock' },
@@ -169,8 +169,8 @@ export function AdvancedFilterModal({
                                 className={cn(
                                     "flex-1 py-2 text-[12px] font-bold rounded-lg transition-all",
                                     localFilters.stockStatus === status.id 
-                                        ? "bg-white text-[#5fa5d9] shadow-sm" 
-                                        : "text-slate-500 hover:text-slate-700"
+                                        ? "bg-background text-[#5fa5d9] shadow-sm" 
+                                        : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
                                 {status.label}
@@ -190,7 +190,7 @@ export function AdvancedFilterModal({
 
                     <div className="relative h-6 flex items-center group">
                         {/* Custom Slider Track */}
-                        <div className="absolute w-full h-1.5 bg-slate-100 rounded-full" />
+                        <div className="absolute w-full h-1.5 bg-muted rounded-full" />
                         <div 
                             className="absolute h-1.5 bg-[#5fa5d9] rounded-full"
                             style={{ 
@@ -210,7 +210,7 @@ export function AdvancedFilterModal({
                                 const val = parseInt(e.target.value);
                                 if (val <= localFilters.priceTo) handleFilterChange('priceFrom', val);
                             }}
-                            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none cursor-pointer z-10 accent-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#5fa5d9] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:shadow-md"
+                            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none cursor-pointer z-10 accent-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#5fa5d9] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:shadow-md"
                         />
                         <input
                             type="range"
@@ -222,7 +222,7 @@ export function AdvancedFilterModal({
                                 const val = parseInt(e.target.value);
                                 if (val >= localFilters.priceFrom) handleFilterChange('priceTo', val);
                             }}
-                            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none cursor-pointer z-10 accent-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#5fa5d9] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:shadow-md"
+                            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none cursor-pointer z-10 accent-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#5fa5d9] [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:shadow-md"
                         />
                     </div>
 
@@ -230,24 +230,24 @@ export function AdvancedFilterModal({
                         <div className="flex-1 space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Mínimo</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-900">S/</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground">S/</span>
                                 <Input
                                     type="number"
                                     value={localFilters.priceFrom}
                                     onChange={(e) => handleFilterChange('priceFrom', parseInt(e.target.value) || 0)}
-                                    className="pl-8 h-12 bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-900"
+                                    className="pl-8 h-12 bg-muted/50 border-none rounded-xl text-sm font-bold text-foreground"
                                 />
                             </div>
                         </div>
                         <div className="flex-1 space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Máximo</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-900">S/</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground">S/</span>
                                 <Input
                                     type="number"
                                     value={localFilters.priceTo}
                                     onChange={(e) => handleFilterChange('priceTo', parseInt(e.target.value) || 0)}
-                                    className="pl-8 h-12 bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-900"
+                                    className="pl-8 h-12 bg-muted/50 border-none rounded-xl text-sm font-bold text-foreground"
                                 />
                             </div>
                         </div>
@@ -256,11 +256,11 @@ export function AdvancedFilterModal({
             </div>
 
             {/* Footer Buttons */}
-            <div className="mt-auto shrink-0 w-full p-6 bg-white border-t border-slate-100 flex gap-4 z-20 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+            <div className="mt-auto shrink-0 w-full p-6 bg-card border-t border-border flex gap-4 z-20 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
                 <Button 
                     variant="outline"
                     onClick={handleReset}
-                    className="flex-1 h-12 rounded-xl border-slate-200 text-slate-600 font-black uppercase text-[12px] hover:bg-slate-50"
+                    className="flex-1 h-12 rounded-xl border-border text-muted-foreground font-black uppercase text-[12px] hover:bg-muted"
                 >
                     Limpiar Filtros
                 </Button>

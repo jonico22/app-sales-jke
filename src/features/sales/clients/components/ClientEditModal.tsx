@@ -12,6 +12,7 @@ import {
 import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
 import { ChevronDown, Save, User as UserIcon, Building2 } from 'lucide-react';
 import { clientService, type Client } from '@/services/client.service';
+import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,7 @@ const clientSchema = z.object({
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
+  societyId: z.string().optional(),
   isActive: z.boolean(),
 });
 
@@ -36,6 +38,7 @@ interface ClientEditModalProps {
   onOpenChange: (open: boolean) => void;
   client: Client | null;
   onSave: () => void;
+  onSuccess?: (client: Client) => void;
 }
 
 export function ClientEditModal({
@@ -43,7 +46,10 @@ export function ClientEditModal({
   onOpenChange,
   client,
   onSave,
+  onSuccess,
 }: ClientEditModalProps) {
+  const society = useSocietyStore(state => state.society);
+
   const {
     register,
     handleSubmit,
@@ -64,6 +70,7 @@ export function ClientEditModal({
       phone: '',
       address: '',
       isActive: true,
+      societyId: society?.id || '',
     },
   });
 
@@ -83,6 +90,7 @@ export function ClientEditModal({
         email: client.email || '',
         phone: client.phone || '',
         address: client.address || '',
+        societyId: client.societyId || society?.id || '',
         isActive: client.isActive,
       });
     } else {
@@ -96,6 +104,7 @@ export function ClientEditModal({
         email: '',
         phone: '',
         address: '',
+        societyId: society?.id || '',
         isActive: true,
       });
     }
@@ -115,11 +124,13 @@ export function ClientEditModal({
       };
 
       if (client) {
-        await clientService.update(client.id, payload);
+        const response = await clientService.update(client.id, payload);
         toast.success('Cliente actualizado exitosamente');
+        onSuccess?.(response.data);
       } else {
-        await clientService.create(payload as any);
+        const response = await clientService.create(payload as any);
         toast.success('Cliente creado exitosamente');
+        onSuccess?.(response.data);
       }
 
       onSave();

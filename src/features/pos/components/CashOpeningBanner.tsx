@@ -37,27 +37,25 @@ export function CashOpeningBanner({ onOpenCash, isLoading, refreshShift }: CashO
 
     return (
         <>
-            <div className="relative group overflow-hidden rounded-[20px] bg-sky-50 shadow-sm border border-sky-100/50">
-                {/* Subtle highlight */}
-                <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-white/40 to-transparent pointer-events-none" />
+            <div className="relative group overflow-hidden rounded-[20px] bg-sky-50 dark:bg-sky-500/10 shadow-sm border border-sky-100/50 dark:border-sky-500/20">
 
                 <div className="relative px-4 py-3 sm:px-6 sm:py-3 flex items-center justify-between gap-3 sm:gap-6">
                     <div className="flex items-center gap-3 w-full sm:w-auto overflow-hidden">
                         {/* Icon Container - Minimalist Light */}
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full sm:rounded-lg bg-sky-100 flex items-center justify-center shrink-0">
-                            <Wallet className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#4096d8]" />
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full sm:rounded-lg bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center shrink-0">
+                            <Wallet className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#4096d8] dark:text-sky-400" />
                         </div>
 
                         {/* Text Content */}
                         <div className="flex flex-col min-w-0">
-                            <h2 className="text-[12px] sm:text-[13px] font-black text-sky-900 uppercase tracking-tight leading-tight truncate">
+                            <h2 className="text-[12px] sm:text-[13px] font-black text-sky-900 dark:text-sky-100 uppercase tracking-tight leading-tight truncate">
                                 Apertura de Caja <span className="hidden sm:inline">Chica</span>
                             </h2>
-                            <p className="hidden sm:block text-sky-700/70 text-[10px] font-bold uppercase tracking-wider mt-0.5">
+                            <p className="hidden sm:block text-sky-700/70 dark:text-sky-300/60 text-[10px] font-bold uppercase tracking-wider mt-0.5">
                                 Comienza tu turno realizando la apertura de caja.
                             </p>
                             {/* Mobile short sub-text instead of subtitle to give context without taking space */}
-                            <p className="sm:hidden text-sky-700/70 text-[9px] font-bold uppercase tracking-wider truncate">
+                            <p className="sm:hidden text-sky-700/70 dark:text-sky-300/60 text-[9px] font-bold uppercase tracking-wider truncate">
                                 Turno Pendiente
                             </p>
                         </div>

@@ -48,6 +48,7 @@ const CashShiftHistoryPage = lazy(() => import('./features/sales/CashShiftHistor
 const CashShiftDetailPage = lazy(() => import('./features/sales/CashShiftDetailPage'));
 const ClientsPage = lazy(() => import('./features/sales/clients/ClientsPage'));
 const PendingPaymentPage = lazy(() => import('./features/onboarding/PendingPaymentPage'));
+const KardexPage = lazy(() => import('@/features/inventory/KardexPage'));
 
 // Simple loading fallback shown while a lazy chunk is being fetched
 const PageLoader = () => (
@@ -116,6 +117,10 @@ const router = createBrowserRouter([
           {
             path: 'inventory/movements',
             element: <Suspense fallback={<PageLoader />}><InventoryMovementsPage /></Suspense>
+          },
+          {
+            path: 'inventory/kardex',
+            element: <Suspense fallback={<PageLoader />}><KardexPage /></Suspense>
           },
           {
             path: 'inventory/movements/new',

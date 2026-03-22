@@ -87,7 +87,7 @@ const SheetHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-6 border-b border-border bg-card shrink-0",
+        "flex items-center justify-between p-6 shrink-0",
         className
       )}
       {...props}

@@ -20,6 +20,9 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
 
     const handleIncrement = (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (stock <= 0) return;
+        if (quantity >= stock) return;
+
         if (quantity === 0) {
             addItem(product, 1);
         } else {
@@ -36,6 +39,25 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
         }
     };
 
+    // Stock Level Logic
+    const stock = Number(product.stock);
+    const minStock = Number(product.minStock || 10);
+    
+    let stockStatus: 'normal' | 'low' | 'out' = 'normal';
+    if (stock <= 0) stockStatus = 'out';
+    else if (stock <= minStock) stockStatus = 'low';
+
+    const stockStyles = {
+        normal: "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30",
+        low: "bg-orange-100/80 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200/50 dark:border-orange-500/30",
+        out: "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30"
+    };
+
+    const stockLabels = {
+        normal: `STOCK: ${stock}`,
+        low: `STOCK BAJO: ${stock}`,
+        out: `AGOTADO`
+    };
 
     return (
         <>
@@ -66,18 +88,15 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
 
                     <div className="flex items-center gap-3 text-[13px]">
                         <span className="text-muted-foreground font-medium">SKU: {product.code || '---'}</span>
-                        <span className="px-2 py-[2px] bg-muted/60 rounded text-muted-foreground font-medium truncate max-w-[120px]">
+                        <span className="px-2 py-[2px] bg-muted/60 dark:bg-muted/30 rounded text-muted-foreground font-medium truncate max-w-[120px]">
                             {product.category?.name || 'General'}
                         </span>
-                        {product.stock > 0 ? (
-                            <span className="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold">
-                                En Stock
-                            </span>
-                        ) : (
-                            <span className="inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                Agotado
-                            </span>
-                        )}
+                        <span className={cn(
+                            "inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider",
+                            stockStyles[stockStatus]
+                        )}>
+                            {stockLabels[stockStatus]}
+                        </span>
                     </div>
                 </div>
 
@@ -92,10 +111,10 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                 {/* Action Button / Quantity Selector */}
                 <div className="shrink-0">
                     {quantity > 0 ? (
-                        <div className="flex items-center bg-[#f0f7ff] rounded-[8px] h-10 border border-[#e0f0ff] overflow-hidden">
+                        <div className="flex items-center bg-[#f0f7ff] dark:bg-blue-500/10 rounded-[8px] h-10 border border-[#e0f0ff] dark:border-blue-500/20 overflow-hidden">
                             <button
                                 onClick={handleDecrement}
-                                className="w-10 h-full flex items-center justify-center text-[#4096d8] hover:bg-blue-100 transition-colors"
+                                className="w-10 h-full flex items-center justify-center text-[#4096d8] hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
                             >
                                 <Minus className="w-4 h-4" />
                             </button>
@@ -104,7 +123,11 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                             </span>
                             <button
                                 onClick={handleIncrement}
-                                className="w-10 h-full flex items-center justify-center text-[#4096d8] hover:bg-blue-100 transition-colors"
+                                disabled={quantity >= stock}
+                                className={cn(
+                                    "w-10 h-full flex items-center justify-center text-[#4096d8] transition-colors",
+                                    quantity >= stock ? "opacity-30 cursor-not-allowed bg-slate-100 dark:bg-slate-800" : "hover:bg-blue-100 dark:hover:bg-blue-500/20"
+                                )}
                             >
                                 <Plus className="w-4 h-4" />
                             </button>
@@ -112,7 +135,13 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                     ) : (
                         <button
                             onClick={handleIncrement}
-                            className="w-12 h-10 flex items-center justify-center bg-[#f0f7ff] text-[#4096d8] rounded-[8px] hover:bg-[#e0f0ff] transition-all border border-[#e0f0ff]"
+                            disabled={stock <= 0}
+                            className={cn(
+                                "w-12 h-10 flex items-center justify-center rounded-[8px] transition-all border",
+                                stock <= 0 
+                                    ? "bg-muted text-muted-foreground/30 border-muted cursor-not-allowed" 
+                                    : "bg-[#f0f7ff] dark:bg-blue-500/10 text-[#4096d8] hover:bg-[#e0f0ff] dark:hover:bg-blue-500/20 border-[#e0f0ff] dark:border-blue-500/20"
+                            )}
                         >
                             <Plus className="w-5 h-5" />
                         </button>
@@ -122,49 +151,46 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
 
             {/* MOBILE LAYOUT (less than lg) - New Design */}
             <div className={cn(
-                "flex lg:hidden bg-white border rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-200 group flex-col relative",
-                quantity > 0 ? "border-[#5fa5d9] ring-1 ring-[#5fa5d9]/20" : "border-slate-100 shadow-sm"
+                "flex lg:hidden bg-card border rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-200 group flex-col relative",
+                quantity > 0 ? "border-[#5fa5d9] ring-1 ring-[#5fa5d9]/20" : "border-border shadow-sm dark:bg-card/40"
             )}>
                 {/* Top Row: Image + Details + Price */}
                 <div className="flex p-3 gap-3 items-start">
                     {/* Image Placeholder */}
-                    <div className="w-[60px] h-[60px] md:w-20 md:h-20 bg-slate-50 flex items-center justify-center rounded-[14px] shrink-0 border border-slate-100/50">
-                        <Package className="w-6 h-6 md:w-10 md:h-10 text-slate-200" />
+                    <div className="w-[60px] h-[60px] md:w-20 md:h-20 bg-muted/30 flex items-center justify-center rounded-[14px] shrink-0 border border-border/50">
+                        <Package className="w-6 h-6 md:w-10 md:h-10 text-muted-foreground/30" />
                     </div>
 
                     {/* Product Info */}
                     <div className="flex-1 min-w-0 pr-6 relative">
-                        <h3 className="font-bold text-[14px] text-slate-900 leading-tight mb-0.5 truncate pr-4">
+                        <h3 className="font-bold text-[14px] text-foreground leading-tight mb-0.5 truncate pr-4">
                             {product.name}
-                            {product.color && <span className="text-slate-400 font-medium ml-1">({product.color})</span>}
+                            {product.color && <span className="text-muted-foreground font-medium ml-1">({product.color})</span>}
                         </h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-2">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter mb-2">
                             SKU: {product.code || '---'}
                         </p>
 
-                        <div className="flex flex-col gap-1">
-                            <span className="text-lg font-black text-[#4096d8] leading-none">
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-[17px] font-black text-[#4096d8] leading-none">
                                 {society?.mainCurrency?.symbol || 'S/'} {parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                             <div>
-                                {product.stock > 0 ? (
-                                    <span className="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold">
-                                        En Stock
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">
-                                        Agotado
-                                    </span>
-                                )}
+                                <span className={cn(
+                                    "inline-flex px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider",
+                                    stockStyles[stockStatus]
+                                )}>
+                                    {stockLabels[stockStatus]}
+                                </span>
                             </div>
                         </div>
 
                         {/* Favorite Button Overlay */}
                         <button
                             onClick={(e) => { e.stopPropagation(); onToggleFavorite(product.id); }}
-                            className="absolute top-0 right-0 p-1 rounded-full text-slate-300 hover:text-red-400 transition-colors"
+                            className="absolute top-0 right-0 p-1 rounded-full text-muted-foreground/40 hover:text-[#4096d8] transition-colors"
                         >
-                            <Heart className={cn("w-4 h-4", isFavorite ? "fill-[#4096d8] text-[#4096d8]" : "fill-current text-slate-200")} />
+                            <Heart className={cn("w-4 h-4", isFavorite ? "fill-[#4096d8] text-[#4096d8]" : "fill-current text-muted-foreground/20")} />
                         </button>
                     </div>
 
@@ -173,7 +199,13 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                         <div className="absolute bottom-3 right-3">
                             <button
                                 onClick={handleIncrement}
-                                className="w-10 h-10 rounded-[14px] bg-[#f0f9ff] text-[#4096d8] flex items-center justify-center hover:bg-blue-100 transition-all border border-blue-100 shadow-sm"
+                                disabled={stock <= 0}
+                                className={cn(
+                                    "w-10 h-10 rounded-[14px] flex items-center justify-center transition-all border shadow-sm",
+                                    stock <= 0
+                                        ? "bg-muted text-muted-foreground/30 border-muted cursor-not-allowed"
+                                        : "bg-primary/5 dark:bg-primary/10 text-primary hover:bg-primary/10 border-primary/20"
+                                )}
                             >
                                 <Plus className="w-5 h-5 stroke-[3]" />
                             </button>
@@ -184,22 +216,28 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                 {/* Bottom Row: Quantity Selector (Visible when qty > 0) */}
                 {quantity > 0 && (
                     <div className="mt-auto px-3 pb-3">
-                        <div className="flex items-center justify-between bg-slate-50 rounded-[16px] p-1 border border-slate-100">
+                        <div className="flex items-center justify-between bg-muted/30 rounded-[16px] p-1 border border-border/50">
                             <button
                                 onClick={handleDecrement}
-                                className="w-12 h-10 flex items-center justify-center bg-white rounded-[12px] text-slate-400 hover:text-[#4096d8] transition-colors border border-slate-100 shadow-sm"
+                                className="w-12 h-10 flex items-center justify-center bg-card rounded-[12px] text-muted-foreground hover:text-[#4096d8] transition-colors border border-border/50 shadow-sm"
                             >
                                 <Minus className="w-5 h-5" />
                             </button>
                             
                             <div className="flex flex-col items-center">
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Cantidad</span>
+                                <span className="text-[8px] font-black text-muted-foreground/50 uppercase tracking-widest">Cantidad</span>
                                 <span className="text-sm font-black text-[#4096d8] leading-tight">{quantity}</span>
                             </div>
 
                             <button
                                 onClick={handleIncrement}
-                                className="w-12 h-10 flex items-center justify-center bg-white rounded-[12px] text-[#4096d8] hover:bg-blue-50 transition-colors border border-slate-100 shadow-sm"
+                                disabled={quantity >= stock}
+                                className={cn(
+                                    "w-12 h-10 flex items-center justify-center bg-card rounded-[12px] transition-colors border border-border/50 shadow-sm",
+                                    quantity >= stock 
+                                        ? "opacity-30 cursor-not-allowed grayscale" 
+                                        : "text-[#4096d8] hover:bg-primary/5"
+                                )}
                             >
                                 <Plus className="w-5 h-5" />
                             </button>
