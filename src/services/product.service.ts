@@ -154,6 +154,8 @@ export const productService = {
         stockFrom?: number;
         stockTo?: number;
         lowStock?: boolean;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
     }): Promise<ProductsResponse> => {
         const response = await api.get<ProductsResponse>('/sales/products', { params });
         return response.data;

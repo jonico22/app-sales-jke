@@ -9,7 +9,9 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    Package
+    Package,
+    ArrowUpDown,
+    ChevronUp
 } from 'lucide-react';
 import {
     Button,
@@ -61,6 +63,10 @@ export default function ProductsPage() {
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPrevPage, setHasPrevPage] = useState(false);
     const [pageSize, setPageSize] = useState(10);
+
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     // Edit panel state
     const [editPanelOpen, setEditPanelOpen] = useState(false);
@@ -119,6 +125,9 @@ export default function ProductsPage() {
             if (advancedFilters.lowStock) params.lowStock = true;
             if (advancedFilters.stockStatus) params.stockStatus = advancedFilters.stockStatus;
 
+            params.sortBy = sortBy;
+            params.sortOrder = sortOrder;
+
             const response = await productService.getAll(params);
 
             setProducts(response.data.data || []);
@@ -138,7 +147,7 @@ export default function ProductsPage() {
 
     useEffect(() => {
         fetchProducts();
-    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize]);
+    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize, sortBy, sortOrder]);
 
     const handleDeleteProduct = async (id: string) => {
         const isConfirmed = await alerts.confirm({
@@ -192,6 +201,37 @@ export default function ProductsPage() {
         setAdvancedFilters(filters);
         setCurrentPage(1); // Reset to first page when applying filters
         setIsFilterPanelOpen(false);
+    };
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
+    const SortableHead = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => {
+        const isActive = sortBy === field;
+        const justifyClass = className?.includes('text-right') ? 'justify-end' : className?.includes('text-center') ? 'justify-center' : 'justify-start';
+        return (
+            <TableHead 
+                className={cn("cursor-pointer hover:bg-muted/50 select-none transition-colors group", className)}
+                onClick={() => handleSort(field)}
+            >
+                <div className={cn("flex items-center gap-1.5", justifyClass)}>
+                    {children}
+                    <div className="flex flex-col text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors">
+                        {isActive ? (
+                            sortOrder === 'asc' ? <ChevronUp className="h-3.5 w-3.5 text-primary" /> : <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                        ) : (
+                            <ArrowUpDown className="h-3 w-3" />
+                        )}
+                    </div>
+                </div>
+            </TableHead>
+        );
     };
 
     return (
@@ -260,14 +300,14 @@ export default function ProductsPage() {
                     <Table>
                     <TableHeader className="bg-muted/50 border-b border-border">
                         <TableRow className="hover:bg-transparent border-none">
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
-                            <TableHead className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Producto</TableHead>
-                            <TableHead className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Categoría</TableHead>
-                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Min.</TableHead>
-                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Stock</TableHead>
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">P. Venta</TableHead>
-                            <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Registro</TableHead>
-                            <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Estado</TableHead>
+                            <SortableHead field="code" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</SortableHead>
+                            <SortableHead field="name" className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Producto</SortableHead>
+                            <SortableHead field="categoryId" className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Categoría</SortableHead>
+                            <SortableHead field="minStock" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Min.</SortableHead>
+                            <SortableHead field="stock" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Stock</SortableHead>
+                            <SortableHead field="price" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">P. Venta</SortableHead>
+                            <SortableHead field="createdAt" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Registro</SortableHead>
+                            <SortableHead field="isActive" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Estado</SortableHead>
                             <TableHead className="w-[100px] h-10 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
