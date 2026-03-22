@@ -42,7 +42,7 @@ export default function InventoryMovementsPage() {
     const [branches, setBranches] = useState<BranchOfficeSelectOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     // Filters
     const [originBranchId, setOriginBranchId] = useState<string>('all');
     const [destinationBranchId, setDestinationBranchId] = useState<string>('all');
@@ -74,7 +74,7 @@ export default function InventoryMovementsPage() {
         try {
             // First try direct Date parsing (ISO)
             let date = new Date(dateString);
-            
+
             // If failed, try parsing the specific format from the snippet: DD/MM/YYYY HH:mm:ss
             if (isNaN(date.getTime()) && dateString.includes('/')) {
                 date = parse(dateString, 'dd/MM/yyyy HH:mm:ss', new Date());
@@ -195,35 +195,35 @@ export default function InventoryMovementsPage() {
     };
 
     return (
-        <div className="p-6 space-y-6 bg-background min-h-full">
+        <div className=" md:p-6 space-y-4 md:space-y-6 bg-background min-h-full">
             {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
                 <div>
-                    <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Movimientos entre Sucursales</h1>
-                    <p className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
+                    <h1 className="text-sm md:text-lg font-bold text-foreground tracking-tight uppercase">Movimientos entre Sucursales</h1>
+                    <p className="text-muted-foreground text-[10px] md:text-sm mt-0.5 md:mt-1 flex items-center gap-2">
                         Gestione y rastree traslados internos de mercancía.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button 
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <Button
                         onClick={() => navigate('/inventory/movements/bulk')}
-                        variant="outline" 
-                        className="h-9 px-4 text-[11px] font-extrabold uppercase tracking-wider text-primary border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
+                        variant="outline"
+                        className="flex-1 md:flex-none h-8 md:h-9 px-3 md:px-4 text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider text-primary border-border bg-card hover:bg-muted gap-1.5 md:gap-2 rounded-xl transition-all"
                     >
-                        <ArrowRightLeft className="w-4 h-4" />
+                        <ArrowRightLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
                         Traslado en Bloque
                     </Button>
-                    <Button 
+                    <Button
                         onClick={() => navigate('/inventory/movements/new')}
-                        className="h-9 px-4 text-[11px] font-extrabold uppercase tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/20 rounded-xl transition-all"
+                        className="flex-1 md:flex-none h-8 md:h-9 px-3 md:px-4 text-[9px] md:text-[11px] font-extrabold uppercase tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 md:gap-2 shadow-lg shadow-primary/20 rounded-xl transition-all"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
                         Nuevo Traslado
                     </Button>
                 </div>
             </div>
             {/* Filter bar */}
-            <div className="bg-card p-3 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row gap-4 items-center">
+            <div className="bg-card p-3 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row gap-2 md:gap-4 items-center">
                 <div className="relative w-full md:min-w-[300px] md:max-w-md flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                     <Input
@@ -286,178 +286,247 @@ export default function InventoryMovementsPage() {
                 </div>
             </div>
 
-            {/* Table section */}
+            {/* Table section / Cards View */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden min-h-[400px]">
-                <Table>
-                    <TableHeader className="bg-muted/30 border-b border-border">
-                        <TableRow className="hover:bg-transparent border-none">
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6">Referencia</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Fecha</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Producto</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Ruta (Origen → Destino)</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Cant.</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Observación / Motivo</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Estado</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6 text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow className="border-none">
-                                <TableCell colSpan={8} className="h-64 text-center border-none">
-                                    <div className="flex flex-col items-center justify-center gap-3">
-                                        <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
-                                        <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Sincronizando movimientos...</p>
-                                    </div>
-                                </TableCell>
+                {/* Desktop/Tablet Table View */}
+                <div className="hidden md:block">
+                    <Table>
+                        <TableHeader className="bg-muted/30 border-b border-border">
+                            <TableRow className="hover:bg-transparent border-none">
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6">Referencia</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Fecha</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Producto</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Ruta (Origen → Destino)</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Cant.</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Observación / Motivo</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Estado</TableHead>
+                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6 text-right">Acciones</TableHead>
                             </TableRow>
-                        ) : movements.length === 0 ? (
-                            <TableRow className="border-none">
-                                <TableCell colSpan={8} className="h-64 text-center border-none">
-                                    <div className="flex flex-col items-center justify-center gap-4">
-                                        <div className="p-5 bg-muted/30 rounded-full">
-                                            <History className="h-10 w-10 text-muted-foreground/30" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-foreground font-black text-xs uppercase tracking-wider">No se encontraron movimientos</p>
-                                            <p className="text-muted-foreground text-[10px] font-medium max-w-[250px] mx-auto opacity-70">Ajusta los filtros para visualizar el historial de traslados internos.</p>
-                                        </div>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            movements.map((movement) => (
-                                <TableRow key={movement.id} className="group hover:bg-muted/30 transition-colors border-border/40 last:border-none">
-                                    <TableCell className="px-6">
-                                        <div className="inline-flex items-center gap-1.5 py-1 px-2.5 bg-primary/5 rounded-lg border border-primary/10">
-                                            <span className="font-black text-primary text-[10px] uppercase tracking-tighter">
-                                                {movement.referenceCode || `TR-${movement.id.slice(0, 5).toUpperCase()}`}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-foreground font-extrabold text-[11px] mb-0.5">{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
-                                            <span className="text-muted-foreground text-[9px] uppercase font-bold tracking-tighter opacity-60">{formatDateSafe(movement.createdAt, 'HH:mm:ss')}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="text-foreground font-black text-[11px] uppercase tracking-tight">{movement.product?.name || 'Producto'}</span>
-                                            <span className="text-muted-foreground text-[9px] font-bold opacity-60">SKU-{movement.product?.code || '---'}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
-                                                {movement.originBranch?.name || 'Origen'}
-                                            </span>
-                                            <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
-                                            <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
-                                                {movement.destinationBranch?.name || 'Destino'}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="inline-flex items-center justify-center font-black text-foreground text-[11px] h-7 w-7 bg-muted/40 rounded-full border border-border/30">
-                                            {movement.quantityMoved}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col max-w-[200px]">
-                                            {movement.status === 'CANCELLED' ? (
-                                                <span className="text-rose-500 text-[10px] font-bold uppercase tracking-tight leading-tight italic">
-                                                    {movement.cancellationReason || 'Sin motivo de cancelación'}
-                                                </span>
-                                            ) : (
-                                                <span className="text-muted-foreground/60 text-[10px] font-medium truncate italic">
-                                                    {movement.notes || '---'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        {getStatusBadge(movement.status)}
-                                    </TableCell>
-                                    <TableCell className="text-right px-6">
-                                        <div className="flex items-center justify-end gap-1.5 transition-all duration-200">
-                                            {movement.status === 'PENDING' && (
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="icon" 
-                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors border-border hover:border-primary/10"
-                                                    onClick={() => {
-                                                        setSelectedMovement(movement);
-                                                        setIsUpdateModalOpen(true);
-                                                    }}
-                                                >
-                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                </Button>
-                                            )}
-                                            <Button 
-                                                variant="outline" 
-                                                size="icon" 
-                                                className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border-border hover:border-rose-500/10"
-                                                onClick={() => handleDeleteMovement(movement.id, movement.referenceCode || movement.id)}
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </Button>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow className="border-none">
+                                    <TableCell colSpan={8} className="h-64 text-center border-none">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Sincronizando movimientos...</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : movements.length === 0 ? (
+                                <TableRow className="border-none">
+                                    <TableCell colSpan={8} className="h-64 text-center border-none">
+                                        <div className="flex flex-col items-center justify-center gap-4">
+                                            <div className="p-5 bg-muted/30 rounded-full">
+                                                <History className="h-10 w-10 text-muted-foreground/30" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-foreground font-black text-xs uppercase tracking-wider">No se encontraron movimientos</p>
+                                                <p className="text-muted-foreground text-[10px] font-medium max-w-[250px] mx-auto opacity-70">Ajusta los filtros para visualizar el historial de traslados internos.</p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                movements.map((movement) => (
+                                    <TableRow key={movement.id} className="group hover:bg-muted/30 transition-colors border-border/40 last:border-none">
+                                        <TableCell className="px-6">
+                                            <div className="inline-flex items-center gap-1.5 py-1 px-2.5 bg-primary/5 rounded-lg border border-primary/10">
+                                                <span className="font-black text-primary text-[10px] uppercase tracking-tighter">
+                                                    {movement.referenceCode || `TR-${movement.id.slice(0, 5).toUpperCase()}`}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-foreground font-extrabold text-[11px] mb-0.5">{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
+                                                <span className="text-muted-foreground text-[9px] uppercase font-bold tracking-tighter opacity-60">{formatDateSafe(movement.createdAt, 'HH:mm:ss')}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="text-foreground font-black text-[11px] uppercase tracking-tight">{movement.product?.name || 'Producto'}</span>
+                                                <span className="text-muted-foreground text-[9px] font-bold opacity-60">SKU-{movement.product?.code || '---'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                                    {movement.originBranch?.name || 'Origen'}
+                                                </span>
+                                                <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
+                                                <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                                    {movement.destinationBranch?.name || 'Destino'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="inline-flex items-center justify-center font-black text-foreground text-[11px] h-7 w-7 bg-muted/40 rounded-full border border-border/30">
+                                                {movement.quantityMoved}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col max-w-[200px]">
+                                                {movement.status === 'CANCELLED' ? (
+                                                    <span className="text-rose-500 text-[10px] font-bold uppercase tracking-tight leading-tight italic">
+                                                        {movement.cancellationReason || 'Sin motivo de cancelación'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground/60 text-[10px] font-medium truncate italic">
+                                                        {movement.notes || '---'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            {getStatusBadge(movement.status)}
+                                        </TableCell>
+                                        <TableCell className="text-right px-6">
+                                            <div className="flex items-center justify-end gap-1.5 transition-all duration-200">
+                                                {movement.status === 'PENDING' && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors border-border hover:border-primary/10"
+                                                        onClick={() => {
+                                                            setSelectedMovement(movement);
+                                                            setIsUpdateModalOpen(true);
+                                                        }}
+                                                    >
+                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border-border hover:border-rose-500/10"
+                                                    onClick={() => handleDeleteMovement(movement.id, movement.referenceCode || movement.id)}
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-border">
+                    {isLoading ? (
+                        <div className="p-12 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary opacity-50" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest">Sincronizando...</p>
+                        </div>
+                    ) : movements.length === 0 ? (
+                        <div className="p-12 flex flex-col items-center justify-center text-center gap-4">
+                            <History className="h-10 w-10 text-muted-foreground/20" />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">No se encontraron movimientos</p>
+                        </div>
+                    ) : (
+                        movements.map((movement) => (
+                            <div key={movement.id} className="p-4 bg-card active:bg-muted/50 transition-colors">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className="font-mono text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/10 uppercase">
+                                                {movement.referenceCode || `TR-${movement.id.slice(0, 5).toUpperCase()}`}
+                                            </span>
+                                            {getStatusBadge(movement.status)}
+                                        </div>
+                                        <h3 className="text-sm font-bold text-foreground leading-tight">{movement.product?.name || 'Producto'}</h3>
+                                        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground font-medium">
+                                            <span>SKU-{movement.product?.code || '---'}</span>
+                                            <span className="opacity-30">•</span>
+                                            <span>{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-1 shrink-0">
+                                        {movement.status === 'PENDING' && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 text-muted-foreground"
+                                                onClick={() => {
+                                                    setSelectedMovement(movement);
+                                                    setIsUpdateModalOpen(true);
+                                                }}
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-500"
+                                            onClick={() => handleDeleteMovement(movement.id, movement.referenceCode || movement.id)}
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="bg-muted/30 rounded-xl p-2.5 border border-border/50 mb-2">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-wider mb-0.5">Origen</p>
+                                            <p className="text-[11px] font-bold text-foreground truncate">{movement.originBranch?.name || 'Origen'}</p>
+                                        </div>
+                                        <div className="flex flex-col items-center px-2">
+                                            <div className="h-6 w-6 rounded-full bg-background border border-border flex items-center justify-center text-[11px] font-black text-primary shadow-sm mb-1">
+                                                {movement.quantityMoved}
+                                            </div>
+                                            <ArrowRightLeft className="w-3 h-3 text-muted-foreground/30" />
+                                        </div>
+                                        <div className="flex-1 min-w-0 text-right">
+                                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-wider mb-0.5">Destino</p>
+                                            <p className="text-[11px] font-bold text-foreground truncate">{movement.destinationBranch?.name || 'Destino'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {(movement.notes || movement.cancellationReason) && (
+                                    <div className="text-[10px] italic">
+                                        {movement.status === 'CANCELLED' ? (
+                                            <p className="text-rose-500 font-bold uppercase tracking-tight">Motivo: {movement.cancellationReason}</p>
+                                        ) : (
+                                            <p className="text-muted-foreground font-medium line-clamp-2">Nota: {movement.notes}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
 
                 {/* Pagination */}
-                <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-muted/10 border-t border-border/40 gap-4">
-                    <p className="text-muted-foreground text-[9px] font-black uppercase tracking-widest order-2 sm:order-1">
-                        Mostrando <span className="text-foreground">{movements.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)}</span> de <span className="text-foreground font-black">{totalItems}</span> registros transaccionales
-                    </p>
-                    <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 border-t border-border bg-card">
+                    <div className="text-[11px] text-muted-foreground font-medium w-full md:w-auto text-center md:text-left">
+                        Mostrando <span className="font-bold text-foreground">{movements.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)}</span> de <span className="font-bold text-foreground">{totalItems}</span> registros
+                    </div>
+                    <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
                         <Button
                             variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-all disabled:opacity-25"
+                            size="sm"
+                            className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
+                            disabled={currentPage === 1 || isLoading}
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                // Simple sliding window for pagination if many pages
-                                let pageNum = i + 1;
-                                if (totalPages > 5 && currentPage > 3) {
-                                    pageNum = currentPage - 2 + i;
-                                    if (pageNum > totalPages) pageNum = totalPages - (4 - i);
-                                }
-                                return (
-                                    <Button
-                                        key={pageNum}
-                                        variant={currentPage === pageNum ? "primary" : "outline"}
-                                        size="sm"
-                                        className={`h-8 w-8 rounded-lg text-[10px] font-black transition-all ${
-                                            currentPage === pageNum 
-                                                ? "shadow-lg shadow-primary/20 ring-2 ring-primary/20 ring-offset-0" 
-                                                : "border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30"
-                                        }`}
-                                        onClick={() => setCurrentPage(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </Button>
-                                );
-                            })}
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[80px] text-center">
+                            Página {currentPage} / {totalPages}
                         </div>
                         <Button
                             variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-all disabled:opacity-25"
+                            size="sm"
+                            className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
+                            disabled={currentPage === totalPages || isLoading}
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
                         >
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>

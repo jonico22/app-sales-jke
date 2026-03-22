@@ -253,9 +253,11 @@ export default function BranchOfficesPage() {
                 </div>
             </div>
 
-            {/* Data Table */}
+            {/* Data Table / Cards View */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                <Table>
+                {/* Desktop/Tablet Table View */}
+                <div className="hidden md:block">
+                    <Table>
                     <TableHeader className="bg-muted/50 border-b border-border">
                         <TableRow className="hover:bg-transparent border-none">
                             <TableHead className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
@@ -353,34 +355,96 @@ export default function BranchOfficesPage() {
                                         <p className="text-muted-foreground max-w-sm mb-6">
                                             No hay sucursales registradas o que coincidan con tu búsqueda.
                                         </p>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => {
-                                                setSearchTerm('');
-                                                setStatusFilter('all');
-                                                setAdvancedFilters({
-                                                    createdBy: undefined,
-                                                    createdAtFrom: null,
-                                                    createdAtTo: null,
-                                                    updatedAtFrom: null,
-                                                    updatedAtTo: null,
-                                                });
-                                            }}
-                                            className="border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-muted/50"
-                                        >
-                                            Limpiar filtros
-                                        </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-border">
+                    {isLoading ? (
+                        <div className="p-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                            <span className="text-xs font-medium tracking-tight uppercase">Cargando sucursales...</span>
+                        </div>
+                    ) : branchOffices.length > 0 ? (
+                        branchOffices.map((branch) => (
+                            <div key={branch.id} className="p-4 bg-card active:bg-muted/50 transition-colors">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-mono text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                                {branch.code || 'S/C'}
+                                            </span>
+                                            <Badge variant={branch.isActive ? 'success' : 'secondary'} className="uppercase text-[8px] font-bold px-1.5 py-0 h-4">
+                                                {branch.isActive ? 'Activa' : 'Inactiva'}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                                            <h3 className="text-sm font-bold text-foreground leading-tight truncate">{branch.name}</h3>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-muted-foreground"
+                                            onClick={() => handleEditBranch(branch.id)}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        {branch.code !== 'ALM-PRINCIPAL' && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                                onClick={() => handleDeleteBranch(branch.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 pt-3 border-t border-border/50">
+                                    <div className="flex items-start gap-2 text-muted-foreground">
+                                        <MapPin className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-60" />
+                                        <span className="text-[10px] font-medium leading-relaxed">{branch.address || 'Sin dirección registrada'}</span>
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                        {branch.phone && (
+                                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                                                <PhoneIcon className="h-3 w-3 opacity-60" />
+                                                {branch.phone}
+                                            </div>
+                                        )}
+                                        {branch.email && (
+                                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                                                <Mail className="h-3 w-3 opacity-60" />
+                                                <span className="truncate max-w-[150px]">{branch.email}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-12 flex flex-col items-center justify-center text-center">
+                            <Building2 className="h-10 w-10 text-muted-foreground/20 mb-3" />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">No se encontraron sucursales</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between p-4 border-t border-border">
-                    <div className="flex items-center gap-4">
-                        <div className="text-[11px] text-muted-foreground font-medium">
+                <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 border-t border-border bg-card">
+                    <div className="flex items-center justify-between w-full md:w-auto gap-4">
+                        <div className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">
                             Mostrando <span className="font-bold text-foreground">{branchOffices.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalBranches)}</span> de <span className="font-bold text-foreground">{totalBranches}</span>
                         </div>
                         <select
@@ -396,7 +460,7 @@ export default function BranchOfficesPage() {
                             <option value="40">40 Filas</option>
                         </select>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -406,7 +470,7 @@ export default function BranchOfficesPage() {
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[100px] text-center">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[80px] text-center">
                             Página {currentPage} / {totalPages}
                         </div>
                         <Button

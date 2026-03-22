@@ -23,7 +23,18 @@ import { POSAlertModal } from '../pos/components/POSAlertModal';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { parseBackendError } from '@/utils/error.utils';
 import { useClients } from '@/hooks/useClients';
+import { useCategories } from '@/hooks/useCategories';
+import { useBrands } from '@/hooks/useBrands';
+import { useSessionValidator } from '@/hooks/useSessionValidator';
+import {
+    Sheet,
+    SheetContent,
+} from "@/components/ui/sheet";
+import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 export default function AdvancedSearchPage() {
+    useSessionValidator();
+    const { data: categories = [] } = useCategories();
+    const { data: brands = [] } = useBrands();
     const { selectedBranch } = useBranchStore();
     const society = useSocietyStore(state => state.society);
     const [products, setProducts] = useState<Product[]>([]);
@@ -84,6 +95,7 @@ export default function AdvancedSearchPage() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
     const { items, discount, orderNotes, currencyId, setCurrentOrder, clearCurrentOrder, currentOrderCode, currentOrderTotal, clearCart } = useCartStore();
     const totalItems = useCartStore(selectTotalItems);
@@ -458,15 +470,15 @@ export default function AdvancedSearchPage() {
         <div className="flex flex-col bg-background min-h-[calc(100vh-4rem)]">
             {/* Cash Banners */}
             {isShiftLoading ? (
-                <div className="px-4 md:px-6 pt-4">
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
                     <CashOpeningBanner isLoading={true} />
                 </div>
             ) : !isShiftOpen ? (
-                <div className="px-4 md:px-6 pt-4">
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
                     <CashOpeningBanner refreshShift={refresh} />
                 </div>
             ) : (
-                <div className="px-4 md:px-6 pt-4">
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
                     <CashClosingBanner
                         branchName={selectedBranch?.name}
                         onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)}
@@ -475,29 +487,26 @@ export default function AdvancedSearchPage() {
             )}
 
             {/* Client Context Header */}
-            <div className="px-4 md:px-6 py-2.5 border-b border-border bg-[#f8fafc] flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <User className="w-[15px] h-[15px] text-muted-foreground mr-1" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">CLIENTE ACTUAL:</span>
-                    <span className="text-[13px] font-bold text-foreground">
-                        {selectedClient?.name || 'Público General'}
-                    </span>
-                    {selectedClient?.documentNumber && selectedClient.documentNumber !== '00000000' && (
-                        <span className="text-[10px] bg-white border border-border px-2 py-0.5 rounded-full font-medium ml-2 shadow-sm shadow-black/5">
-                            {selectedClient.documentNumber}
+            <div className="px-4 md:px-6 py-2 border-b border-border bg-white flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                    <User className="w-[12px] h-[12px] text-muted-foreground shrink-0" />
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">CLIENTE:</span>
+                        <span className="text-[12px] font-black text-foreground truncate uppercase min-w-0">
+                            {selectedClient?.name || 'Público General'}
                         </span>
-                    )}
+                    </div>
                 </div>
                 <button
                     onClick={() => setIsSelectClientModalOpen(true)}
-                    className="text-[11px] font-bold text-[#4096d8] hover:text-blue-500 hover:underline transition-all uppercase tracking-wider bg-white border border-[#4096d8]/20 px-3 py-1 rounded-[12px] shadow-sm shadow-[#4096d8]/5"
+                    className="text-[10px] font-bold text-[#4096d8] hover:bg-sky-50 transition-all uppercase tracking-tight bg-white border border-[#4096d8]/30 px-2.5 py-1 rounded-[10px] shadow-sm whitespace-nowrap shrink-0"
                 >
-                    CAMBIAR CLIENTE
+                    CAMBIAR
                 </button>
             </div>
 
             {/* Global Search Header spans full width */}
-            <div className="px-4 md:px-6 py-4 border-b border-border">
+            <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border">
                 <SearchHeader
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
@@ -514,29 +523,50 @@ export default function AdvancedSearchPage() {
                     selectedColor={filters.color}
                     onColorSelect={(colorId) => handleFilterChange('color', colorId)}
                     onClearFilters={handleClearFilters}
+                    onOpenFilters={() => setIsFilterSheetOpen(true)}
                 />
             </div>
 
             {/* Split Content Area */}
-            <div className="flex flex-col md:flex-row flex-1">
-                {/* Sidebar */}
-                <aside className="w-full md:w-56 xl:w-64 flex-shrink-0 bg-background border-r border-border p-4 md:p-6">
+            <div className="flex flex-1 overflow-hidden">
+                {/* Desktop Sidebar (Hidden on mobile) */}
+                <aside className="hidden lg:block w-72 flex-shrink-0 bg-background border-r border-border p-6 overflow-y-auto custom-scrollbar">
                     <FilterSidebar
                         filters={filters}
+                        categories={categories}
+                        brands={brands}
                         onFilterChange={handleFilterChange}
                         onClearFilters={handleClearFilters}
                     />
                 </aside>
 
+                {/* Mobile Filter Sheet */}
+                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                    <SheetContent side="bottom" className="h-[92vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
+                        <AdvancedFilterModal
+                            isOpen={isFilterSheetOpen}
+                            onClose={() => setIsFilterSheetOpen(false)}
+                            filters={filters}
+                            categories={categories}
+                            brands={brands}
+                            onApply={(newFilters) => {
+                                setFilters(prev => ({ ...prev, ...newFilters }));
+                                setPage(1);
+                            }}
+                            onReset={handleClearFilters}
+                        />
+                    </SheetContent>
+                </Sheet>
+
                 {/* Main Content */}
-                <div className="flex-1 bg-muted/10 p-4 md:p-6">
+                <div className="flex-1 bg-muted/10 p-3 md:p-6">
                     {/* Product Grid */}
                     {loading ? (
                         <div className="flex justify-center items-center h-64">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3 md:space-y-4">
                             {/* RESULTS HEADER */}
                             <div className="flex justify-between items-center mb-2 hidden">
                                 <h2 className="text-[12px] md:text-sm font-bold text-muted-foreground uppercase tracking-wider">
@@ -628,7 +658,7 @@ export default function AdvancedSearchPage() {
                         <div className="flex items-center justify-end gap-3 w-full md:w-auto">
                             <button
                                 onClick={clearCart}
-                                className="flex-1 md:flex-none px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors active:scale-95"
+                                className="hidden md:flex px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors active:scale-95"
                             >
                                 CANCELAR
                             </button>

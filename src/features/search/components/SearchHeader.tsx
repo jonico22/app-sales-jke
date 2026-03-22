@@ -1,4 +1,4 @@
-import { Search, Heart, TrendingUp, Check, X } from 'lucide-react';
+import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode } from 'lucide-react';
 import type { Color } from '@/services/product.service';
 import { useState, useRef, useEffect } from 'react';
 
@@ -11,6 +11,7 @@ interface SearchHeaderProps {
     selectedColor: string;
     onColorSelect: (color: string) => void;
     onClearFilters?: () => void;
+    onOpenFilters?: () => void;
 }
 
 export function SearchHeader({
@@ -21,7 +22,8 @@ export function SearchHeader({
     colors,
     selectedColor,
     onColorSelect,
-    onClearFilters
+    onClearFilters,
+    onOpenFilters
 }: SearchHeaderProps) {
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,18 +41,16 @@ export function SearchHeader({
     }, []);
 
     return (
-        <div className="w-full space-y-5">
+        <div className="w-full space-y-3 sm:space-y-5">
 
             {/* Search Input */}
             <div className="relative w-full max-w-5xl">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
                 
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 opacity-60">
-                        <span className="px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
+                    <div className="flex items-center gap-1.5 opacity-40">
+                        <span className="hidden sm:inline-block px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
+                        <ScanBarcode className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
                     </div>
                     {searchQuery && (
                         <button
@@ -66,33 +66,52 @@ export function SearchHeader({
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     placeholder="Buscar productos por nombre, SKU o código de barras..."
-                    className="w-full pl-12 pr-32 py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
+                    className="w-full pl-12 pr-32 py-2.5 sm:py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
                 />
             </div>
 
             {/* Quick Filters */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-nowrap overflow-x-auto items-center gap-3 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 custom-scrollbar-hide">
+                {/* Filtros Button - Mobile Only */}
+                <button
+                    onClick={onOpenFilters}
+                    className="lg:hidden flex items-center gap-2 px-5 py-2.5 rounded-[12px] text-[13px] font-bold transition-all border border-border bg-white text-[#334155] shadow-sm hover:bg-slate-50 shrink-0"
+                >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Filtros
+                </button>
+
+                {/* Todos Button - Desktop Only */}
+                <button
+                    onClick={onClearFilters}
+                    className="hidden lg:flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border border-border bg-white text-slate-500 hover:bg-slate-50 shrink-0"
+                >
+                    Todos
+                </button>
+
+                <div className="lg:hidden w-[1px] h-6 bg-slate-200 shrink-0 mx-1" />
+
                 <button
                     onClick={() => onToggleQuickFilter('favorites')}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-white text-slate-500 border-border hover:bg-slate-50'}`}
                 >
-                    <Heart className={`w-4 h-4 ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
+                    <Heart className={`w-[14px] h-[14px] ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
                     Favoritos
                 </button>
 
                 <button
                     onClick={() => onToggleQuickFilter('bestSellers')}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${activeQuickFilters.includes('bestSellers') ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${activeQuickFilters.includes('bestSellers') ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20' : 'bg-white text-slate-500 border-border hover:bg-slate-50'}`}
                 >
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-[14px] h-[14px]" />
                     Más vendidos
                 </button>
 
                 {/* Color Dropdown */}
-                <div className="relative" ref={dropdownRef}>
+                <div className="relative shrink-0" ref={dropdownRef}>
                     <button
                         onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-[20px] text-[13px] font-medium transition-all border ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-card border-border text-muted-foreground hover:bg-accent'}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-white border-border text-slate-500 hover:bg-slate-50'}`}
                     >
                         {/* Paint palette icon */}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -143,12 +162,12 @@ export function SearchHeader({
                     )}
                 </div>
 
-                <div className="ml-4 flex items-center">
+                <div className="ml-4 flex items-center shrink-0">
                     <button
                         onClick={onClearFilters}
-                        className="text-[11px] font-bold text-[#4096d8] hover:text-blue-400 transition-colors uppercase tracking-wider"
+                        className="text-[10px] font-black text-[#4096d8] hover:text-blue-400 transition-colors uppercase tracking-tight"
                     >
-                        LIMPIAR FILTROS
+                        LIMPIAR
                     </button>
                 </div>
             </div>

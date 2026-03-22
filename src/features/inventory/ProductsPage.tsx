@@ -30,6 +30,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { productService, type Product } from '@/services/product.service';
 import { alerts } from '@/utils/alerts';
+import { cn } from '@/lib/utils';
 import { ProductEditPanel } from './components/ProductEditPanel';
 import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
 
@@ -252,9 +253,11 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {/* Data Table */}
+            {/* Data Table / Cards View */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                <Table>
+                {/* Desktop/Tablet Table View */}
+                <div className="hidden md:block">
+                    <Table>
                     <TableHeader className="bg-muted/50 border-b border-border">
                         <TableRow className="hover:bg-transparent border-none">
                             <TableHead className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
@@ -279,63 +282,86 @@ export default function ProductsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : products.length > 0 ? (
-                            products.map((product) => (
-                                <TableRow key={product.id} className="hover:bg-muted/30 border-border transition-colors group">
-                                    <TableCell className="font-mono text-[10px] text-muted-foreground">{product.code || '—'}</TableCell>
-                                    <TableCell>
-                                        <div className="text-[11px] font-bold text-foreground line-clamp-1">{product.name}</div>
-                                        <div className="text-[9px] text-muted-foreground font-medium group-hover:text-primary transition-colors">{product.category?.name || 'Genérico'}</div>
-                                    </TableCell>
-                                    <TableCell className="text-[11px] font-medium text-muted-foreground">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-                                            {product.category?.name || '—'}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-muted-foreground/60">{product.minStock}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-col items-end">
-                                            <span className={`text-[11px] font-bold ${product.stock <= product.minStock ? 'text-destructive' : 'text-primary'}`}>
-                                                {product.stock}
-                                            </span>
-                                            {product.stock <= product.minStock && (
-                                                <span className="text-[8px] font-black uppercase tracking-tighter text-destructive">Crítico</span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-foreground">
-                                        {formatCurrency(product.price)}
-                                    </TableCell>
-                                    <TableCell className="text-center text-[10px] font-medium text-muted-foreground">
-                                        {product.createdAt?.split(' ')[0] || '—'}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant={product.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!product.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
-                                            {product.isActive ? 'Activo' : 'Inactivo'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                                onClick={() => handleEditProduct(product.id)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => handleDeleteProduct(product.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            products.map((product) => {
+                                const isNoStock = product.stock === 0;
+                                const isLowStock = !isNoStock && product.stock <= product.minStock;
+
+                                return (
+                                    <TableRow 
+                                        key={product.id} 
+                                        className={cn(
+                                            "border-border transition-colors group relative",
+                                            isNoStock ? "bg-rose-50/50 hover:bg-rose-100/60 dark:bg-rose-950/10 dark:hover:bg-rose-900/20 border-l-2 border-l-rose-500 shadow-[inset_2px_0_0_0_#f43f5e]" : 
+                                            isLowStock ? "bg-amber-50/30 hover:bg-amber-100/40 dark:bg-amber-950/5 dark:hover:bg-amber-900/10 border-l-2 border-l-amber-500 shadow-[inset_2px_0_0_0_#f59e0b]" : 
+                                            "hover:bg-muted/30"
+                                        )}
+                                    >
+                                        <TableCell className="font-mono text-[10px] text-muted-foreground pl-4">{product.code || '—'}</TableCell>
+                                        <TableCell>
+                                            <div className="text-[11px] font-bold text-foreground line-clamp-1">{product.name}</div>
+                                            <div className="text-[9px] text-muted-foreground font-medium group-hover:text-primary transition-colors">{product.category?.name || 'Genérico'}</div>
+                                        </TableCell>
+                                        <TableCell className="text-[11px] font-medium text-muted-foreground">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                                                {product.category?.name || '—'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right text-[11px] font-bold text-muted-foreground/60">{product.minStock}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex flex-col items-end">
+                                                <span className={cn(
+                                                    "text-[11px] font-black tabular-nums",
+                                                    isNoStock ? "text-rose-600 dark:text-rose-400" : 
+                                                    isLowStock ? "text-amber-600 dark:text-amber-400" : 
+                                                    "text-primary"
+                                                )}>
+                                                    {product.stock}
+                                                </span>
+                                                {(isNoStock || isLowStock) && (
+                                                    <span className={cn(
+                                                        "text-[8px] font-black uppercase tracking-tighter",
+                                                        isNoStock ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400"
+                                                    )}>
+                                                        {isNoStock ? 'Sin Stock' : 'Crítico'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right text-[11px] font-bold text-foreground">
+                                            {formatCurrency(product.price)}
+                                        </TableCell>
+                                        <TableCell className="text-center text-[10px] font-medium text-muted-foreground">
+                                            {product.createdAt?.split(' ')[0] || '—'}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge variant={product.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!product.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
+                                                {product.isActive ? 'Activo' : 'Inactivo'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                    onClick={() => handleEditProduct(product.id)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={9} className="h-64 text-center">
@@ -349,38 +375,101 @@ export default function ProductsPage() {
                                         <p className="text-muted-foreground max-w-sm mb-6">
                                             No hay productos que coincidan con tu búsqueda o los filtros seleccionados.
                                         </p>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => {
-                                                setSearchTerm('');
-                                                setStatusFilter('all');
-                                                setAdvancedFilters({
-                                                    categoryCode: undefined,
-                                                    priceFrom: '',
-                                                    priceTo: '',
-                                                    priceCostFrom: '',
-                                                    priceCostTo: '',
-                                                    stockFrom: '',
-                                                    stockTo: '',
-                                                    lowStock: false,
-                                                    stockStatus: undefined,
-                                                });
-                                            }}
-                                            className="border-border text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-muted/50"
-                                        >
-                                            Limpiar filtros
-                                        </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-border">
+                    {isLoading ? (
+                        <div className="p-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                            <span className="text-xs font-medium tracking-tight uppercase">Cargando productos...</span>
+                        </div>
+                    ) : products.length > 0 ? (
+                        products.map((product) => {
+                            const isNoStock = product.stock === 0;
+                            const isLowStock = !isNoStock && product.stock <= product.minStock;
+
+                            return (
+                                <div 
+                                    key={product.id} 
+                                    className={cn(
+                                        "p-4 bg-card active:bg-muted/50 transition-colors relative",
+                                        isNoStock ? "bg-rose-50/50 dark:bg-rose-950/10 border-l-4 border-l-rose-500 shadow-[inset_4px_0_0_0_#f43f5e]" : 
+                                        isLowStock ? "bg-amber-50/30 dark:bg-amber-950/5 border-l-4 border-l-amber-500 shadow-[inset_4px_0_0_0_#f59e0b]" : 
+                                        ""
+                                    )}
+                                >
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-mono text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                                {product.code || 'S/C'}
+                                            </span>
+                                            <Badge variant={product.isActive ? 'success' : 'secondary'} className="uppercase text-[8px] font-bold px-1.5 py-0 h-4">
+                                                {product.isActive ? 'Activo' : 'Inactivo'}
+                                            </Badge>
+                                        </div>
+                                        <h3 className="text-sm font-bold text-foreground leading-tight truncate">{product.name}</h3>
+                                        <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{product.category?.name || 'Varios'}</p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-muted-foreground"
+                                            onClick={() => handleEditProduct(product.id)}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                            onClick={() => handleDeleteProduct(product.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-border/50">
+                                    <div className="space-y-0.5">
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Precio Venta</p>
+                                        <p className="text-sm font-black text-primary">{formatCurrency(product.price)}</p>
+                                    </div>
+                                    <div className="space-y-0.5 text-right">
+                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Stock Actual</p>
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            {product.stock <= product.minStock && (
+                                                <Badge variant="destructive" className="h-4 px-1 text-[8px] font-black uppercase">Crítico</Badge>
+                                            )}
+                                            <p className={`text-sm font-black ${product.stock <= product.minStock ? 'text-destructive' : 'text-foreground'}`}>
+                                                {product.stock}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })
+                    ) : (
+                        <div className="p-12 flex flex-col items-center justify-center text-center">
+                            <Package className="h-10 w-10 text-muted-foreground/20 mb-3" />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">No se encontraron productos</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between p-4 border-t border-border">
-                    <div className="flex items-center gap-4">
-                        <div className="text-[11px] text-muted-foreground font-medium">
+                <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 border-t border-border">
+                    <div className="flex items-center justify-between w-full md:w-auto gap-4">
+                        <div className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">
                             Mostrando <span className="font-bold text-foreground">{products.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalProducts)}</span> de <span className="font-bold text-foreground">{totalProducts}</span>
                         </div>
                         <select
@@ -396,7 +485,7 @@ export default function ProductsPage() {
                             <option value="40">40 Filas</option>
                         </select>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -406,7 +495,7 @@ export default function ProductsPage() {
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[100px] text-center">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[80px] text-center">
                             Página {currentPage} / {totalPages}
                         </div>
                         <Button

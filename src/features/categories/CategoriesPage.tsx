@@ -200,8 +200,8 @@ export default function CategoriesPage() {
           <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Gestione su inventario organizando productos por categorías.</p>
         </div>
         <Link to="/categories/new">
-          <Button className="h-9 px-4 flex items-center gap-2 shadow-lg shadow-primary/20 text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95">
-            <Plus className="h-3.5 w-3.5" /> Nueva Categoría
+          <Button className="h-9 px-4 text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-primary/20 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Nueva Categoría
           </Button>
         </Link>
       </div>
@@ -218,41 +218,43 @@ export default function CategoriesPage() {
           />
         </div>
 
-        <div className="flex w-full sm:w-auto gap-3">
+        <div className="flex w-full sm:w-auto gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex-1 sm:flex-none justify-between text-secondary border-border font-normal hover:bg-accent/10 hover:text-foreground min-w-[160px]">
+              <Button variant="outline" className="flex-1 sm:flex-none justify-between h-10 text-[11px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted min-w-[160px] rounded-xl transition-all">
                 {getStatusLabel()}
                 <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+            <DropdownMenuContent align="end" className="w-[180px] bg-card border-border shadow-xl rounded-xl p-1">
+              <DropdownMenuItem className="text-[11px] font-medium py-2 rounded-lg cursor-pointer" onClick={() => setStatusFilter('all')}>
                 Todos los estados
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('active')}>
-                Activo
+              <DropdownMenuItem className="text-[11px] font-medium py-2 rounded-lg cursor-pointer" onClick={() => setStatusFilter('active')}>
+                Solo Activos
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
-                Inactivo
+              <DropdownMenuItem className="text-[11px] font-medium py-2 rounded-lg cursor-pointer" onClick={() => setStatusFilter('inactive')}>
+                Solo Inactivos
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
+  
           <Button
             variant="outline"
-            className="flex-1 sm:flex-none text-secondary border-border font-normal gap-2 hover:bg-accent/10 hover:text-foreground"
+            className="flex-1 sm:flex-none h-10 text-[11px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
             onClick={() => setIsFilterPanelOpen(true)}
           >
             <SlidersHorizontal className="h-4 w-4" />
-            Más Filtros
+            Filtros
           </Button>
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* Data Table / Cards View */}
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <Table>
+        {/* Desktop/Tablet Table View */}
+        <div className="hidden md:block">
+          <Table>
           <TableHeader className="bg-muted/30 border-b border-border">
             <TableRow className="hover:bg-muted/40 border-none h-10">
               <TableHead className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
@@ -322,52 +324,97 @@ export default function CategoriesPage() {
                     <p className="text-muted-foreground max-w-sm mb-6">
                       No hay categorías que coincidan con tu búsqueda o los filtros seleccionados.
                     </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setStatusFilter('all');
-                        setAdvancedFilters({
-                          createdBy: undefined,
-                          createdAtFrom: null,
-                          createdAtTo: null,
-                          updatedAtFrom: null,
-                          updatedAtTo: null,
-                        });
-                      }}
-                      className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                    >
-                      Limpiar filtros
-                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-border">
+          {isLoading ? (
+            <div className="p-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="text-xs font-medium tracking-tight uppercase">Cargando categorías...</span>
+            </div>
+          ) : filteredCategories.length > 0 ? (
+            filteredCategories.map((category) => (
+              <div key={category.id} className="p-4 bg-card active:bg-muted/50 transition-colors">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-mono text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        {category.code || 'S/C'}
+                      </span>
+                      <Badge variant={category.isActive ? 'success' : 'secondary'} className="uppercase text-[8px] font-bold px-1.5 py-0 h-4">
+                        {category.isActive ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground leading-tight truncate">{category.name}</h3>
+                    {category.description && (
+                      <p className="text-[10px] text-muted-foreground font-medium mt-1 line-clamp-2">{category.description}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground"
+                      onClick={() => handleEditClick(category)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Fecha Creación</span>
+                    <span className="text-[10px] font-bold text-foreground">{category.createdAt}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 flex flex-col items-center justify-center text-center">
+              <Search className="h-10 w-10 text-muted-foreground/20 mb-3" />
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">No se encontraron categorías</p>
+            </div>
+          )}
+        </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-border bg-card">
-          <div className="text-sm text-muted-foreground">
-            Mostrando <span className="font-semibold text-foreground">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-foreground">{totalCategories}</span> categorías
+        <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-4 border-t border-border bg-card">
+          <div className="text-[11px] text-muted-foreground font-medium w-full md:w-auto text-center md:text-left">
+            Mostrando <span className="font-bold text-foreground">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-bold text-foreground">{totalCategories}</span> categorías
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 disabled:opacity-50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+              className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
               disabled={!hasPrevPage || isLoading}
               onClick={handlePrevPage}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="text-sm text-muted-foreground min-w-[80px] text-center">
-              Página {currentPage} de {totalPages}
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider min-w-[80px] text-center">
+              Página {currentPage} / {totalPages}
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 text-muted-foreground border-border hover:bg-muted hover:text-foreground disabled:opacity-50"
+              className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
               disabled={!hasNextPage || isLoading}
               onClick={handleNextPage}
             >

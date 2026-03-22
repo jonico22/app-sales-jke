@@ -11,7 +11,6 @@ import { POSQuickActions } from './components/POSQuickActions';
 import { POSFloatingCart } from './components/POSFloatingCart';
 import { POSCartPanel } from './components/POSCartPanel';
 import { POSMobileFooter } from './components/POSMobileFooter';
-import { POSTopBar } from './components/POSTopBar';
 import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
 import { useCartStore } from '@/store/cart.store';
@@ -134,11 +133,9 @@ export default function POSPage() {
   const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
 
   return (
-    <div className=" bg-background pb-24 md:pb-6 md:pt-6 p-4 md:p-6 min-h-[calc(100vh-64px)]">
-      <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
+    <div className=" bg-background pb-20 md:pb-6 md:pt-6 p-2 md:p-6 min-h-[calc(100vh-64px)]">
+      <div className="max-w-3xl mx-auto space-y-4 md:space-y-8">
 
-        {/* Top Bar */}
-        <POSTopBar />
 
         {/* Cash Opening Banner */}
         {/* Cash Banners (Opening/Closing) - Layout Stability */}

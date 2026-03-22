@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { useCategories } from '@/hooks/useCategories';
-import { useBrands } from '@/hooks/useBrands';
+import type { CategorySelectOption } from '@/services/category.service';
+import type { Brand } from '@/services/product.service';
 
 interface FilterSidebarProps {
     filters: {
@@ -11,29 +11,14 @@ interface FilterSidebarProps {
         priceTo: number;
         stockStatus: 'all' | 'available' | 'low' | 'out';
     };
+    categories: CategorySelectOption[];
+    brands: Brand[];
     onFilterChange: (key: string, value: any) => void;
     onClearFilters: () => void;
 }
 
-export function FilterSidebar({ filters, onFilterChange, onClearFilters }: FilterSidebarProps) {
-    // Categories and brands are now fetched via hooks
+export function FilterSidebar({ filters, categories, brands, onFilterChange, onClearFilters }: FilterSidebarProps) {
     const [categorySearch, setCategorySearch] = useState('');
-
-    // Fetch categories and brands using custom hooks
-    const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
-    const { data: brands = [], isLoading: brandsLoading, error: brandsError } = useBrands();
-
-    // Optionally handle loading/error states
-    if (categoriesLoading || brandsLoading) {
-        // You could render a loading indicator here
-    }
-    if (categoriesError) {
-        console.error('Failed to load categories', categoriesError);
-    }
-    if (brandsError) {
-        console.error('Failed to load brands', brandsError);
-    }
-
 
     const filteredCategories = categories.filter(c =>
         c.name.toLowerCase().includes(categorySearch.toLowerCase())

@@ -62,55 +62,58 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
   };
 
   return (
-    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6 relative z-50">
+    <header className="h-16 bg-background border-b border-border flex items-center justify-between px-2 md:px-6 relative z-50">
       {/* Left Section - Title */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4 shrink-0">
         {onMenuClick && (
           <button
             type="button"
             onClick={onMenuClick}
-            className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground"
+            className="md:hidden p-1.5 -ml-1 text-muted-foreground hover:text-foreground shrink-0"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         )}
-        <h1 className="text-xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-sm md:text-xl font-bold text-foreground shrink-0">
+          <span className="hidden md:inline">{title}</span>
+          <span className="md:hidden">POS</span>
+        </h1>
       </div>
 
       {/* Center Section - Branch & Currency */}
-      <div className="hidden md:flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4 justify-end flex-1 md:flex-none pr-1 md:pr-0 min-w-0">
         {/* Branch Selector */}
-        <div className="relative">
+        <div className="relative shrink-0 max-w-[120px] sm:max-w-[140px] md:max-w-none">
           <button
             type="button"
             onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
-            className="flex items-center gap-3 px-4 py-2 border border-input rounded-xl hover:bg-muted transition-colors bg-background shadow-sm"
+            className="flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-1.5 md:py-2 border border-input rounded-lg md:rounded-xl hover:bg-muted transition-colors bg-background shadow-sm w-full h-[36px] md:h-auto"
           >
-            <div className="bg-primary/10 p-1.5 rounded-lg">
-              <Store className="h-4 w-4 text-primary" />
+            <div className="bg-primary/10 p-1 md:p-1.5 rounded-md md:rounded-lg shrink-0">
+              <Store className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
             </div>
-            <div className="text-left">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">SUCURSAL</p>
-              <p className="text-sm font-bold text-foreground leading-none">
-                {selectedBranch?.name || 'Seleccionar...'}
+            <div className="text-left min-w-0">
+              <p className="hidden md:block text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">SUCURSAL</p>
+              <p className="text-[11px] md:text-sm font-bold text-foreground leading-none truncate">
+                {selectedBranch?.name || '---'}
               </p>
             </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isBranchDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground shrink-0 transition-transform ${isBranchDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isBranchDropdownOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setIsBranchDropdownOpen(false)} />
-              <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full right-0 md:left-0 mt-2 w-64 md:w-72 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                 <div className="p-2 space-y-1">
                   {branches.map((branch) => (
                     <button
                       key={branch.id}
                       type="button"
                       onClick={() => handleSelectBranch(branch)}
-                      className={`w-full px-4 py-3 flex items-start gap-3 rounded-lg transition-colors group ${selectedBranch?.id === branch.id ? 'bg-primary/10' : 'hover:bg-muted'
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 flex items-start gap-3 rounded-lg transition-colors group ${selectedBranch?.id === branch.id ? 'bg-primary/10' : 'hover:bg-muted'
                         }`}
                     >
                       <div className={`mt-0.5 p-1.5 rounded-lg ${selectedBranch?.id === branch.id ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground group-hover:text-foreground'}`}>
@@ -122,7 +125,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
                             {branch.name}
                           </p>
                           {selectedBranch?.id === branch.id && (
-                            <Check className="h-4 w-4 text-primary" />
+                            <Check className="h-4 w-4 text-primary shrink-0" />
                           )}
                         </div>
                       </div>
@@ -148,7 +151,9 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
         </div>
 
         {/* Currency Selector */}
-        <CurrencySelector />
+        <div className="shrink-0 max-w-[80px] md:max-w-none">
+          <CurrencySelector />
+        </div>
       </div>
 
       {/* Right Section - Date/Time & Notifications */}
