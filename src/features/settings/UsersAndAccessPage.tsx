@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, Input, Button } from '@/components/ui';
 import { Search, Plus, FileEdit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { userService, type BusinessUser } from '@/services/user.service';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { toast } from 'sonner';
 import { CreateUserModal } from './components/CreateUserModal';
 import { EditUserPanel } from './components/EditUserPanel';
@@ -21,9 +22,17 @@ export default function UsersAndAccessPage() {
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const usersPerPage = 5;
 
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('name');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
     const fetchUsers = async () => {
         try {
-            const response = await userService.getBusinessUsers();
+            setLoading(true);
+            const response = await userService.getBusinessUsers({
+                sortBy,
+                sortOrder
+            });
             if (response && response.data) {
                 setUsers(response.data);
             }
@@ -37,7 +46,7 @@ export default function UsersAndAccessPage() {
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [sortBy, sortOrder]);
 
     const filteredUsers = useMemo(() => {
         if (!searchTerm) return users;
@@ -98,6 +107,15 @@ export default function UsersAndAccessPage() {
         }
     };
 
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto px-4 md:px-0 space-y-4 md:space-y-6 animate-in fade-in duration-500 pb-20 md:pb-0">
             {/* Header */}
@@ -151,12 +169,52 @@ export default function UsersAndAccessPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-muted/30 border-b border-border">
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Nombre</th>
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Email</th>
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Rol</th>
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Último Acceso</th>
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-center">Estado</th>
-                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-right text-right">Acciones</th>
+                                <SortableTableHead 
+                                    field="name" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Nombre
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="email" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Email
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="roleId" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Rol
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="lastLogin" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Último Acceso
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="isActive" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-center"
+                                >
+                                    Estado
+                                </SortableTableHead>
+                                <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">

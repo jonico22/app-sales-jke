@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Loader2
 } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import {
   Button,
   Input,
@@ -47,6 +48,10 @@ export default function CategoriesPage() {
     updatedAtFrom: null,
     updatedAtTo: null,
   });
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -112,6 +117,9 @@ export default function CategoriesPage() {
         params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       }
 
+      params.sortBy = sortBy;
+      params.sortOrder = sortOrder;
+
       const response = await categoryService.getAll(params);
 
       setCategories(response.data.data || []);
@@ -130,7 +138,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
+  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, sortBy, sortOrder]);
 
   const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
@@ -166,6 +174,15 @@ export default function CategoriesPage() {
     setAdvancedFilters(filters);
     setCurrentPage(1); // Reset to first page when applying filters
     setIsFilterPanelOpen(false);
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
   };
 
   // We now use server-side filtering, so we don't need to filter on the client
@@ -257,11 +274,51 @@ export default function CategoriesPage() {
           <Table>
           <TableHeader className="bg-muted/30 border-b border-border">
             <TableRow className="hover:bg-muted/40 border-none h-10">
-              <TableHead className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
-              <TableHead className="w-[300px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Nombre de la Categoría</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Descripción</TableHead>
-              <TableHead className="w-[130px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Fecha Creación</TableHead>
-              <TableHead className="w-[90px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Estado</TableHead>
+              <SortableTableHead 
+                field="code" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort} 
+                className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Código
+              </SortableTableHead>
+              <SortableTableHead 
+                field="name" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort} 
+                className="w-[300px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Nombre de la Categoría
+              </SortableTableHead>
+              <SortableTableHead 
+                field="description" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort} 
+                className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Descripción
+              </SortableTableHead>
+              <SortableTableHead 
+                field="createdAt" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort} 
+                className="w-[130px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Fecha Creación
+              </SortableTableHead>
+              <SortableTableHead 
+                field="isActive" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort} 
+                className="w-[90px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Estado
+              </SortableTableHead>
               <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
             </TableRow>
           </TableHeader>

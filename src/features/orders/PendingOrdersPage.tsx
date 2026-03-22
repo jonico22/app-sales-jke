@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Clock, Play, CreditCard, XCircle, ChevronLeft, ChevronRight, SlidersHorizontal, RefreshCw, FileText } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { orderService, type Order, OrderStatus } from '@/services/order.service';
 import { useCartStore } from '@/store/cart.store';
 import { useNavigate } from 'react-router-dom';
@@ -58,7 +59,10 @@ export default function PendingOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'time' | 'total'>('time');
+    
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Modal State
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -81,7 +85,9 @@ export default function PendingOrdersPage() {
             const pendingPaymentResponse = await orderService.getAll({
                 status: OrderStatus.PENDING_PAYMENT,
                 limit: 50,
-                include: 'allItems'
+                include: 'allItems',
+                sortBy,
+                sortOrder,
             });
 
             let allOrders: Order[] = [];
@@ -105,7 +111,7 @@ export default function PendingOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [sortBy, sortOrder]);
 
     // Handlers
     const handleResume = (order: Order) => {
@@ -189,13 +195,22 @@ export default function PendingOrdersPage() {
         fetchOrders();
     };
 
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
     const closeSuccessModal = () => {
         setIsSuccessModalOpen(false);
         setSelectedOrderForPayment(null);
         clearCurrentOrder();
     };
 
-    // Filter and Sort
+    // Filter (Sort is now server-side)
     const filteredOrders = orders
         .filter(order => {
             const query = searchQuery.toLowerCase();
@@ -205,12 +220,6 @@ export default function PendingOrdersPage() {
                 clientName.includes(query) ||
                 order.totalAmount.toString().includes(query)
             );
-        })
-        .sort((a, b) => {
-            if (sortBy === 'time') {
-                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            }
-            return Number(b.totalAmount) - Number(a.totalAmount);
         });
 
     return (
@@ -258,10 +267,13 @@ export default function PendingOrdersPage() {
                     <select
                         className="bg-transparent font-bold text-foreground focus:outline-none cursor-pointer text-xs"
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'time' | 'total')}
+                        onChange={(e) => {
+                            setSortBy(e.target.value);
+                            setSortOrder('desc'); // Default to desc when changing via dropdown
+                        }}
                     >
-                        <option value="time">Tiempo de espera</option>
-                        <option value="total">Monto total</option>
+                        <option value="createdAt">Tiempo de espera</option>
+                        <option value="totalAmount">Monto total</option>
                     </select>
                 </div>
             </div>
@@ -273,11 +285,43 @@ export default function PendingOrdersPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border bg-muted/50">
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ticket ID</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
+                                <SortableTableHead 
+                                    field="orderCode" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Ticket ID
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="partnerName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Cliente
+                                </SortableTableHead>
                                 <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ítems</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Espera</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Total</th>
+                                <SortableTableHead 
+                                    field="createdAt" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Espera
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="totalAmount" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Total
+                                </SortableTableHead>
                                 <th className="px-6 py-3 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>

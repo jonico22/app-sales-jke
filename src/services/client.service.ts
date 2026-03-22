@@ -122,6 +122,8 @@ export const clientService = {
         createdAtTo?: string;
         updatedAtFrom?: string;
         updatedAtTo?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
     }): Promise<ClientsResponse> => {
         const response = await api.get<ClientsResponse>('/sales/clients', { params });
         return response.data;

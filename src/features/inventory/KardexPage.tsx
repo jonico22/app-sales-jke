@@ -18,6 +18,7 @@ import {
     ArrowRightLeft,
     ChevronDown
 } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { kardexService } from '@/services/kardex.service';
@@ -47,6 +48,10 @@ export default function KardexPage() {
     const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
     const [filters, setFilters] = useState<KardexFilterValues>({});
 
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     // Debounce search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -58,7 +63,7 @@ export default function KardexPage() {
 
     useEffect(() => {
         fetchHistory();
-    }, [currentPage, pageSize, debouncedSearch, filters]);
+    }, [currentPage, pageSize, debouncedSearch, filters, sortBy, sortOrder]);
 
     const fetchHistory = async () => {
         setIsLoading(true);
@@ -67,6 +72,8 @@ export default function KardexPage() {
                 page: currentPage,
                 limit: pageSize,
                 search: debouncedSearch,
+                sortBy,
+                sortOrder,
                 ...filters
             });
 
@@ -128,6 +135,15 @@ export default function KardexPage() {
             `Kardex_${format(new Date(), 'yyyy-MM-dd')}`,
             'Historial de Inventario'
         );
+    };
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
     };
 
     return (
@@ -201,13 +217,69 @@ export default function KardexPage() {
                     <table className="w-full">
                         <thead className="bg-muted/30 border-b border-border">
                             <tr>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Fecha / Hora</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Producto</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Sucursal</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Operación</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Stock Movido</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Balance</th>
-                                <th className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Documento</th>
+                                <SortableTableHead 
+                                    field="date" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Fecha / Hora
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="productName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Producto
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="branchOfficeName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Sucursal
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="type" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Operación
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="quantity" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Stock Movido
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="newStock" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Balance
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="documentNumber" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                                >
+                                    Documento
+                                </SortableTableHead>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/50">

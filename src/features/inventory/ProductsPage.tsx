@@ -10,8 +10,6 @@ import {
     ChevronRight,
     Loader2,
     Package,
-    ArrowUpDown,
-    ChevronUp
 } from 'lucide-react';
 import {
     Button,
@@ -33,6 +31,7 @@ import { toast } from 'sonner';
 import { productService, type Product } from '@/services/product.service';
 import { alerts } from '@/utils/alerts';
 import { cn } from '@/lib/utils';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { ProductEditPanel } from './components/ProductEditPanel';
 import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
 
@@ -212,28 +211,6 @@ export default function ProductsPage() {
         }
     };
 
-    const SortableHead = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => {
-        const isActive = sortBy === field;
-        const justifyClass = className?.includes('text-right') ? 'justify-end' : className?.includes('text-center') ? 'justify-center' : 'justify-start';
-        return (
-            <TableHead 
-                className={cn("cursor-pointer hover:bg-muted/50 select-none transition-colors group", className)}
-                onClick={() => handleSort(field)}
-            >
-                <div className={cn("flex items-center gap-1.5", justifyClass)}>
-                    {children}
-                    <div className="flex flex-col text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors">
-                        {isActive ? (
-                            sortOrder === 'asc' ? <ChevronUp className="h-3.5 w-3.5 text-primary" /> : <ChevronDown className="h-3.5 w-3.5 text-primary" />
-                        ) : (
-                            <ArrowUpDown className="h-3 w-3" />
-                        )}
-                    </div>
-                </div>
-            </TableHead>
-        );
-    };
-
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -300,14 +277,78 @@ export default function ProductsPage() {
                     <Table>
                     <TableHeader className="bg-muted/50 border-b border-border">
                         <TableRow className="hover:bg-transparent border-none">
-                            <SortableHead field="code" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</SortableHead>
-                            <SortableHead field="name" className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Producto</SortableHead>
-                            <SortableHead field="categoryId" className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Categoría</SortableHead>
-                            <SortableHead field="minStock" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Min.</SortableHead>
-                            <SortableHead field="stock" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">Stock</SortableHead>
-                            <SortableHead field="price" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right">P. Venta</SortableHead>
-                            <SortableHead field="createdAt" className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Registro</SortableHead>
-                            <SortableHead field="isActive" className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center">Estado</SortableHead>
+                            <SortableTableHead 
+                                field="code" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            >
+                                Código
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="name" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            >
+                                Producto
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="categoryId" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            >
+                                Categoría
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="minStock" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            >
+                                Min.
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="stock" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            >
+                                Stock
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="price" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            >
+                                P. Venta
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="createdAt" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center"
+                            >
+                                Registro
+                            </SortableTableHead>
+                            <SortableTableHead 
+                                field="isActive" 
+                                currentSortBy={sortBy} 
+                                currentSortOrder={sortOrder} 
+                                onSort={handleSort} 
+                                className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center"
+                            >
+                                Estado
+                            </SortableTableHead>
                             <TableHead className="w-[100px] h-10 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>

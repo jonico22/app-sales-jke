@@ -103,6 +103,8 @@ export const branchOfficeService = {
         createdAtTo?: string;
         updatedAtFrom?: string;
         updatedAtTo?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
     }): Promise<BranchOfficesResponse> => {
         const response = await api.get<BranchOfficesResponse>('/sales/branch-offices', { params });
         return response.data;

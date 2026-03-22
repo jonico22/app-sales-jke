@@ -14,6 +14,7 @@ import {
   Phone,
   MapPin
 } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import {
   Button,
   Input,
@@ -51,6 +52,10 @@ export default function ClientsPage() {
     updatedAtFrom: null,
     updatedAtTo: null,
   });
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -116,6 +121,9 @@ export default function ClientsPage() {
         params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       }
 
+      params.sortBy = sortBy;
+      params.sortOrder = sortOrder;
+
       const response = await clientService.getAll(params);
 
       setClients(response.data.data || []);
@@ -134,7 +142,7 @@ export default function ClientsPage() {
 
   useEffect(() => {
     fetchClients();
-  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
+  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, sortBy, sortOrder]);
 
   const handleEditClick = (client: Client) => {
     setSelectedClient(client);
@@ -174,6 +182,15 @@ export default function ClientsPage() {
     setAdvancedFilters(filters);
     setCurrentPage(1); 
     setIsFilterPanelOpen(false);
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
   };
 
   const getClientDisplayName = (client: Client) => {
@@ -271,11 +288,51 @@ export default function ClientsPage() {
           <Table>
           <TableHeader className="bg-muted/30 border-b border-border">
             <TableRow className="hover:bg-muted/40 border-none h-10">
-              <TableHead className="w-[140px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pl-6">Documento</TableHead>
-              <TableHead className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Nombre / Razón Social</TableHead>
-              <TableHead className="w-[200px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Contacto</TableHead>
-              <TableHead className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Dirección</TableHead>
-              <TableHead className="w-[100px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Estado</TableHead>
+              <SortableTableHead 
+                field="documentNumber" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort}
+                className="w-[140px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pl-6"
+              >
+                Documento
+              </SortableTableHead>
+              <SortableTableHead 
+                field="name" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort}
+                className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Nombre / Razón Social
+              </SortableTableHead>
+              <SortableTableHead 
+                field="email" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort}
+                className="w-[200px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Contacto
+              </SortableTableHead>
+              <SortableTableHead 
+                field="address" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort}
+                className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Dirección
+              </SortableTableHead>
+              <SortableTableHead 
+                field="isActive" 
+                currentSortBy={sortBy} 
+                currentSortOrder={sortOrder} 
+                onSort={handleSort}
+                className="w-[100px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              >
+                Estado
+              </SortableTableHead>
               <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pr-6">Acciones</TableHead>
             </TableRow>
           </TableHeader>

@@ -11,6 +11,7 @@ import {
     Trash2,
     History
 } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import {
     Button,
     Input,
@@ -54,6 +55,10 @@ export default function InventoryMovementsPage() {
     const [totalItems, setTotalItems] = useState(0);
     const [pageSize] = useState(10);
 
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const getBranchName = (id: string, type: 'origin' | 'destination') => {
         if (id === 'all') return type === 'origin' ? 'Todas las sedes (Origen)' : 'Todas las sedes (Destino)';
         return branches.find(b => b.id === id)?.name || (type === 'origin' ? 'Sucursal Origen' : 'Sucursal Destino');
@@ -93,7 +98,7 @@ export default function InventoryMovementsPage() {
 
     useEffect(() => {
         fetchMovements();
-    }, [currentPage, originBranchId, destinationBranchId, statusFilter, searchTerm]);
+    }, [currentPage, originBranchId, destinationBranchId, statusFilter, searchTerm, sortBy, sortOrder]);
 
     const fetchBranches = async () => {
         try {
@@ -120,6 +125,8 @@ export default function InventoryMovementsPage() {
                 originBranchId: originBranchId === 'all' ? undefined : originBranchId,
                 destinationBranchId: destinationBranchId === 'all' ? undefined : destinationBranchId,
                 status: statusFilter === 'all' ? undefined : (statusFilter as MovementStatus),
+                sortBy,
+                sortOrder,
             };
 
             const response = await branchMovementService.getAll(params);
@@ -178,6 +185,15 @@ export default function InventoryMovementsPage() {
         } catch (error) {
             console.error('Error deleting movement:', error);
             toast.error('Error al intentar eliminar el movimiento');
+        }
+    };
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
         }
     };
 
@@ -293,13 +309,69 @@ export default function InventoryMovementsPage() {
                     <Table>
                         <TableHeader className="bg-muted/30 border-b border-border">
                             <TableRow className="hover:bg-transparent border-none">
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6">Referencia</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Fecha</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Producto</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Ruta (Origen → Destino)</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Cant.</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4">Observación / Motivo</TableHead>
-                                <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center">Estado</TableHead>
+                                <SortableTableHead 
+                                    field="referenceCode" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6"
+                                >
+                                    Referencia
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="createdAt" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                                >
+                                    Fecha
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="productName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                                >
+                                    Producto
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="originBranchName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                                >
+                                    Ruta (Origen → Destino)
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="quantityMoved" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                                >
+                                    Cant.
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="notes" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                                >
+                                    Observación / Motivo
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="status" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                                >
+                                    Estado
+                                </SortableTableHead>
                                 <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6 text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>

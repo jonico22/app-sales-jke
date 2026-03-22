@@ -30,6 +30,7 @@ import { SalesHistoryFilterPanel, type FilterValues } from './components/SalesHi
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
 import { exportToExcel } from '@/utils/excel.utils';
 import { ReportGenerationModal } from './components/ReportGenerationModal';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
@@ -65,6 +66,10 @@ export default function SalesHistoryPage() {
         totalTo: '',
     });
 
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('updatedAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -80,7 +85,7 @@ export default function SalesHistoryPage() {
 
     useEffect(() => {
         fetchOrders(currentPage);
-    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm, pageSize]); // Re-fetch on page, status, date, or advanced filters change
+    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm, pageSize, sortBy, sortOrder]); // Re-fetch on page, status, date, or advanced filters change
 
     const fetchOrders = async (page: number = 1) => {
         setIsLoading(true);
@@ -89,6 +94,8 @@ export default function SalesHistoryPage() {
                 page,
                 limit: pageSize,
                 search: debouncedSearchTerm,
+                sortBy,
+                sortOrder,
             };
 
             if (startDate) {
@@ -181,6 +188,15 @@ export default function SalesHistoryPage() {
             console.error('Error fetching sales history:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
         }
     };
 
@@ -455,12 +471,52 @@ export default function SalesHistoryPage() {
                     <table className="w-full">
                         <thead className="bg-muted/30 border-b border-border">
                             <tr>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">ID Venta</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Fecha de Modificación</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Total</th>
+                                <SortableTableHead 
+                                    field="orderCode" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    ID Venta
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="updatedAt" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Fecha de Modificación
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="partnerName" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Cliente
+                                </SortableTableHead>
+                                <SortableTableHead 
+                                    field="totalAmount" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Total
+                                </SortableTableHead>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Estado</th>
+                                <SortableTableHead 
+                                    field="status" 
+                                    currentSortBy={sortBy} 
+                                    currentSortOrder={sortOrder} 
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Estado
+                                </SortableTableHead>
                                 <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
