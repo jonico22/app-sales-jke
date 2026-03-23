@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
+import { BRANCHES_QUERY_KEY } from '@/hooks/useBranches';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -43,6 +45,7 @@ export function BranchOfficeEditPanel({
     branchOfficeId,
     onSuccess,
 }: BranchOfficeEditPanelProps) {
+    const queryClient = useQueryClient();
     const society = useSocietyStore(state => state.society);
     const [isLoadingBranchOffice, setIsLoadingBranchOffice] = useState(false);
     const [isGeneratingCode, setIsGeneratingCode] = useState(false);
@@ -135,6 +138,10 @@ export function BranchOfficeEditPanel({
                 });
                 toast.success('Sucursal creada exitosamente');
             }
+ 
+            // Invalidate branches select cache to ensure all selectors are updated
+            queryClient.invalidateQueries({ queryKey: BRANCHES_QUERY_KEY });
+ 
             onOpenChange(false);
             onSuccess?.();
         } catch (error: any) {
