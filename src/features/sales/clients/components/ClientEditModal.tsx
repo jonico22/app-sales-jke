@@ -143,164 +143,168 @@ export function ClientEditModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden bg-card border-border shadow-2xl">
-        <div className="p-6 pb-0">
-          <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] p-0 max-h-[90vh] overflow-hidden bg-card border-border shadow-2xl flex flex-col">
+        <div className="p-6 pb-4 border-b border-border shrink-0">
+          <DialogHeader className="mb-0">
             <DialogTitle className="text-xl font-bold text-foreground uppercase tracking-tight">
               {client ? 'Editar Cliente' : 'Nuevo Cliente'}
             </DialogTitle>
           </DialogHeader>
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-6 pt-2">
-          {/* BP Type Selector */}
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cliente</Label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-xl border border-border">
-              <button
-                type="button"
-                onClick={() => setValue('typeBP', 'PERSON')}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
-                  typeBP === 'PERSON' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
-                )}
-              >
-                <UserIcon className="h-3.5 w-3.5" /> Persona
-              </button>
-              <button
-                type="button"
-                onClick={() => setValue('typeBP', 'LEGAL_ENTITY')}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
-                  typeBP === 'LEGAL_ENTITY' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
-                )}
-              >
-                <Building2 className="h-3.5 w-3.5" /> Empresa / RUC
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Document Type */}
-            <div className="space-y-2">
-              <Label htmlFor="documentType" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo Documento</Label>
-              <div className="relative">
-                <select
-                  id="documentType"
-                  {...register('documentType')}
-                  className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all h-10"
-                >
-                  <option value="DNI">DNI (Persona)</option>
-                  <option value="RUC">RUC (Empresa/Persona)</option>
-                  <option value="PASSPORT">PASAPORTE</option>
-                  <option value="CE">C.E.</option>
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
-                  <ChevronDown className="h-4 w-4" />
+ 
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="space-y-4">
+              {/* BP Type Selector */}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cliente</Label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-xl border border-border">
+                  <button
+                    type="button"
+                    onClick={() => setValue('typeBP', 'PERSON')}
+                    className={cn(
+                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      typeBP === 'PERSON' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <UserIcon className="h-3.5 w-3.5" /> Persona
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setValue('typeBP', 'LEGAL_ENTITY')}
+                    className={cn(
+                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      typeBP === 'LEGAL_ENTITY' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <Building2 className="h-3.5 w-3.5" /> Empresa / RUC
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Document Number */}
-            <div className="space-y-2">
-              <Label htmlFor="documentNumber" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Número Documento</Label>
-              <Input
-                id="documentNumber"
-                placeholder="Ej. 12345678"
-                {...register('documentNumber')}
-                className={errors.documentNumber ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
-              />
-              {errors.documentNumber && <span className="text-[10px] font-medium text-destructive">{errors.documentNumber.message}</span>}
-            </div>
-
-            {/* Conditional Name Fields */}
-            {typeBP === 'PERSON' ? (
-              <>
+ 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Document Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nombres</Label>
+                  <Label htmlFor="documentType" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo Documento</Label>
+                  <div className="relative">
+                    <select
+                      id="documentType"
+                      {...register('documentType')}
+                      className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all h-10"
+                    >
+                      <option value="DNI">DNI (Persona)</option>
+                      <option value="RUC">RUC (Empresa/Persona)</option>
+                      <option value="PASSPORT">PASAPORTE</option>
+                      <option value="CE">C.E.</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                  </div>
+                </div>
+ 
+                {/* Document Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="documentNumber" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Número Documento</Label>
                   <Input
-                    id="firstName"
-                    placeholder="Ej. Juan Carlos"
-                    {...register('firstName')}
+                    id="documentNumber"
+                    placeholder="Ej. 12345678"
+                    {...register('documentNumber')}
+                    className={errors.documentNumber ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
+                  />
+                  {errors.documentNumber && <span className="text-[10px] font-medium text-destructive">{errors.documentNumber.message}</span>}
+                </div>
+ 
+                {/* Conditional Name Fields */}
+                {typeBP === 'PERSON' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nombres</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Ej. Juan Carlos"
+                        {...register('firstName')}
+                        className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Apellidos</Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Ej. Pérez García"
+                        {...register('lastName')}
+                        className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="companyName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Razón Social</Label>
+                    <Input
+                      id="companyName"
+                      placeholder="Ej. Empresa de Transportes S.A.C."
+                      {...register('companyName')}
+                      className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
+                    />
+                  </div>
+                )}
+ 
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Correo Electrónico</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="ejemplo@correo.com"
+                    {...register('email')}
+                    className={errors.email ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
+                  />
+                  {errors.email && <span className="text-[10px] font-medium text-destructive">{errors.email.message}</span>}
+                </div>
+ 
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Teléfono / Celular</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Ej. 987654321"
+                    {...register('phone')}
                     className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Apellidos</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Ej. Pérez García"
-                    {...register('lastName')}
-                    className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
+ 
+                {/* Address */}
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dirección</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="Dirección completa del cliente..."
+                    {...register('address')}
+                    className="bg-muted/30 border-border min-h-[60px] text-xs resize-none focus:bg-background transition-colors p-3 leading-relaxed"
                   />
                 </div>
-              </>
-            ) : (
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="companyName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Razón Social</Label>
-                <Input
-                  id="companyName"
-                  placeholder="Ej. Empresa de Transportes S.A.C."
-                  {...register('companyName')}
-                  className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
-                />
               </div>
-            )}
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Correo Electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="ejemplo@correo.com"
-                {...register('email')}
-                className={errors.email ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
-              />
-              {errors.email && <span className="text-[10px] font-medium text-destructive">{errors.email.message}</span>}
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Teléfono / Celular</Label>
-              <Input
-                id="phone"
-                placeholder="Ej. 987654321"
-                {...register('phone')}
-                className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
-              />
-            </div>
-
-            {/* Address */}
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dirección</Label>
-              <Textarea
-                id="address"
-                placeholder="Dirección completa del cliente..."
-                {...register('address')}
-                className="bg-muted/30 border-border min-h-[60px] text-xs resize-none focus:bg-background transition-colors p-3 leading-relaxed"
-              />
+ 
+              {/* Status */}
+              <div className="flex items-center justify-between border-t border-border pt-4">
+                <div>
+                  <Label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Estado del Cliente</Label>
+                  <p className="text-[10px] text-muted-foreground font-medium">Habilitar para transacciones comerciales</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={isActive}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('isActive', e.target.checked)}
+                  />
+                  <span className="text-xs font-semibold text-foreground uppercase tracking-tighter">
+                    {isActive ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Status */}
-          <div className="flex items-center justify-between border-t border-border pt-4">
-            <div>
-              <Label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Estado del Cliente</Label>
-              <p className="text-[10px] text-muted-foreground font-medium">Habilitar para transacciones comerciales</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={isActive}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('isActive', e.target.checked)}
-              />
-              <span className="text-xs font-semibold text-foreground uppercase tracking-tighter">
-                {isActive ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-          </div>
-
-          <DialogFooter className="pt-2 border-t border-border gap-2">
+ 
+          <DialogFooter className="p-6 border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2 mt-0">
             <Button
               type="button"
               variant="ghost"
@@ -312,9 +316,9 @@ export function ClientEditModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-10 px-8 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-10 px-8 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2"
             >
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="h-4 w-4" />
               {isSubmitting ? 'Guardando...' : (client ? 'Guardar Cambios' : 'Crear Cliente')}
             </Button>
           </DialogFooter>
