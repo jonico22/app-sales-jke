@@ -113,7 +113,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
     'Inventario': 'INVENTARIO',
     'Ventas': 'VENTAS',
     'Usuarios': 'USUARIOS',
-    'Reportes': 'REPORTE',
+    'Reportes': 'REPORTES',
     'Suscripción': 'SUSCRIPCION',
     'Configuración': 'CONFIGURACION'
   };
