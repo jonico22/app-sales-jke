@@ -111,6 +111,13 @@ export interface UpdateProfileRequest {
   documentType?: string | null;
   documentNumber?: string | null;
   image?: string | null;
+  person?: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string | null;
+    documentType?: string | null;
+    documentNumber?: string | null;
+  };
 }
 
 export interface UpdateProfileResponse {

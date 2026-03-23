@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LoginData, User, Role, SubscriptionInfo } from '@/services/auth.service';
+import { queryClient } from '@/lib/react-query';
 
 interface AuthState {
   token: string | null;
@@ -42,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
         // For now, let's allow the store to manage its own persistence 'auth-storage'.
       },
       logout: () => {
+        queryClient.clear();
         set({ token: null, user: null, role: null, subscription: null, modulePermissions: null, isAuthenticated: false });
         localStorage.removeItem('token'); // Clear the manual token if we still use it for interceptors
 
