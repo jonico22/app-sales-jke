@@ -324,7 +324,7 @@ export default function AdvancedSearchPage() {
         };
 
         loadProducts();
-    }, [page, debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, selectedBranch?.id, refreshTrigger]);
+    }, [page, debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, selectedBranch?.id, society?.id, refreshTrigger]);
 
     // Simplified client-side filter for just what's loaded (pagination etc)
     // Actually, if we reload data on search, 'filteredProducts' should just be 'products'

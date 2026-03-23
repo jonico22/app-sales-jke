@@ -34,8 +34,10 @@ import { cn } from '@/lib/utils';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { ProductEditPanel } from './components/ProductEditPanel';
 import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
+import { useSocietyStore } from '@/store/society.store';
 
 export default function ProductsPage() {
+    const { society } = useSocietyStore();
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -146,7 +148,7 @@ export default function ProductsPage() {
 
     useEffect(() => {
         fetchProducts();
-    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize, sortBy, sortOrder]);
+    }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, pageSize, sortBy, sortOrder, society?.id]);
 
     const handleDeleteProduct = async (id: string) => {
         const isConfirmed = await alerts.confirm({

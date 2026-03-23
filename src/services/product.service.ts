@@ -155,6 +155,7 @@ export const productService = {
         stockFrom?: number;
         stockTo?: number;
         lowStock?: boolean;
+        sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     }): Promise<ProductsResponse> => {
         const response = await api.get<ProductsResponse>('/sales/products', { params });
@@ -168,8 +169,10 @@ export const productService = {
     },
 
     getForSelect: async (params?: {
+        search?: string;
         categoryCode?: string;
         categoryId?: string;
+        color?: string;
         branchId?: string;
     }): Promise<ProductsResponse> => {
         const response = await api.get<ProductsResponse>('/sales/products/select', { params });
