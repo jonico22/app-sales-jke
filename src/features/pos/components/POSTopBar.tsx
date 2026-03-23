@@ -4,25 +4,16 @@ import { Store, Banknote } from 'lucide-react';
 // import { currencyService, type Currency } from '@/services/currency.service';
 import { useCartStore } from '@/store/cart.store';
 import { useBranchStore } from '@/store/branch.store';
-import { useBranches } from '@/hooks/useBranches';
 import { useCurrencies } from '@/hooks/useCurrencies';
 
 export function POSTopBar() {
-    const { data: branches = [] } = useBranches();
-    const { data: currencies = [] } = useCurrencies();
-
     const { currencyId, setCurrencyId } = useCartStore();
-    const { selectedBranch, selectBranch } = useBranchStore();
+    const { branches, selectedBranch, selectBranch } = useBranchStore();
 
     // No local state for selectedCurrency, use store
     const selectedCurrency = currencyId;
 
-    useEffect(() => {
-        // Set default branch if loaded and none selected
-        if (branches.length > 0 && !selectedBranch) {
-            selectBranch(branches[0]);
-        }
-    }, [branches, selectedBranch, selectBranch]);
+    const { data: currencies = [] } = useCurrencies();
 
     useEffect(() => {
         // Set default currency if loaded and none selected
@@ -33,7 +24,7 @@ export function POSTopBar() {
     }, [currencies, selectedCurrency, setCurrencyId]);
 
     // Fallback/Mock if empty (to match design immediately)
-    const displayBranches = branches.length > 0 ? (branches as any[]) : [{ id: '1', name: 'Sede Principal' }];
+    const displayBranches = branches.length > 0 ? branches : [{ id: '1', name: 'Sede Principal', code: 'MAIN', isActive: true }];
     const displayCurrencies = currencies.length > 0 ? currencies : [{ id: '1', name: 'PEN', symbol: 'S/' }];
 
 

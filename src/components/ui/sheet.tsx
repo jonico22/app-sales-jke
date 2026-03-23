@@ -46,7 +46,7 @@ const SheetTrigger = ({ children, asChild }: { children: React.ReactNode, asChil
 
 const SheetContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { side?: "left" | "right" }
+  React.HTMLAttributes<HTMLDivElement> & { side?: "left" | "right" | "bottom" }
 >(({ side = "right", className, children, ...props }, ref) => {
   const { open, setOpen } = React.useContext(SheetContext)
 
@@ -61,10 +61,10 @@ const SheetContent = React.forwardRef<
       />
 
       <div className={cn(
-        "fixed inset-y-0 z-50 flex h-full w-3/4 flex-col border-l border-border bg-card shadow-2xl transition ease-in-out sm:max-w-md",
-        side === "right" ? "right-0 inset-y-0" : "left-0 inset-y-0 border-r border-l-0",
-        // Animation classes
-        side === "right" ? "slide-in-from-right-full" : "slide-in-from-left-full",
+        "fixed z-50 flex flex-col border-border bg-card shadow-2xl transition ease-in-out",
+        side === "right" && "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-md slide-in-from-right-full",
+        side === "left" && "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-md slide-in-from-left-full",
+        side === "bottom" && "inset-x-0 bottom-0 h-[92vh] w-full border-t rounded-t-[32px] slide-in-from-bottom-full",
         className
       )}
         ref={ref}
@@ -87,7 +87,7 @@ const SheetHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-6 border-b border-border bg-card shrink-0",
+        "flex items-center justify-between p-6 shrink-0",
         className
       )}
       {...props}

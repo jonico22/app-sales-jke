@@ -17,7 +17,10 @@ import {
     HelpCircle,
     ChevronDown,
     SlidersHorizontal,
-    FileText
+    FileText,
+    Clock,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -27,6 +30,7 @@ import { SalesHistoryFilterPanel, type FilterValues } from './components/SalesHi
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
 import { exportToExcel } from '@/utils/excel.utils';
 import { ReportGenerationModal } from './components/ReportGenerationModal';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
@@ -62,6 +66,10 @@ export default function SalesHistoryPage() {
         totalTo: '',
     });
 
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -77,7 +85,7 @@ export default function SalesHistoryPage() {
 
     useEffect(() => {
         fetchOrders(currentPage);
-    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm, pageSize]); // Re-fetch on page, status, date, or advanced filters change
+    }, [currentPage, statusFilter, dateRange, advancedFilters, debouncedSearchTerm, pageSize, sortBy, sortOrder]); // Re-fetch on page, status, date, or advanced filters change
 
     const fetchOrders = async (page: number = 1) => {
         setIsLoading(true);
@@ -86,6 +94,8 @@ export default function SalesHistoryPage() {
                 page,
                 limit: pageSize,
                 search: debouncedSearchTerm,
+                sortBy,
+                sortOrder,
             };
 
             if (startDate) {
@@ -181,6 +191,15 @@ export default function SalesHistoryPage() {
         }
     };
 
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
     // Removed obsolete useEffect and fetchOrders call in favor of the new ones above
 
 
@@ -194,8 +213,8 @@ export default function SalesHistoryPage() {
     const getExcelColumns = () => [
         { header: 'ID Venta', key: 'orderCode' as keyof Order, width: 15 },
         {
-            header: 'Fecha',
-            key: (order: Order) => order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm') : '-',
+            header: 'Fecha de Modificación',
+            key: (order: Order) => order.updatedAt ? format(new Date(order.updatedAt), 'dd/MM/yyyy HH:mm') : '-',
             width: 20
         },
         {
@@ -203,7 +222,7 @@ export default function SalesHistoryPage() {
             key: (order: Order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
             width: 30
         },
-        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toFixed(2), width: 15 },
+        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), width: 15 },
         {
             header: 'Método de Pago',
             key: (order: Order) => {
@@ -365,7 +384,7 @@ export default function SalesHistoryPage() {
     }
 
     return (
-        <div className="p-6 space-y-6 max-w-[1400px] mx-auto min-h-screen bg-background">
+        <div className="space-y-6 max-w-[1400px] mx-auto min-h-screen bg-background">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
@@ -445,18 +464,59 @@ export default function SalesHistoryPage() {
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Table / List */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Desktop view */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-muted/30 border-b border-border">
                             <tr>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">ID Venta</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Fecha</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Total</th>
+                                <SortableTableHead
+                                    field="orderCode"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    ID Venta
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    field="updatedAt"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Fecha de Modificación
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    field="partnerName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Cliente
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    field="totalAmount"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Total
+                                </SortableTableHead>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
-                                <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Estado</th>
+                                <SortableTableHead
+                                    field="status"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Estado
+                                </SortableTableHead>
                                 <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -486,7 +546,7 @@ export default function SalesHistoryPage() {
                                                 #{order.orderCode}
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-[11px] text-muted-foreground/80 font-medium">
-                                                {order.createdAt ? format(new Date(order.createdAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
+                                                {order.updatedAt ? format(new Date(order.updatedAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap">
                                                 <div className="flex items-center gap-2.5">
@@ -497,7 +557,7 @@ export default function SalesHistoryPage() {
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-xs font-bold text-foreground">
-                                                {order.currency?.symbol} {Number(order.totalAmount).toFixed(2)}
+                                                {order.currency?.symbol} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {getPaymentBadge(payment)}
@@ -529,43 +589,151 @@ export default function SalesHistoryPage() {
                     </table>
                 </div>
 
+                {/* Mobile view */}
+                <div className="md:hidden p-4 space-y-4 bg-muted/5 min-h-screen">
+                    {isLoading ? (
+                        <div className="p-8 text-center bg-card rounded-2xl border border-border/40">
+                            <RefreshCw className="w-8 h-8 animate-spin text-primary/20 mx-auto mb-3" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Sincronizando ventas...</p>
+                        </div>
+                    ) : filteredOrders.length === 0 ? (
+                        <div className="p-16 text-center bg-card rounded-2xl border border-border/40 text-muted-foreground/40 font-black uppercase tracking-widest text-[10px]">
+                            No se encontraron ventas recientes
+                        </div>
+                    ) : (
+                        filteredOrders.map((order) => {
+                            const clientName = order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General';
+                            const initials = clientName.slice(0, 2).toUpperCase();
+                            const payment = order.OrderPayment && order.OrderPayment.length > 0 ? order.OrderPayment[0] : undefined;
+
+                            return (
+                                <div
+                                    key={order.id}
+                                    className="bg-card rounded-2xl border border-border/80 shadow-none active:bg-muted/30 transition-all relative overflow-hidden flex flex-col"
+                                    onClick={() => setSearchParams({ id: order.id })}
+                                >
+                                    {/* 1. Header: Venta ID + Date */}
+                                    <div className="p-4 border-b border-border/30 flex items-center justify-between bg-muted/5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest">Venta</span>
+                                            <span className="font-mono text-[11px] font-black text-foreground">#{order.orderCode}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/70">
+                                            <Clock size={10} className="opacity-50" />
+                                            <span>{order.updatedAt ? format(new Date(order.updatedAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Client Info */}
+                                    <div className="p-4 flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black border border-primary/10 shrink-0">
+                                            {initials}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest mb-0.5 leading-none">Cliente</p>
+                                            <h3 className="text-[13px] font-black text-foreground uppercase tracking-tight truncate leading-tight">{clientName}</h3>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Status & Payment Row */}
+                                    <div className="px-4 pb-3 flex items-center gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-none mb-1.5">Estado</p>
+                                            {getStatusBadge(order.status)}
+                                        </div>
+                                        <div className="w-px h-8 bg-border/40" />
+                                        <div className="space-y-1">
+                                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-none mb-1.5">Método</p>
+                                            {getPaymentBadge(payment)}
+                                        </div>
+                                    </div>
+
+                                    {/* 4. Total highlight section (Prominent & Full Width) */}
+                                    <div className="mx-4 mb-4 p-3 bg-primary/5 rounded-xl border border-primary/10 flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest leading-none mb-1">Monto Cobrado</p>
+                                            <span className="text-[10px] font-bold text-muted-foreground/60 leading-none">Total Final</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-[11px] font-black text-primary/60">{order.currency?.symbol}</span>
+                                            <span className="text-xl font-black text-foreground tracking-tighter leading-none">
+                                                {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* 5. Actions Footer */}
+                                    <div className="p-3 bg-muted/20 border-t border-border/30 flex items-center justify-end gap-2">
+                                        <button
+                                            className="flex-1 flex items-center justify-center gap-2 h-10 bg-card hover:bg-muted text-foreground border border-border/40 rounded-xl transition-all active:scale-95"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSearchParams({ id: order.id });
+                                            }}
+                                        >
+                                            <FileText size={14} className="opacity-50" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Ver Detalle</span>
+                                        </button>
+                                        <button
+                                            className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 rounded-xl transition-all active:scale-95 shrink-0"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+
                 {/* Pagination */}
-                <div className="px-6 py-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/20">
-                    <div className="flex items-center gap-4">
-                        <span className="text-[11px] text-muted-foreground font-medium">
-                            Mostrando <span className="font-bold text-foreground">{orders.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-bold text-foreground">{totalOrders}</span> ventas
-                        </span>
-                        <select
-                            value={pageSize}
-                            onChange={(e) => {
-                                setPageSize(Number(e.target.value));
-                                setCurrentPage(1);
-                            }}
-                            className="bg-card border border-border text-foreground text-sm rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-2 font-bold outline-none transition-all"
-                        >
-                            <option value="10">10 por página</option>
-                            <option value="20">20 por página</option>
-                            <option value="40">40 por página</option>
-                            <option value="60">60 por página</option>
-                        </select>
+                <div className="px-6 py-5 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/10">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                        <div className="flex flex-col items-center sm:items-start order-2 sm:order-1">
+                            <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">Resultados</span>
+                            <span className="text-[11px] font-bold text-foreground whitespace-nowrap">
+                                <span className="text-primary">{orders.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-bold">{totalOrders}</span> registros
+                            </span>
+                        </div>
+                        <div className="relative w-full sm:w-auto order-1 sm:order-2">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40">
+                                <SlidersHorizontal size={10} />
+                            </div>
+                            <select
+                                value={pageSize}
+                                onChange={(e) => {
+                                    setPageSize(Number(e.target.value));
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full sm:w-auto pl-8 pr-8 py-2 bg-card border border-border/50 text-foreground text-[10px] rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block font-black outline-none transition-all uppercase tracking-wider appearance-none shadow-sm"
+                            >
+                                <option value="10">10 / pág</option>
+                                <option value="20">20 / pág</option>
+                                <option value="40">40 / pág</option>
+                                <option value="60">60 / pág</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={10} />
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2 w-full md:w-auto">
                         <button
                             disabled={!hasPrevPage || isLoading}
                             onClick={() => setCurrentPage(prev => prev - 1)}
-                            className="px-5 py-2.5 border border-border bg-card rounded-xl text-sm text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-sm transition-all active:scale-95"
+                            className="w-10 h-10 flex items-center justify-center border border-border/50 bg-card rounded-xl text-foreground hover:bg-muted disabled:opacity-20 shadow-sm transition-all active:scale-90"
                         >
-                            Anterior
+                            <ChevronLeft size={16} />
                         </button>
-                        <span className="text-sm font-semibold text-foreground min-w-[120px] text-center bg-card border border-border py-2.5 rounded-xl px-4">
-                            Página {currentPage} de {totalPages}
-                        </span>
+                        <div className="px-4 py-2 bg-muted/50 border border-border/50 rounded-xl min-w-[100px] text-center shadow-inner">
+                            <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-0.5">Página</p>
+                            <p className="text-[11px] font-black text-foreground">{currentPage} / {totalPages}</p>
+                        </div>
                         <button
                             disabled={!hasNextPage || isLoading}
                             onClick={() => setCurrentPage(prev => prev + 1)}
-                            className="px-5 py-2.5 border border-border bg-card rounded-xl text-sm text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-sm transition-all active:scale-95"
+                            className="w-10 h-10 flex items-center justify-center border border-border/50 bg-card rounded-xl text-foreground hover:bg-muted disabled:opacity-20 shadow-sm transition-all active:scale-90"
                         >
-                            Siguiente
+                            <ChevronRight size={16} />
                         </button>
                     </div>
                 </div>

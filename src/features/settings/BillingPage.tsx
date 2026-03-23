@@ -224,7 +224,7 @@ export default function BillingPage() {
     const storagePercent = Math.min(100, Math.max(0, (Number(currentStorageBytes) / planStorageBytes) * 100)) || 0;
 
     return (
-        <div className="flex-1 w-full bg-background min-h-[calc(100vh-4rem)] p-4 md:p-8 space-y-6">
+        <div className="flex-1 w-full bg-background min-h-[calc(100vh-4rem)]  md:p-8 space-y-6">
             {/* Header */}
             <div className="max-w-6xl mx-auto space-y-1">
                 <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Suscripción y Facturación</h1>
@@ -509,142 +509,247 @@ export default function BillingPage() {
             <div className="max-w-6xl mx-auto pt-4">
                 <Card className="border-border shadow-sm overflow-hidden">
                     {/* Custom Tabs Header */}
-                    <div className="flex border-b border-border px-6 pt-2">
+                    <div className="flex border-b border-border px-4 sm:px-6 pt-2 overflow-x-auto no-scrollbar scroll-smooth">
                         <button
                             onClick={() => setActiveTab('history')}
-                            className={`px-4 py-3 text-xs font-bold inline-flex items-center gap-2 uppercase tracking-wider ${activeTab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground transition-colors'}`}
+                            className={`px-4 py-3 text-[10px] sm:text-xs font-black inline-flex items-center gap-2 uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === 'history' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             Historial de Suscripciones
                         </button>
                         <button
                             onClick={() => setActiveTab('billing')}
-                            className={`px-4 py-3 text-xs font-bold inline-flex items-center gap-2 uppercase tracking-wider ${activeTab === 'billing' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground transition-colors'}`}
+                            className={`px-4 py-3 text-[10px] sm:text-xs font-black inline-flex items-center gap-2 uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === 'billing' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             Historial de Facturación
                         </button>
                     </div>
 
-                    <div className="p-0 overflow-x-auto">
+                    <div className="p-0">
                         {activeTab === 'history' ? (
-                            <table className="w-full text-sm text-left">
-                                <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30">
-                                    <tr>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Plan</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Fecha de Inicio</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Fecha de Fin</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider text-right">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
+                            <>
+                                {/* Mobile View: Subscription Cards */}
+                                <div className="md:hidden divide-y divide-border/40">
                                     {loadingHistory ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                                                <div className="flex justify-center items-center gap-2">
-                                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-                                                    Cargando historial...
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest mt-2">Cargando historial...</span>
+                                        </div>
                                     ) : history.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                                                No hay movimientos registrados.
-                                            </td>
-                                        </tr>
+                                        <div className="py-12 text-center flex flex-col items-center justify-center p-6">
+                                            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-tight">No hay registros</p>
+                                        </div>
                                     ) : (
                                         history.map((movement) => (
-                                            <tr key={movement.id} className="hover:bg-muted/20 transition-colors">
-                                                <td className="px-6 py-4 font-bold text-foreground text-xs">
-                                                    {movement.newPlan?.name || 'Desconocido'} {movement.newPlan?.code === 'PRO' && '(Public Preview)'}
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground text-xs capitalize">
-                                                    {new Date(movement.movementDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground text-xs">
-                                                    {movement.newEndDate ? new Date(movement.newEndDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    {movement.movementType === 'SUBSCRIBED' && <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-medium">Suscrito</span>}
-                                                    {movement.movementType === 'RENEWAL' && <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-medium">Renovación</span>}
-                                                    {movement.movementType === 'REACTIVATED' && <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-2.5 py-1 rounded-md text-xs font-medium">Reactivado</span>}
-                                                    {movement.movementType === 'CANCELED' && <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 px-2.5 py-1 rounded-md text-xs font-medium">Cancelado</span>}
-                                                    {movement.movementType === 'UPGRADE' && <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-medium">Upgrade</span>}
-                                                    {movement.movementType === 'DOWNGRADE' && <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md text-xs font-medium">Downgrade</span>}
-                                                    {!['SUBSCRIBED', 'RENEWAL', 'REACTIVATED', 'CANCELED', 'UPGRADE', 'DOWNGRADE'].includes(movement.movementType) && (
-                                                        <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs font-medium">{movement.movementType}</span>
-                                                    )}
-                                                </td>
-                                            </tr>
+                                            <div key={movement.id} className="p-4 bg-card active:bg-muted/5 transition-colors">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h4 className="font-black text-[13px] text-foreground tracking-tight uppercase leading-tight">
+                                                            {movement.newPlan?.name || 'Desconocido'} {movement.newPlan?.code === 'PRO' && '(Public Preview)'}
+                                                        </h4>
+                                                        <p className="text-[10px] font-bold text-muted-foreground mt-1 lowercase first-letter:uppercase">
+                                                            {new Date(movement.movementDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                                                            {movement.newEndDate && ` - ${new Date(movement.newEndDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`}
+                                                        </p>
+                                                    </div>
+                                                    <div className="shrink-0 flex items-center justify-end">
+                                                        {movement.movementType === 'SUBSCRIBED' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">Suscrito</span>}
+                                                        {movement.movementType === 'RENEWAL' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-100">Renovación</span>}
+                                                        {movement.movementType === 'REACTIVATED' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-100">Reactivado</span>}
+                                                        {movement.movementType === 'CANCELED' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100">Cancelado</span>}
+                                                        {movement.movementType === 'UPGRADE' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">Upgrade</span>}
+                                                        {movement.movementType === 'DOWNGRADE' && <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-100">Downgrade</span>}
+                                                        {!['SUBSCRIBED', 'RENEWAL', 'REACTIVATED', 'CANCELED', 'UPGRADE', 'DOWNGRADE'].includes(movement.movementType) && (
+                                                            <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-muted text-muted-foreground border border-border">{movement.movementType}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         ))
                                     )}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Desktop View: Subscription Table */}
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30">
+                                            <tr>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Plan</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Fecha de Inicio</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Fecha de Fin</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider text-right">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border text-foreground">
+                                            {loadingHistory ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                                                        <div className="flex justify-center items-center gap-2">
+                                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                                                            Cargando historial...
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : history.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground font-medium uppercase text-[10px]">
+                                                        No hay movimientos registrados.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                history.map((movement) => (
+                                                    <tr key={movement.id} className="hover:bg-muted/20 transition-colors">
+                                                        <td className="px-6 py-4 font-black text-foreground text-xs uppercase tracking-tight">
+                                                            {movement.newPlan?.name || 'Desconocido'} {movement.newPlan?.code === 'PRO' && '(Public Preview)'}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-muted-foreground text-xs font-bold capitalize">
+                                                            {new Date(movement.movementDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-muted-foreground text-xs font-bold">
+                                                            {movement.newEndDate ? new Date(movement.newEndDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            {movement.movementType === 'SUBSCRIBED' && <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-emerald-100">Suscrito</span>}
+                                                            {movement.movementType === 'RENEWAL' && <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-blue-100">Renovación</span>}
+                                                            {movement.movementType === 'REACTIVATED' && <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-sky-100">Reactivado</span>}
+                                                            {movement.movementType === 'CANCELED' && <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-rose-100">Cancelado</span>}
+                                                            {movement.movementType === 'UPGRADE' && <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-indigo-100">Upgrade</span>}
+                                                            {movement.movementType === 'DOWNGRADE' && <span className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-orange-100">Downgrade</span>}
+                                                            {!['SUBSCRIBED', 'RENEWAL', 'REACTIVATED', 'CANCELED', 'UPGRADE', 'DOWNGRADE'].includes(movement.movementType) && (
+                                                                <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-border">{movement.movementType}</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         ) : (
-                            <table className="w-full text-sm text-left">
-                                <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30">
-                                    <tr>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Descripción</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Fecha</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider">Método</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider text-right">Monto</th>
-                                        <th className="px-6 py-4 font-bold tracking-wider text-right">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
+                            <>
+                                {/* Mobile View: Billing Cards */}
+                                <div className="md:hidden divide-y divide-border/40">
                                     {loadingBilling ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                                                <div className="flex justify-center items-center gap-2">
-                                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
-                                                    Cargando facturación...
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest mt-2">Cargando facturación...</span>
+                                        </div>
                                     ) : billingHistory.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                                                No hay pagos registrados.
-                                            </td>
-                                        </tr>
+                                        <div className="py-12 text-center flex flex-col items-center justify-center p-6">
+                                            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-tight">No hay cobros registrados</p>
+                                        </div>
                                     ) : (
                                         billingHistory.map((billing) => (
-                                            <tr key={billing.id} className="hover:bg-muted/20 transition-colors">
-                                                <td className="px-6 py-4 font-bold text-foreground text-xs">
-                                                    {billing.description}
-                                                    {billing.subscriptionMovement && (
-                                                        <span className="ml-2 text-[10px] text-muted-foreground">
-                                                            ({billing.subscriptionMovement.newPlan?.name})
+                                            <div key={billing.id} className="p-4 bg-card active:bg-muted/5 transition-colors">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 className="font-black text-[12px] text-foreground tracking-tight uppercase leading-tight">
+                                                            {billing.description}
+                                                        </h4>
+                                                        <p className="text-[10px] font-bold text-muted-foreground mt-1 capitalize">
+                                                            {new Date(billing.paymentDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-black text-[13px] text-foreground tracking-tighter">
+                                                            ${billing.amount.toFixed(2)}
+                                                        </p>
+                                                        <div className="mt-1">
+                                                            {billing.status === 'COMPLETED' ? (
+                                                                <span className="px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">Pagado</span>
+                                                            ) : billing.status === 'PENDING' ? (
+                                                                <span className="px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-100">Pendiente</span>
+                                                            ) : billing.status === 'FAILED' ? (
+                                                                <span className="px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100">Fallido</span>
+                                                            ) : (
+                                                                <span className="px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider bg-muted text-muted-foreground border border-border">{billing.status}</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {billing.subscriptionMovement && (
+                                                    <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between">
+                                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{billing.subscriptionMovement.newPlan?.name}</span>
+                                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase">
+                                                            <CreditCard className="h-3 w-3" />
+                                                            {billing.paymentMethod}
                                                         </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground text-xs capitalize">
-                                                    {new Date(billing.paymentDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </td>
-                                                <td className="px-6 py-4 text-muted-foreground">
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-muted text-foreground">
-                                                        <CreditCard className="h-3 w-3" />
-                                                        {billing.paymentMethod}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-bold text-foreground text-xs">
-                                                    ${billing.amount.toFixed(2)}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    {billing.status === 'COMPLETED' ? (
-                                                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-medium">Pagado</span>
-                                                    ) : billing.status === 'PENDING' ? (
-                                                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-xs font-medium">Pendiente</span>
-                                                    ) : billing.status === 'FAILED' ? (
-                                                        <span className="inline-flex items-center gap-1.5 bg-red-50 text-red-700 px-2.5 py-1 rounded-md text-xs font-medium">Fallido</span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs font-medium">{billing.status}</span>
-                                                    )}
-                                                </td>
-                                            </tr>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))
                                     )}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Desktop View: Billing Table */}
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30">
+                                            <tr>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Descripción</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Fecha</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider">Método</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider text-right">Monto</th>
+                                                <th className="px-6 py-4 font-bold tracking-wider text-right">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border text-foreground">
+                                            {loadingBilling ? (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                                                        <div className="flex justify-center items-center gap-2">
+                                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                                                            Cargando facturación...
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : billingHistory.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground font-medium uppercase text-[10px]">
+                                                        No hay pagos registrados.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                billingHistory.map((billing) => (
+                                                    <tr key={billing.id} className="hover:bg-muted/20 transition-colors">
+                                                        <td className="px-6 py-4 font-black text-foreground text-xs uppercase tracking-tight">
+                                                            {billing.description}
+                                                            {billing.subscriptionMovement && (
+                                                                <span className="ml-2 text-[10px] text-muted-foreground font-bold italic">
+                                                                    ({billing.subscriptionMovement.newPlan?.name})
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-muted-foreground text-xs font-bold capitalize">
+                                                            {new Date(billing.paymentDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-muted-foreground">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-muted/50 text-foreground border border-border">
+                                                                <CreditCard className="h-3 w-3" />
+                                                                {billing.paymentMethod}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right font-black text-foreground text-[13px] tracking-tight">
+                                                            ${billing.amount.toFixed(2)}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            {billing.status === 'COMPLETED' ? (
+                                                                <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-emerald-100">Pagado</span>
+                                                            ) : billing.status === 'PENDING' ? (
+                                                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-amber-100">Pendiente</span>
+                                                            ) : billing.status === 'FAILED' ? (
+                                                                <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-rose-100">Fallido</span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border border-border">{billing.status}</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
                         )}
                     </div>
                 </Card>

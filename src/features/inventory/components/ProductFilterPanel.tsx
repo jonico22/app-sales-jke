@@ -6,10 +6,9 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Button, Label, Input, Switch } from '@/components/ui';
-import { DatePickerInput } from '@/components/shared/DatePickerInput';
-import { TagInput, type TagOption } from '@/components/shared/TagInput';
-import { productService } from '@/services/product.service';
+import { categoryService, type CategorySelectOption } from '@/services/category.service';
 import { toast } from 'sonner';
+import { ChevronDown } from 'lucide-react';
 
 interface ProductFilterPanelProps {
     open: boolean;
@@ -18,11 +17,7 @@ interface ProductFilterPanelProps {
 }
 
 export interface FilterValues {
-    createdBy?: string;
-    createdAtFrom: Date | null;
-    createdAtTo: Date | null;
-    updatedAtFrom: Date | null;
-    updatedAtTo: Date | null;
+    categoryCode?: string;
     priceFrom: string;
     priceTo: string;
     priceCostFrom: string;
@@ -30,6 +25,7 @@ export interface FilterValues {
     stockFrom: string;
     stockTo: string;
     lowStock: boolean;
+    stockStatus?: 'out';
 }
 
 
@@ -40,11 +36,7 @@ export function ProductFilterPanel({
     onApplyFilters,
 }: ProductFilterPanelProps) {
     const [filters, setFilters] = useState<FilterValues>({
-        createdBy: undefined,
-        createdAtFrom: null,
-        createdAtTo: null,
-        updatedAtFrom: null,
-        updatedAtTo: null,
+        categoryCode: undefined,
         priceFrom: '',
         priceTo: '',
         priceCostFrom: '',
@@ -52,37 +44,35 @@ export function ProductFilterPanel({
         stockFrom: '',
         stockTo: '',
         lowStock: false,
+        stockStatus: undefined,
     });
-    const [availableUsers, setAvailableUsers] = useState<TagOption[]>([]);
+    const [categories, setCategories] = useState<CategorySelectOption[]>([]);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchCategories = async () => {
             try {
-                const response = await productService.getCreatedByUsers();
+                setIsLoadingCategories(true);
+                const response = await categoryService.getForSelect();
                 if (response.success && response.data) {
-                    setAvailableUsers(response.data.map(user => ({
-                        id: user.id,
-                        name: user.name
-                    })));
+                    setCategories(response.data);
                 }
             } catch (error) {
-                console.error('Error fetching users:', error);
-                toast.error('Error al cargar lista de usuarios');
+                console.error('Error fetching categories:', error);
+                toast.error('Error al cargar lista de categorías');
+            } finally {
+                setIsLoadingCategories(false);
             }
         };
 
         if (open) {
-            fetchUsers();
+            fetchCategories();
         }
     }, [open]);
 
     const handleClear = () => {
-        const emptyFilters = {
-            createdBy: undefined,
-            createdAtFrom: null,
-            createdAtTo: null,
-            updatedAtFrom: null,
-            updatedAtTo: null,
+        const emptyFilters: FilterValues = {
+            categoryCode: undefined,
             priceFrom: '',
             priceTo: '',
             priceCostFrom: '',
@@ -90,6 +80,7 @@ export function ProductFilterPanel({
             stockFrom: '',
             stockTo: '',
             lowStock: false,
+            stockStatus: undefined,
         };
         setFilters(emptyFilters);
         onApplyFilters(emptyFilters);
@@ -106,16 +97,27 @@ export function ProductFilterPanel({
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
-                    {/* Created By */}
+                    {/* Category */}
                     <div className="space-y-3">
-                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Creado por</Label>
-                        <TagInput
-                            options={availableUsers}
-                            value={filters.createdBy ? [filters.createdBy] : []}
-                            onChange={(userIds) => setFilters({ ...filters, createdBy: userIds[0] })}
-                            placeholder="Seleccionar..."
-                            maxTags={1}
-                        />
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Categoría</Label>
+                        <div className="relative">
+                            <select
+                                value={filters.categoryCode || ''}
+                                onChange={(e) => setFilters({ ...filters, categoryCode: e.target.value || undefined })}
+                                disabled={isLoadingCategories}
+                                className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors"
+                            >
+                                <option value="">{isLoadingCategories ? 'Cargando...' : 'Seleccionar...'}</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.code} value={cat.code}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
+                                <ChevronDown className="h-4 w-4" />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Price Range */}
@@ -160,11 +162,11 @@ export function ProductFilterPanel({
                         </div>
                     </div>
 
-                    {/* Stock Range */}
+                    {/* Stock Control */}
                     <div className="space-y-3">
                         <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Control de Stock</Label>
 
-                        <div className="flex items-center justify-between border border-border rounded-lg p-3 mb-3 bg-muted/20">
+                        <div className="flex items-center justify-between border border-border rounded-lg p-3 bg-muted/20">
                             <Label htmlFor="lowStock" className="text-[11px] font-bold text-foreground cursor-pointer uppercase tracking-wide">Stock Bajo (≤ Mínimo)</Label>
                             <Switch
                                 id="lowStock"
@@ -175,62 +177,35 @@ export function ProductFilterPanel({
                             />
                         </div>
 
+                        <div className="flex items-center justify-between border border-border rounded-lg p-3 bg-muted/20 mt-3">
+                            <Label htmlFor="stockStatus" className="text-[11px] font-bold text-foreground cursor-pointer uppercase tracking-wide">Sin Stock (≤ 0)</Label>
+                            <Switch
+                                id="stockStatus"
+                                checked={filters.stockStatus === 'out'}
+                                onChange={(checked) => {
+                                    setFilters({ ...filters, stockStatus: checked.target.checked ? 'out' : undefined });
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stock Range */}
+                    <div className="space-y-3">
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Stock</Label>
                         <div className="grid grid-cols-2 gap-3">
                             <Input
                                 type="number"
-                                placeholder="Stock Mín"
+                                placeholder="Mínimo"
                                 value={filters.stockFrom}
                                 className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                                 onChange={(e) => setFilters({ ...filters, stockFrom: e.target.value })}
                             />
                             <Input
                                 type="number"
-                                placeholder="Stock Máx"
+                                placeholder="Máximo"
                                 value={filters.stockTo}
                                 className="bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"
                                 onChange={(e) => setFilters({ ...filters, stockTo: e.target.value })}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Creation Date Range */}
-                    <div className="space-y-3">
-                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Fecha de Creación</Label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <DatePickerInput
-                                value={filters.createdAtFrom}
-                                onChange={(date) => setFilters({ ...filters, createdAtFrom: date })}
-                                maxDate={filters.createdAtTo || undefined}
-                                placeholder="Desde"
-                                aria-label="Fecha inicio creación"
-                            />
-                            <DatePickerInput
-                                value={filters.createdAtTo}
-                                onChange={(date) => setFilters({ ...filters, createdAtTo: date })}
-                                minDate={filters.createdAtFrom || undefined}
-                                placeholder="Hasta"
-                                aria-label="Fecha fin creación"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Update Date Range */}
-                    <div className="space-y-3">
-                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Fecha de Actualización</Label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <DatePickerInput
-                                value={filters.updatedAtFrom}
-                                onChange={(date) => setFilters({ ...filters, updatedAtFrom: date })}
-                                maxDate={filters.updatedAtTo || undefined}
-                                placeholder="Desde"
-                                aria-label="Fecha inicio actualización"
-                            />
-                            <DatePickerInput
-                                value={filters.updatedAtTo}
-                                onChange={(date) => setFilters({ ...filters, updatedAtTo: date })}
-                                minDate={filters.updatedAtFrom || undefined}
-                                placeholder="Hasta"
-                                aria-label="Fecha fin actualización"
                             />
                         </div>
                     </div>

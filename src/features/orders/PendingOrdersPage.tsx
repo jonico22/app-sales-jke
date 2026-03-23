@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Clock, Play, CreditCard, XCircle, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, Clock, Play, CreditCard, XCircle, ChevronLeft, ChevronRight, SlidersHorizontal, RefreshCw, FileText } from 'lucide-react';
+import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { orderService, type Order, OrderStatus } from '@/services/order.service';
 import { useCartStore } from '@/store/cart.store';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +10,6 @@ import { POSSuccessModal } from '../pos/components/POSSuccessModal';
 import { POSCancelModal } from '../pos/components/POSCancelModal';
 import { POSResumeModal } from '../pos/components/POSResumeModal';
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
-import { FileText } from 'lucide-react';
 
 // Helper for relative time (e.g. "Hace 15 min")
 function getTimeAgo(dateString: string) {
@@ -59,7 +59,10 @@ export default function PendingOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'time' | 'total'>('time');
+
+    // Sorting state
+    const [sortBy, setSortBy] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Modal State
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -82,7 +85,9 @@ export default function PendingOrdersPage() {
             const pendingPaymentResponse = await orderService.getAll({
                 status: OrderStatus.PENDING_PAYMENT,
                 limit: 50,
-                include: 'allItems'
+                include: 'allItems',
+                sortBy,
+                sortOrder,
             });
 
             let allOrders: Order[] = [];
@@ -106,7 +111,7 @@ export default function PendingOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, []);
+    }, [sortBy, sortOrder]);
 
     // Handlers
     const handleResume = (order: Order) => {
@@ -190,13 +195,22 @@ export default function PendingOrdersPage() {
         fetchOrders();
     };
 
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
     const closeSuccessModal = () => {
         setIsSuccessModalOpen(false);
         setSelectedOrderForPayment(null);
         clearCurrentOrder();
     };
 
-    // Filter and Sort
+    // Filter (Sort is now server-side)
     const filteredOrders = orders
         .filter(order => {
             const query = searchQuery.toLowerCase();
@@ -206,12 +220,6 @@ export default function PendingOrdersPage() {
                 clientName.includes(query) ||
                 order.totalAmount.toString().includes(query)
             );
-        })
-        .sort((a, b) => {
-            if (sortBy === 'time') {
-                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            }
-            return Number(b.totalAmount) - Number(a.totalAmount);
         });
 
     return (
@@ -259,25 +267,61 @@ export default function PendingOrdersPage() {
                     <select
                         className="bg-transparent font-bold text-foreground focus:outline-none cursor-pointer text-xs"
                         value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'time' | 'total')}
+                        onChange={(e) => {
+                            setSortBy(e.target.value);
+                            setSortOrder('desc'); // Default to desc when changing via dropdown
+                        }}
                     >
-                        <option value="time">Tiempo de espera</option>
-                        <option value="total">Monto total</option>
+                        <option value="createdAt">Tiempo de espera</option>
+                        <option value="totalAmount">Monto total</option>
                     </select>
                 </div>
             </div>
 
-            {/* Orders Table */}
+            {/* Orders List / Table */}
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Desktop view */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border bg-muted/50">
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ticket ID</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Cliente</th>
+                                <SortableTableHead
+                                    field="orderCode"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Ticket ID
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    field="partnerName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Cliente
+                                </SortableTableHead>
                                 <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ítems</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Espera</th>
-                                <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Total</th>
+                                <SortableTableHead
+                                    field="createdAt"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Espera
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    field="totalAmount"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
+                                    onSort={handleSort}
+                                    className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
+                                >
+                                    Total
+                                </SortableTableHead>
                                 <th className="px-6 py-3 text-right text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -327,7 +371,7 @@ export default function PendingOrdersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="font-black text-[12px] text-foreground">
-                                                {order.currency?.symbol || 'S/.'} {Number(order.totalAmount).toFixed(2)}
+                                                {order.currency?.symbol || 'S/.'} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -369,17 +413,127 @@ export default function PendingOrdersPage() {
                     </table>
                 </div>
 
+                {/* Mobile Card View */}
+                <div className="md:hidden p-4 space-y-4 bg-muted/5 min-h-screen">
+                    {isLoading ? (
+                        <div className="p-8 text-center bg-card rounded-2xl border border-border/40">
+                            <RefreshCw className="w-8 h-8 animate-spin text-primary/20 mx-auto mb-3" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Consultando órdenes...</p>
+                        </div>
+                    ) : filteredOrders.length === 0 ? (
+                        <div className="p-16 text-center bg-card rounded-2xl border border-border/40">
+                            <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-border/50">
+                                <Clock className="w-8 h-8 text-muted-foreground/20" />
+                            </div>
+                            <p className="text-sm font-black text-foreground uppercase tracking-widest">Sin Pendientes</p>
+                            <p className="text-[10px] text-muted-foreground mt-1 font-medium tracking-wide">Todas las órdenes han sido procesadas o anuladas.</p>
+                        </div>
+                    ) : (
+                        filteredOrders.map((order) => (
+                            <div
+                                key={order.id}
+                                className="bg-card rounded-2xl border border-border/80 shadow-none active:bg-muted/30 transition-all relative overflow-hidden flex flex-col"
+                            >
+                                {/* 1. Header: Ticket ID + Wait Time Status */}
+                                <div className="p-4 border-b border-border/30 flex items-center justify-between bg-muted/5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest">Ticket</span>
+                                        <div className="px-2 py-0.5 bg-primary/5 border border-primary/20 rounded-md">
+                                            <span className="font-mono text-[10px] font-black text-foreground">
+                                                #{order.orderCode.includes('-') ? order.orderCode.split('-').pop() : order.orderCode}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <StatusBadge date={order.createdAt} />
+                                </div>
+
+                                {/* 2. Client Info */}
+                                <div className="p-4 flex items-center gap-3.5">
+                                    <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center font-black text-sm text-primary-foreground shrink-0 capitalize">
+                                        {(order.partner?.firstName?.charAt(0) || order.partner?.companyName?.charAt(0) || 'C').toLowerCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest mb-0.5 leading-none">Cliente</p>
+                                        <h3 className="text-[13px] font-black text-foreground uppercase tracking-tight truncate leading-tight">
+                                            {order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General'}
+                                        </h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/30 border border-border/50">
+                                                <span className="text-[9px] font-black text-foreground/70 uppercase">
+                                                    {order.totalProducts || 0} ítems
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. Amount Highlight Section */}
+                                <div className="mx-4 mb-3 p-3 bg-primary/5 rounded-xl border border-primary/10 flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">Monto Pendiente</p>
+                                        <span className="text-[10px] font-bold text-primary/60 leading-none">Total Pedido</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-[11px] font-black text-muted-foreground">{order.currency?.symbol || 'S/.'}</span>
+                                        <span className="text-2xl font-black text-foreground tracking-tighter leading-none">
+                                            {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Primary Action Button (Full Width for better accessibility) */}
+                                <div className="px-4 pb-4">
+                                    <button
+                                        onClick={() => handlePay(order)}
+                                        className="w-full flex items-center justify-center gap-2.5 h-12 bg-primary text-primary-foreground rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] active:scale-[0.98] transition-all ring-offset-2 hover:ring-2 hover:ring-primary/20 shadow-lg shadow-primary/20"
+                                    >
+                                        <CreditCard className="w-4 h-4" /> Pagar Ticket
+                                    </button>
+                                </div>
+
+                                {/* 4. Secondary Actions Footer */}
+                                <div className="p-2 bg-muted/20 border-t border-border/30 flex items-center justify-between gap-1">
+                                    <div className="flex gap-1 flex-1">
+                                        <button
+                                            onClick={() => handleResume(order)}
+                                            className="flex-1 flex items-center justify-center gap-2 h-10 bg-card hover:bg-muted text-foreground border border-border/40 rounded-xl text-[9px] font-black uppercase tracking-wider active:scale-[0.97] transition-all"
+                                        >
+                                            <Play className="w-3.5 h-3.5 fill-current opacity-70" /> Continuar
+                                        </button>
+                                        <button
+                                            onClick={() => handleViewDetail(order)}
+                                            className="flex-1 flex items-center justify-center gap-2 h-10 bg-card hover:bg-muted text-foreground border border-border/40 rounded-xl text-[9px] font-black uppercase tracking-wider active:scale-[0.97] transition-all"
+                                        >
+                                            <FileText className="w-3.5 h-3.5 opacity-70" /> Detalle
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => handleCancel(order)}
+                                        className="w-10 h-10 flex items-center justify-center text-destructive/40 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all"
+                                        title="Anular Pedido"
+                                    >
+                                        <XCircle className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
                 {/* Pagination Footer */}
-                <div className="px-6 py-4 border-t border-border flex items-center justify-between">
-                    <div className="text-[11px] font-medium text-muted-foreground">
-                        Mostrando <span className="font-bold text-foreground">{filteredOrders.length}</span> órdenes
+                <div className="px-6 py-5 border-t border-border/30 flex items-center justify-between bg-muted/5">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Resumen</span>
+                        <span className="text-[11px] font-bold text-foreground">
+                            <span className="text-primary">{filteredOrders.length}</span> órdenes pendientes
+                        </span>
                     </div>
                     <div className="flex gap-2">
-                        <button className="p-1.5 hover:bg-muted rounded-lg transition-colors disabled:opacity-30 border border-border">
-                            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                        <button className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none">
+                            <ChevronLeft className="w-4 h-4 text-foreground" />
                         </button>
-                        <button className="p-1.5 hover:bg-muted rounded-lg transition-colors disabled:opacity-30 border border-border">
-                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        <button className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none">
+                            <ChevronRight className="w-4 h-4 text-foreground" />
                         </button>
                     </div>
                 </div>

@@ -63,7 +63,7 @@ export function MobileNavFooter({ onMenuClick }: MobileNavFooterProps) {
         {/* Center Floating Button */}
         <div className="flex flex-col items-center -mt-6">
           <Link
-            to="/pos"
+            to="/pos/search"
             className="bg-[#0ea5e9] hover:bg-[#0284c7] text-white p-4 rounded-full shadow-lg shadow-cyan-500/30 transition-all active:scale-95"
           >
             <Plus className="h-6 w-6" />

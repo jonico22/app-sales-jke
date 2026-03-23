@@ -32,24 +32,25 @@ export function CurrencySelector() {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 px-4 py-2 border border-input rounded-xl hover:bg-muted transition-colors bg-background shadow-sm"
+                className="flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-1.5 md:py-2 border border-input rounded-lg md:rounded-xl hover:bg-muted transition-colors bg-background shadow-sm w-full min-w-[65px] md:min-w-[100px] h-[36px] md:h-auto"
             >
-                <div className="bg-primary/10 p-1.5 rounded-lg">
-                    <Banknote className="h-4 w-4 text-primary" />
+                <div className="bg-primary/10 p-1 md:p-1.5 rounded-md md:rounded-lg shrink-0">
+                    <Banknote className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
                 </div>
-                <div className="text-left">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">MONEDA</p>
-                    <p className="text-sm font-bold text-foreground leading-none">
-                        {selectedCurrency ? `${selectedCurrency.name} (${selectedCurrency.code})` : 'Seleccionar...'}
+                <div className="text-left min-w-0">
+                    <p className="hidden md:block text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none mb-0.5">MONEDA</p>
+                    <p className="text-[11px] md:text-sm font-bold text-foreground leading-none">
+                        {selectedCurrency ? `${selectedCurrency.code}` : 'CUR'}
+                        <span className="hidden md:inline ml-1">({selectedCurrency?.name})</span>
                     </p>
                 </div>
-                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                    <div className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute top-full right-0 mt-2 w-72 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                         {/* Currencies List */}
                         <div className="p-2 space-y-1">
                             {currencies.map((currency) => (

@@ -8,6 +8,8 @@ import { Button, Input, Label, Card } from '@/components/ui';
 import { authService } from '@/services/auth.service';
 import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
+import { useQueryClient } from '@tanstack/react-query';
+import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
 
 const changePasswordSchema = z.object({
     currentPassword: z.string().min(1, { message: "La contraseña actual es requerida" }),
@@ -36,6 +38,8 @@ export default function SecurityPage() {
         },
     });
 
+    const queryClient = useQueryClient();
+
     const onSubmit = async (data: ChangePasswordSchema) => {
         try {
             await authService.changePassword({
@@ -44,14 +48,21 @@ export default function SecurityPage() {
             });
 
             // Update store so the user can navigate again
-            const { setMustChangePassword } = useAuthStore.getState();
+            const { setMustChangePassword, updateUser } = useAuthStore.getState();
             setMustChangePassword(false);
 
-            // Fetch society data now that the user is fully authorized
+            // Remove permissions to force a clean fetch and show skeleton loader
+            queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
+
+            // Fetch me data and society data now that the user is fully authorized
             try {
+                const meRes = await authService.getMe();
+                if (meRes.success) {
+                    updateUser(meRes.data.user);
+                }
                 await societyService.getCurrent();
             } catch (err) {
-                console.error('Failed to load society data after password change', err);
+                console.error('Failed to load user/society data after password change', err);
             }
 
             toast.success('Contraseña actualizada correctamente');

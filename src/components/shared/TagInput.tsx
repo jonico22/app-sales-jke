@@ -34,6 +34,8 @@ export interface TagInputProps {
  * 
  * Follows JKE Solutions brand guidelines with customizable options.
  */
+import { Portal } from './Portal';
+
 export function TagInput({
   options,
   value,
@@ -47,8 +49,42 @@ export function TagInput({
 }: TagInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Update position when opening
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, [isOpen]);
+
+  // Handle window resize/scroll to update position
+  useEffect(() => {
+    const handleUpdate = () => {
+      if (isOpen && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleUpdate);
+    window.addEventListener('scroll', handleUpdate, true);
+    return () => {
+      window.removeEventListener('resize', handleUpdate);
+      window.removeEventListener('scroll', handleUpdate, true);
+    };
+  }, [isOpen]);
 
   // Get selected tag objects
   const selectedTags = options.filter(opt => value.includes(opt.id));
@@ -179,53 +215,70 @@ export function TagInput({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-xl max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-100 custom-scrollbar">
-          {filteredOptions.length > 0 ? (
-            <ul className="py-1">
-              {filteredOptions.map(option => (
-                <li
-                  key={option.id}
-                  onClick={() => {
-                    handleToggleOption(option.id);
-                    setSearchTerm('');
-                    inputRef.current?.focus();
-                  }}
-                  className={cn(
-                    'px-3 py-2 text-sm cursor-pointer transition-colors flex items-center gap-2',
-                    'text-foreground hover:bg-muted hover:text-foreground'
-                  )}
-                >
-                  <span className="flex-1 font-medium">{option.name}</span>
-                  {value.includes(option.id) && (
-                    <Check className="h-4 w-4 text-primary" />
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-3 py-4 text-sm text-muted-foreground text-center font-medium">
-              {searchTerm ? (
-                allowCreate ? (
-                  <button
+        <Portal>
+          <div 
+            className="fixed inset-0 z-[60] lg:hidden" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div 
+            className={cn(
+              "fixed z-[70] bg-card border border-border rounded-xl shadow-xl max-h-60 overflow-auto animate-in fade-in zoom-in-95 duration-100 custom-scrollbar",
+              "md:absolute md:z-50 md:mt-1 md:w-full md:max-h-60", // Desktop/Tablet behavior
+            )}
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
+          >
+            {filteredOptions.length > 0 ? (
+              <ul className="py-1">
+                {filteredOptions.map(option => (
+                  <li
+                    key={option.id}
                     onClick={() => {
-                      if (onCreateTag) {
-                        onCreateTag(searchTerm.trim());
-                        setSearchTerm('');
-                      }
+                      handleToggleOption(option.id);
+                      setSearchTerm('');
+                      inputRef.current?.focus();
+                      if (maxTags === 1) setIsOpen(false); // Auto-close if single select
                     }}
-                    className="text-primary hover:underline"
+                    className={cn(
+                      'px-3 py-2.5 text-sm cursor-pointer transition-colors flex items-center gap-2',
+                      'text-foreground hover:bg-muted hover:text-foreground'
+                    )}
                   >
-                    + Crear "{searchTerm}"
-                  </button>
+                    <span className="flex-1 font-medium">{option.name}</span>
+                    {value.includes(option.id) && (
+                      <Check className="h-4 w-4 text-primary" />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-3 py-4 text-sm text-muted-foreground text-center font-medium">
+                {searchTerm ? (
+                  allowCreate ? (
+                    <button
+                      onClick={() => {
+                        if (onCreateTag) {
+                          onCreateTag(searchTerm.trim());
+                          setSearchTerm('');
+                        }
+                      }}
+                      className="text-primary hover:underline"
+                    >
+                      + Crear "{searchTerm}"
+                    </button>
+                  ) : (
+                    'No se encontraron resultados'
+                  )
                 ) : (
-                  'No se encontraron resultados'
-                )
-              ) : (
-                'No hay opciones disponibles'
-              )}
-            </div>
-          )}
-        </div>
+                  'No hay opciones disponibles'
+                )}
+              </div>
+            )}
+          </div>
+        </Portal>
       )}
     </div>
   );

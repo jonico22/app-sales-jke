@@ -1,44 +1,108 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FilterSidebar } from './components/FilterSidebar';
 import { SearchHeader } from './components/SearchHeader';
 import { ProductCard } from './components/ProductCard';
 import { productService, type Product, type Color } from '@/services/product.service';
 import { favoritesService } from '@/services/favorites.service';
 
-import { Loader2 } from 'lucide-react';
-import { POSClientSelector } from '../pos/components/POSClientSelector';
-import { AddClientModal } from '../pos/components/AddClientModal';
-import { type ClientSelectOption } from '@/services/client.service';
-import { useCartStore } from '@/store/cart.store';
+import { Loader2, ShoppingCart, User } from 'lucide-react';
+import { CashOpeningBanner } from '../pos/components/CashOpeningBanner';
+import { CashClosingBanner } from '../pos/components/CashClosingBanner';
+import { useBranchStore } from '@/store/branch.store';
+import { useSocietyStore } from '@/store/society.store';
+import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
+import { SelectClientModal } from '../pos/components/SelectClientModal';
+import { type Client, type ClientSelectOption } from '@/services/client.service';
+import { useCartStore, selectTotalItems, selectTotalPrice } from '@/store/cart.store';
 import { POSCartPanel } from '../pos/components/POSCartPanel';
-import { POSFloatingCart } from '../pos/components/POSFloatingCart';
+import { useCashShift } from '@/hooks/useCashShift';
 import { POSPaymentModal } from '../pos/components/POSPaymentModal';
 import { POSSuccessModal } from '../pos/components/POSSuccessModal';
-
+import { POSAlertModal } from '../pos/components/POSAlertModal';
+import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
+import { parseBackendError } from '@/utils/error.utils';
+import { useClients } from '@/hooks/useClients';
+import { useCategories } from '@/hooks/useCategories';
+import { useBrands } from '@/hooks/useBrands';
+import { useSessionValidator } from '@/hooks/useSessionValidator';
+import {
+    Sheet,
+    SheetContent,
+} from "@/components/ui/sheet";
+import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 export default function AdvancedSearchPage() {
-    // State
+    useSessionValidator();
+    const { data: categories = [] } = useCategories();
+    const { data: brands = [] } = useBrands();
+    const { selectedBranch } = useBranchStore();
+    const society = useSocietyStore(state => state.society);
     const [products, setProducts] = useState<Product[]>([]);
     const [colors, setColors] = useState<Color[]>([]); // Added colors state
     const [loading, setLoading] = useState(true);
+
+    // Infinite Scroll State
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const lastFilterParams = useRef('');
+
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastProductElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (loading || isLoadingMore) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, isLoadingMore, hasMore]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>(['favorites']);
+    const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>(['all']);
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
     const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
 
     // Client State
+    const { data: clients = [], isLoading: isLoadingClients } = useClients();
     const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
         id: 'public',
         name: 'Público General',
         documentNumber: '00000000'
     });
     const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
+    const [isSelectClientModalOpen, setIsSelectClientModalOpen] = useState(false);
+
+    // Auto-select real 'Público General' client from DB to have a valid UUID
+    useEffect(() => {
+        if (!isLoadingClients && clients.length > 0 && selectedClient?.id === 'public') {
+            const defaultClient = clients.find(c =>
+                c.name === 'PÚBLICO GENERAL' || c.name === 'PUBLICO GENERAL'
+            ) || clients[0];
+
+            if (defaultClient) {
+                setSelectedClient({
+                    id: defaultClient.id,
+                    name: defaultClient.name,
+                    documentNumber: defaultClient.documentNumber
+                });
+            }
+        }
+    }, [clients, isLoadingClients, selectedClient?.id]);
 
     // POS Cart State
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
-    const { clearCurrentOrder, currentOrderCode, currentOrderTotal } = useCartStore();
+    const { items, discount, orderNotes, currencyId, setCurrentOrder, clearCurrentOrder, currentOrderCode, currentOrderTotal, clearCart } = useCartStore();
+    const totalItems = useCartStore(selectTotalItems);
+    const totalPrice = useCartStore(selectTotalPrice);
+
+    const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+    const [orderError, setOrderError] = useState<string | null>(null);
 
     // Filters State
     const [filters, setFilters] = useState({
@@ -107,42 +171,44 @@ export default function AdvancedSearchPage() {
         loadInitialData();
     }, []);
 
-    // Load products when filters or search changes
-    const loadProducts = async () => {
-        setLoading(true);
-        try {
-            // Priority: If favorites filter is active, use the cached list (no extra API call)
-            if (activeQuickFilters.includes('favorites')) {
-                let data = [...favoriteProducts];
+    // Effect to reload products when filters, search, branch, or page changes
+    useEffect(() => {
+        const loadProducts = async () => {
+            const currentParams = JSON.stringify({
+                debouncedSearchQuery,
+                categoryId: filters.categoryId,
+                brand: filters.brand,
+                color: filters.color,
+                stockStatus: filters.stockStatus,
+                debouncedPriceFrom,
+                debouncedPriceTo,
+                activeQuickFilters,
+                branchId: selectedBranch?.id,
+                refreshTrigger
+            });
 
-                // Client-side filtering
-                if (debouncedSearchQuery) {
-                    const lowerQuery = debouncedSearchQuery.toLowerCase();
-                    data = data.filter(p =>
-                        p.name.toLowerCase().includes(lowerQuery) ||
-                        (p.code && p.code.toLowerCase().includes(lowerQuery)) ||
-                        (p.barcode && p.barcode.toLowerCase().includes(lowerQuery))
-                    );
-                }
-                if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
-                if (filters.brand) data = data.filter(p => p.brand === filters.brand);
-                if (filters.color) {
-                    data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
-                }
-                if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
-                if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
+            const isFilterChange = lastFilterParams.current !== currentParams;
+            let targetPage = page;
 
-                setProducts(data);
-                return;
+            if (isFilterChange) {
+                targetPage = 1;
+                setPage(1);
+                lastFilterParams.current = currentParams;
             }
 
-            // Priority: If bestSellers filter is active
-            if (activeQuickFilters.includes('bestSellers')) {
-                const bestSellersRes = await productService.getBestSellers();
-                if (bestSellersRes.success) {
-                    let data = bestSellersRes.data;
+            const isLoadMore = targetPage > 1;
 
-                    // Client-side filtering for favorites based on other active filters
+            if (isLoadMore) {
+                setIsLoadingMore(true);
+            } else {
+                setLoading(true);
+            }
+
+            try {
+                // Priority: If favorites filter is active, use the cached list
+                if (activeQuickFilters.includes('favorites')) {
+                    let data = [...favoriteProducts];
+
                     if (debouncedSearchQuery) {
                         const lowerQuery = debouncedSearchQuery.toLowerCase();
                         data = data.filter(p =>
@@ -154,62 +220,111 @@ export default function AdvancedSearchPage() {
                     if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
                     if (filters.brand) data = data.filter(p => p.brand === filters.brand);
                     if (filters.color) {
-                        data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                        const selectedColorObj = colors.find(c => c.id === filters.color);
+                        data = data.filter(p => 
+                            p.color === filters.color || 
+                            p.colorCode === filters.color || 
+                            (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
+                        );
                     }
                     if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
                     if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
 
                     setProducts(data);
-                } else {
+                    setHasMore(false);
+                    return;
+                }
+
+                // Priority: If bestSellers filter is active
+                if (activeQuickFilters.includes('bestSellers')) {
+                    const bestSellersRes = await productService.getBestSellers();
+                    if (bestSellersRes.success) {
+                        let data = bestSellersRes.data;
+
+                        if (debouncedSearchQuery) {
+                            const lowerQuery = debouncedSearchQuery.toLowerCase();
+                            data = data.filter(p =>
+                                p.name.toLowerCase().includes(lowerQuery) ||
+                                (p.code && p.code.toLowerCase().includes(lowerQuery)) ||
+                                (p.barcode && p.barcode.toLowerCase().includes(lowerQuery))
+                            );
+                        }
+                        if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
+                        if (filters.brand) data = data.filter(p => p.brand === filters.brand);
+                        if (filters.color) {
+                            const selectedColorObj = colors.find(c => c.id === filters.color);
+                            data = data.filter(p => 
+                                p.color === filters.color || 
+                                p.colorCode === filters.color || 
+                                (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
+                            );
+                        }
+                        if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
+                        if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
+
+                        setProducts(data);
+                    } else {
+                        setProducts([]);
+                    }
+                    setHasMore(false);
+                    return;
+                }
+
+                // Normal Product Fetching
+                if (!debouncedSearchQuery && !filters.categoryId && !filters.brand && !filters.color && !activeQuickFilters.includes('all')) {
                     setProducts([]);
-                }
-                return;
-            }
-
-            // Normal Product Fetching
-            // Don't fetch the massive generic list unless they've actually started a search or applied a primary filter or selected 'Todos'
-            if (!debouncedSearchQuery && !filters.categoryId && !filters.brand && !activeQuickFilters.includes('bestSellers') && !activeQuickFilters.includes('all')) {
-                setProducts([]);
-                setLoading(false);
-                return;
-            }
-
-            const params: any = {
-                limit: 50,
-                search: debouncedSearchQuery || undefined,
-                categoryId: filters.categoryId || undefined,
-                brand: filters.brand || undefined,
-                priceFrom: filters.priceFrom > 0 ? filters.priceFrom : undefined,
-                priceTo: filters.priceTo < 1000 ? filters.priceTo : undefined,
-                stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
-            };
-
-            const productsRes = await productService.getAll(params);
-
-            if (productsRes.success) {
-                let data = productsRes.data.data;
-
-                // Optional: Client-side refinement if API is loose
-                if (filters.color) {
-                    data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                    setHasMore(false);
+                    return;
                 }
 
-                setProducts(data);
+                const params: any = {
+                    limit: 10, // Increased limit for better UX
+                    page: targetPage,
+                    search: debouncedSearchQuery || undefined,
+                    categoryId: filters.categoryId || undefined,
+                    brand: filters.brand || undefined,
+                    branchId: selectedBranch?.id || undefined,
+                    priceFrom: filters.priceFrom > 0 ? filters.priceFrom : undefined,
+                    priceTo: filters.priceTo < 1000 ? filters.priceTo : undefined,
+                    color: filters.color || undefined,
+                    stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
+                };
+
+                const productsRes = await productService.getAll(params);
+
+                if (productsRes.success) {
+                    let newData = productsRes.data.data;
+                    const pagination = productsRes.data.pagination;
+
+                    if (isLoadMore) {
+                        setProducts(prev => {
+                            const existingIds = new Set(prev.map(p => p.id));
+                            const uniqueNewData = newData.filter(p => !existingIds.has(p.id));
+                            return [...prev, ...uniqueNewData];
+                        });
+                    } else {
+                        setProducts(newData);
+                    }
+
+                    if (pagination) {
+                        setHasMore(pagination.hasNextPage);
+                    } else {
+                        setHasMore(false);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading products', error);
+            } finally {
+                if (isLoadMore) {
+                    setIsLoadingMore(false);
+                } else {
+                    setLoading(false);
+                }
             }
-        } catch (error) {
-            console.error('Error loading products', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
 
-
-
-
-    // Effect to reload products when filters or search changes
-    useEffect(() => {
         loadProducts();
-    }, [debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters]);
+    }, [page, debouncedSearchQuery, filters.categoryId, filters.brand, filters.color, filters.stockStatus, debouncedPriceFrom, debouncedPriceTo, activeQuickFilters, selectedBranch?.id, society?.id, refreshTrigger]);
 
     // Simplified client-side filter for just what's loaded (pagination etc)
     // Actually, if we reload data on search, 'filteredProducts' should just be 'products'
@@ -231,7 +346,7 @@ export default function AdvancedSearchPage() {
             stockStatus: 'all'
         });
         setSearchQuery('');
-        setActiveQuickFilters(['favorites']);
+        setActiveQuickFilters(['all']);
     };
 
     const handleToggleFavorite = async (id: string) => {
@@ -295,25 +410,117 @@ export default function AdvancedSearchPage() {
 
 
 
-    const handleClientRegistered = (newClient: ClientSelectOption) => {
+    const handleClientSuccess = (client: Client) => {
+        const newClient: ClientSelectOption = {
+            id: client.id,
+            name: client.name || `${client.firstName} ${client.lastName}`.trim(),
+            documentNumber: client.documentNumber || ''
+        };
         setSelectedClient(newClient);
         setIsAddClientModalOpen(false);
     };
 
-    return (
-        <div className="flex gap-6 h-full bg-background min-h-screen">
-            {/* Sidebar */}
-            <aside className="w-80 flex-shrink-0 bg-card border border-border rounded-lg p-6 h-fit shadow-sm">
-                <h2 className="text-xl font-bold text-foreground mb-6">Filtros</h2>
-                <FilterSidebar
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    onClearFilters={handleClearFilters}
-                />
-            </aside>
+    const handleDirectPay = async () => {
+        if (items.length === 0) return;
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col gap-6">
+        setIsCreatingOrder(true);
+        setOrderError(null);
+
+        const subtotal = totalPrice / 1.18;
+        const igv = totalPrice - subtotal;
+        const total = totalPrice - (discount || 0);
+
+        try {
+            const orderData: CreateOrderRequest = {
+                societyId: society?.id || '1',
+                branchId: selectedBranch?.id || '1',
+                currencyId: society?.mainCurrency?.id || currencyId || '1',
+                partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2',
+                exchangeRate: 1.0,
+                status: OrderStatus.PENDING_PAYMENT,
+                subtotal: subtotal,
+                taxAmount: igv,
+                total: total,
+                discount: discount || 0,
+                notes: orderNotes || '',
+                orderItems: items.map(item => {
+                    const price = Number(item.product.price);
+                    return {
+                        productId: item.product.id,
+                        quantity: item.quantity,
+                        unitPrice: price,
+                        total: price * item.quantity
+                    };
+                })
+            };
+
+            const response = await orderService.create(orderData);
+
+            if (response.success && response.data) {
+                // Save order details to store for payment modal
+                setCurrentOrder(response.data.id, response.data.orderCode, total);
+
+                // Clear cart
+                clearCart();
+
+                // Open Payment modal
+                setIsPaymentModalOpen(true);
+                setRefreshTrigger(prev => prev + 1);
+            }
+        } catch (error) {
+            console.error('Failed to create order', error);
+            setOrderError(parseBackendError(error));
+        } finally {
+            setIsCreatingOrder(false);
+        }
+    };
+
+    const navigate = useNavigate();
+    const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
+
+    return (
+        <div className="flex flex-col bg-background min-h-[calc(100vh-4rem)]">
+            {/* Cash Banners */}
+            {isShiftLoading ? (
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
+                    <CashOpeningBanner isLoading={true} />
+                </div>
+            ) : !isShiftOpen ? (
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
+                    <CashOpeningBanner refreshShift={refresh} />
+                </div>
+            ) : (
+                <div className="px-4 md:px-6 pt-3 md:pt-4">
+                    <CashClosingBanner
+                        branchName={selectedBranch?.name}
+                        onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)}
+                    />
+                </div>
+            )}
+
+            {/* Client Context Header */}
+            <div className="px-4 md:px-6 py-1">
+                <div className="flex items-center justify-between gap-2 bg-card/50 px-4 py-2 rounded-xl border border-border/50 transition-colors">
+                    <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                        <User className="w-[12px] h-[12px] text-muted-foreground shrink-0" />
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">CLIENTE:</span>
+                            <span className="text-[12px] font-black text-foreground truncate uppercase min-w-0">
+                                {selectedClient?.name || 'Público General'}
+                            </span>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setIsSelectClientModalOpen(true)}
+                        className="text-[10px] font-bold text-[#4096d8] dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all uppercase tracking-tight bg-card border border-[#4096d8]/30 px-2.5 py-1 rounded-[10px] shadow-sm whitespace-nowrap shrink-0"
+                    >
+                        CAMBIAR
+                    </button>
+                </div>
+            </div>
+
+            {/* Global Search Header spans full width */}
+            <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border">
                 <SearchHeader
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
@@ -330,57 +537,176 @@ export default function AdvancedSearchPage() {
                     selectedColor={filters.color}
                     onColorSelect={(colorId) => handleFilterChange('color', colorId)}
                     onClearFilters={handleClearFilters}
-                    clientSelector={
-                        <POSClientSelector
-                            selectedClient={selectedClient}
-                            onSelectClient={setSelectedClient}
-                            onNewClient={() => setIsAddClientModalOpen(true)}
-                        />
-                    }
+                    onOpenFilters={() => setIsFilterSheetOpen(true)}
                 />
-
-                {/* Product Grid */}
-                {loading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                Resultados ({filteredProducts.length})
-                            </h2>
-                            {/* Optional: Sort dropdown */}
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3">
-                            {filteredProducts.map(product => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                    isFavorite={favorites.has(product.id)}
-                                    onToggleFavorite={handleToggleFavorite}
-                                />
-                            ))}
-                        </div>
-
-                        {filteredProducts.length === 0 && (
-                            <div className="text-center py-20 text-muted-foreground">
-                                <p>No se encontraron productos con los filtros seleccionados.</p>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
 
-            <AddClientModal
-                isOpen={isAddClientModalOpen}
-                onClose={() => setIsAddClientModalOpen(false)}
-                onClientRegistered={handleClientRegistered}
+            {/* Split Content Area */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Desktop Sidebar (Hidden on mobile) */}
+                <aside className="hidden lg:block w-72 flex-shrink-0 bg-background border-r border-border p-6 overflow-y-auto custom-scrollbar">
+                    <FilterSidebar
+                        filters={filters}
+                        categories={categories}
+                        brands={brands}
+                        onFilterChange={handleFilterChange}
+                        onClearFilters={handleClearFilters}
+                    />
+                </aside>
+
+                {/* Mobile Filter Sheet */}
+                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                    <SheetContent side="bottom" className="h-[92vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
+                        <AdvancedFilterModal
+                            isOpen={isFilterSheetOpen}
+                            onClose={() => setIsFilterSheetOpen(false)}
+                            filters={filters}
+                            categories={categories}
+                            brands={brands}
+                            onApply={(newFilters) => {
+                                setFilters(prev => ({ ...prev, ...newFilters }));
+                                setPage(1);
+                            }}
+                            onReset={handleClearFilters}
+                        />
+                    </SheetContent>
+                </Sheet>
+
+                {/* Main Content */}
+                <div className="flex-1 bg-muted/10 p-3 md:p-6">
+                    {/* Product Grid */}
+                    {loading ? (
+                        <div className="flex justify-center items-center h-64">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                    ) : (
+                        <div className="space-y-3 md:space-y-4">
+                            {/* RESULTS HEADER */}
+                            <div className="flex justify-between items-center mb-2 hidden">
+                                <h2 className="text-[12px] md:text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                                    Resultados ({filteredProducts.length})
+                                </h2>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                {filteredProducts.map((product, index) => {
+                                    if (filteredProducts.length === index + 1) {
+                                        return (
+                                            <div ref={lastProductElementRef} key={product.id}>
+                                                <ProductCard
+                                                    product={product}
+                                                    isFavorite={favorites.has(product.id)}
+                                                    onToggleFavorite={handleToggleFavorite}
+                                                />
+                                            </div>
+                                        );
+                                    } else {
+                                        return (
+                                            <ProductCard
+                                                key={product.id}
+                                                product={product}
+                                                isFavorite={favorites.has(product.id)}
+                                                onToggleFavorite={handleToggleFavorite}
+                                            />
+                                        );
+                                    }
+                                })}
+                            </div>
+
+                            {isLoadingMore && (
+                                <div className="flex justify-center items-center py-4">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                </div>
+                            )}
+
+                            {filteredProducts.length === 0 && (
+                                <div className="text-center py-20 text-muted-foreground">
+                                    <p>No se encontraron productos con los filtros seleccionados.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <ClientEditModal
+                open={isAddClientModalOpen}
+                onOpenChange={setIsAddClientModalOpen}
+                client={null}
+                onSave={() => {}}
+                onSuccess={handleClientSuccess}
             />
 
-            {/* POS Cart Integration */}
-            <POSFloatingCart onClick={() => setIsCartOpen(true)} />
+            <SelectClientModal
+                isOpen={isSelectClientModalOpen}
+                onClose={() => setIsSelectClientModalOpen(false)}
+                selectedClient={selectedClient}
+                onSelectClient={(client) => setSelectedClient(client)}
+                onNewClient={() => {
+                    setIsAddClientModalOpen(true);
+                }}
+            />
+
+            {/* Cart Footer Integration */}
+            {totalItems > 0 && (
+                <div className="sticky bottom-0 left-0 w-full bg-card border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+                    <div className="max-w-7xl mx-auto p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                        {/* Summary Info */}
+                        <div className="flex items-center gap-6">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
+                                    Productos Seleccionados
+                                </span>
+                                <span className="text-lg font-bold text-foreground leading-none">{totalItems}</span>
+                            </div>
+                            <div className="w-px h-8 bg-border" />
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
+                                    Subtotal Estimado
+                                </span>
+                                <span className="text-lg font-bold text-[#4096d8] leading-none">
+                                    {society?.mainCurrency?.symbol || 'S/'} {totalPrice.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-end gap-3 w-full md:w-auto">
+                            <button
+                                onClick={clearCart}
+                                className="hidden md:flex px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors active:scale-95"
+                            >
+                                CANCELAR
+                            </button>
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-[#4096d8] text-[#4096d8] hover:bg-blue-50 transition-all active:scale-95 bg-white"
+                            >
+                                <span className="font-medium text-sm">EDITAR PEDIDO</span>
+                            </button>
+                            <button
+                                onClick={handleDirectPay}
+                                disabled={isCreatingOrder}
+                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#4096d8] text-white hover:bg-blue-500 transition-all active:scale-95 shadow-md shadow-[#4096d8]/20 disabled:opacity-50"
+                            >
+                                {isCreatingOrder ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        <span className="font-medium text-sm">PAGAR</span>
+                                        <div className="relative flex items-center justify-center ml-1">
+                                            <ShoppingCart className="w-[18px] h-[18px]" />
+                                            <div className="absolute -top-1.5 -right-2 bg-cyan-400 text-white text-[9px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center">
+                                                {totalItems}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <POSCartPanel
                 isOpen={isCartOpen}
@@ -389,7 +715,7 @@ export default function AdvancedSearchPage() {
                 onSaleSuccess={() => {
                     setIsPaymentModalOpen(true);
                     // Refresh data to update stock
-                    loadProducts();
+                    setRefreshTrigger(prev => prev + 1);
                 }}
             />
 
@@ -400,7 +726,7 @@ export default function AdvancedSearchPage() {
                     setLastPaymentMethod(paymentMethod);
                     setIsPaymentModalOpen(false);
                     setIsSuccessModalOpen(true);
-                    loadProducts();
+                    setRefreshTrigger(prev => prev + 1);
                 }}
             />
 
@@ -416,6 +742,14 @@ export default function AdvancedSearchPage() {
                 }}
                 onPrintTicket={() => console.log('Print ticket')}
                 onShareWhatsApp={() => console.log('Share WhatsApp')}
+            />
+
+            <POSAlertModal
+                isOpen={!!orderError}
+                onClose={() => setOrderError(null)}
+                title="Error al Generar Pedido"
+                message={orderError || ''}
+                type="error"
             />
         </div>
     );
