@@ -220,7 +220,12 @@ export default function AdvancedSearchPage() {
                     if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
                     if (filters.brand) data = data.filter(p => p.brand === filters.brand);
                     if (filters.color) {
-                        data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                        const selectedColorObj = colors.find(c => c.id === filters.color);
+                        data = data.filter(p => 
+                            p.color === filters.color || 
+                            p.colorCode === filters.color || 
+                            (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
+                        );
                     }
                     if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
                     if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
@@ -247,7 +252,12 @@ export default function AdvancedSearchPage() {
                         if (filters.categoryId) data = data.filter(p => p.categoryId === filters.categoryId);
                         if (filters.brand) data = data.filter(p => p.brand === filters.brand);
                         if (filters.color) {
-                            data = data.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                            const selectedColorObj = colors.find(c => c.id === filters.color);
+                            data = data.filter(p => 
+                                p.color === filters.color || 
+                                p.colorCode === filters.color || 
+                                (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
+                            );
                         }
                         if (filters.priceFrom > 0) data = data.filter(p => parseFloat(p.price) >= filters.priceFrom);
                         if (filters.priceTo < 1000) data = data.filter(p => parseFloat(p.price) <= filters.priceTo);
@@ -261,7 +271,7 @@ export default function AdvancedSearchPage() {
                 }
 
                 // Normal Product Fetching
-                if (!debouncedSearchQuery && !filters.categoryId && !filters.brand && !activeQuickFilters.includes('all')) {
+                if (!debouncedSearchQuery && !filters.categoryId && !filters.brand && !filters.color && !activeQuickFilters.includes('all')) {
                     setProducts([]);
                     setHasMore(false);
                     return;
@@ -286,7 +296,12 @@ export default function AdvancedSearchPage() {
                     const pagination = productsRes.data.pagination;
 
                     if (filters.color) {
-                        newData = newData.filter(p => p.color === filters.color || p.colorCode === filters.color || p.color === colors.find(c => c.id === filters.color)?.color);
+                        const selectedColorObj = colors.find(c => c.id === filters.color);
+                        newData = newData.filter(p => 
+                            p.color === filters.color || 
+                            p.colorCode === filters.color || 
+                            (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
+                        );
                     }
 
                     if (isLoadMore) {

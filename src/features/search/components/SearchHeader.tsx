@@ -3,6 +3,7 @@ import type { Color } from '@/services/product.service';
 import { useState, useRef, useEffect } from 'react';
 import { Portal } from '@/components/shared/Portal';
 import { cn } from '@/lib/utils';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface SearchHeaderProps {
     searchQuery: string;
@@ -14,6 +15,50 @@ interface SearchHeaderProps {
     onColorSelect: (color: string) => void;
     onClearFilters?: () => void;
     onOpenFilters?: () => void;
+}
+
+function ColorList({ 
+    colors, 
+    selectedColor, 
+    onColorSelect 
+}: { 
+    colors: Color[], 
+    selectedColor: string, 
+    onColorSelect: (id: string) => void 
+}) {
+    return (
+        <>
+            <button
+                onClick={() => onColorSelect('')}
+                className="w-full px-4 py-3 lg:py-2 text-sm text-left flex items-center justify-between hover:bg-accent transition-colors"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 lg:w-4 lg:h-4 rounded-full bg-muted border border-border" />
+                    <span className={!selectedColor ? 'text-primary font-bold' : 'text-muted-foreground'}>Todos los Colores</span>
+                </div>
+                {!selectedColor && <Check className="w-5 h-5 lg:w-4 lg:h-4 text-primary" />}
+            </button>
+
+            {colors.map(color => (
+                <button
+                    key={color.id}
+                    onClick={() => onColorSelect(color.id)}
+                    className="w-full px-4 py-3 lg:py-2 text-sm text-left flex items-center justify-between hover:bg-accent transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-5 h-5 lg:w-4 lg:h-4 rounded-full border border-border shadow-sm"
+                            style={{ backgroundColor: color.colorCode }}
+                        />
+                        <span className={selectedColor === color.id ? 'text-primary font-bold' : 'text-muted-foreground'}>
+                            {color.color}
+                        </span>
+                    </div>
+                    {selectedColor === color.id && <Check className="w-5 h-5 lg:w-4 lg:h-4 text-primary" />}
+                </button>
+            ))}
+        </>
+    );
 }
 
 export function SearchHeader({
@@ -28,11 +73,13 @@ export function SearchHeader({
     onOpenFilters
 }: SearchHeaderProps) {
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+    const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            // For Desktop (non-portal), we use the standard ref check
+            if (!isMobileOrTablet && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsColorDropdownOpen(false);
             }
         }
@@ -40,7 +87,7 @@ export function SearchHeader({
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [isMobileOrTablet]);
 
     return (
         <div className="w-full space-y-3 sm:space-y-5">
@@ -124,61 +171,50 @@ export function SearchHeader({
 
                     {/* Color Dropdown Content */}
                     {isColorDropdownOpen && (
-                        <Portal>
-                            <div 
-                                className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm lg:hidden" 
-                                onClick={() => setIsColorDropdownOpen(false)}
-                            />
-                            <div className={cn(
-                                "fixed z-[70] bg-popover rounded-2xl shadow-2xl border border-border p-1 animate-in fade-in zoom-in-95 duration-200",
-                                "lg:absolute lg:top-full lg:left-0 lg:mt-2 lg:w-56 lg:z-20", // Desktop: standard absolute
-                                "bottom-4 left-4 right-4 mx-auto max-w-[calc(100%-2rem)] w-full lg:bottom-auto lg:mx-0 lg:max-w-none" // Mobile: Floating centered at bottom
-                            )}>
-                                <div className="p-3 border-b border-border lg:hidden flex justify-between items-center">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seleccionar Color</span>
-                                    <button onClick={() => setIsColorDropdownOpen(false)} className="p-1 hover:bg-muted rounded-full">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                <div className="max-h-[60vh] overflow-y-auto py-1 custom-scrollbar">
-                                    <button
-                                        onClick={() => {
-                                            onColorSelect('');
-                                            setIsColorDropdownOpen(false);
-                                        }}
-                                        className="w-full px-4 py-3 lg:py-2 text-sm text-left flex items-center justify-between hover:bg-accent transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-5 h-5 lg:w-4 lg:h-4 rounded-full bg-muted border border-border" />
-                                            <span className={!selectedColor ? 'text-primary font-bold' : 'text-muted-foreground'}>Todos los Colores</span>
+                        <>
+                            {isMobileOrTablet ? (
+                                <Portal>
+                                    <div 
+                                        className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm lg:hidden" 
+                                        onClick={() => setIsColorDropdownOpen(false)}
+                                    />
+                                    <div className={cn(
+                                        "fixed z-[70] bg-popover rounded-2xl shadow-2xl border border-border p-1 animate-in fade-in zoom-in-95 duration-200",
+                                        "bottom-4 left-4 right-4 mx-auto max-w-[calc(100%-2rem)] w-full"
+                                    )}>
+                                        <div className="p-3 border-b border-border flex justify-between items-center">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seleccionar Color</span>
+                                            <button onClick={() => setIsColorDropdownOpen(false)} className="p-1 hover:bg-muted rounded-full">
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         </div>
-                                        {!selectedColor && <Check className="w-5 h-5 lg:w-4 lg:h-4 text-primary" />}
-                                    </button>
-
-                                    {colors.map(color => (
-                                        <button
-                                            key={color.id}
-                                            onClick={() => {
-                                                onColorSelect(color.id);
+                                        <div className="max-h-[60vh] overflow-y-auto py-1 custom-scrollbar">
+                                            <ColorList 
+                                                colors={colors} 
+                                                selectedColor={selectedColor} 
+                                                onColorSelect={(id) => {
+                                                    onColorSelect(id);
+                                                    setIsColorDropdownOpen(false);
+                                                }} 
+                                            />
+                                        </div>
+                                    </div>
+                                </Portal>
+                            ) : (
+                                <div className="absolute top-full left-0 mt-2 w-56 z-50 bg-popover rounded-xl shadow-xl border border-border p-1 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="max-h-[60vh] overflow-y-auto py-1 custom-scrollbar">
+                                        <ColorList 
+                                            colors={colors} 
+                                            selectedColor={selectedColor} 
+                                            onColorSelect={(id) => {
+                                                onColorSelect(id);
                                                 setIsColorDropdownOpen(false);
-                                            }}
-                                            className="w-full px-4 py-3 lg:py-2 text-sm text-left flex items-center justify-between hover:bg-accent transition-colors"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div
-                                                    className="w-5 h-5 lg:w-4 lg:h-4 rounded-full border border-border shadow-sm"
-                                                    style={{ backgroundColor: color.colorCode }}
-                                                />
-                                                <span className={selectedColor === color.id ? 'text-primary font-bold' : 'text-muted-foreground'}>
-                                                    {color.color}
-                                                </span>
-                                            </div>
-                                            {selectedColor === color.id && <Check className="w-5 h-5 lg:w-4 lg:h-4 text-primary" />}
-                                        </button>
-                                    ))}
+                                            }} 
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </Portal>
+                            )}
+                        </>
                     )}
                 </div>
 
