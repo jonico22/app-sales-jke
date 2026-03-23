@@ -218,9 +218,9 @@ export function ProductEditPanel({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <form id="product-edit-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form id="product-edit-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="mb-6 border-b border-border w-full justify-start space-x-6 bg-transparent h-auto p-0">
+            <TabsList className="mb-4 border-b border-border w-full justify-start space-x-6 bg-transparent h-auto p-0">
               <TabsTrigger value="basic" className="px-0 pb-3 text-[11px] font-bold uppercase tracking-wider data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary text-muted-foreground hover:text-foreground border-b-2 border-transparent transition-all rounded-none bg-transparent">
                 Datos Básicos
               </TabsTrigger>
@@ -230,7 +230,7 @@ export function ProductEditPanel({
             </TabsList>
 
             {/* === TAB: DATOS BÁSICOS === */}
-            <TabsContent value="basic" className="space-y-6 animate-in slide-in-from-left-4 fade-in duration-300">
+            <TabsContent value="basic" className="space-y-4 animate-in slide-in-from-left-4 fade-in duration-300">
               {/* Product Name */}
               <div className="space-y-2">
                 <Label htmlFor="edit-name" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nombre del Producto</Label>
@@ -379,7 +379,7 @@ export function ProductEditPanel({
             </TabsContent>
 
             {/* === TAB: ATRIBUTOS === */}
-            <TabsContent value="attributes" className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
+            <TabsContent value="attributes" className="space-y-4 animate-in slide-in-from-right-4 fade-in duration-300">
               {/* Image Upload */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Imagen (Opcional)</Label>
