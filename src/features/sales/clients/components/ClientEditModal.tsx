@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
+import { CLIENTS_QUERY_KEY } from '@/hooks/useClients';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -48,6 +50,7 @@ export function ClientEditModal({
   onSave,
   onSuccess,
 }: ClientEditModalProps) {
+  const queryClient = useQueryClient();
   const society = useSocietyStore(state => state.society);
 
   const {
@@ -133,6 +136,9 @@ export function ClientEditModal({
         onSuccess?.(response.data);
       }
 
+      // Invalidate clients select cache to ensure POS and other selects are updated
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+ 
       onSave();
       onOpenChange(false);
     } catch (error: any) {
