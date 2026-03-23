@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LoginData, User, Role, SubscriptionInfo } from '@/services/auth.service';
 import { queryClient } from '@/lib/react-query';
+import { useSocietyStore } from './society.store';
+import { useBranchStore } from './branch.store';
+import { useCartStore } from './cart.store';
 
 interface AuthState {
   token: string | null;
@@ -43,13 +46,17 @@ export const useAuthStore = create<AuthState>()(
         // For now, let's allow the store to manage its own persistence 'auth-storage'.
       },
       logout: () => {
+        // Clear in-memory stores
+        useSocietyStore.getState().clearSociety();
+        useBranchStore.getState().clearBranch();
+        useCartStore.getState().clearCart();
+        useCartStore.getState().clearCurrentOrder(); // Ensure any pending order is also cleared
+
         queryClient.clear();
         set({ token: null, user: null, role: null, subscription: null, modulePermissions: null, isAuthenticated: false });
         localStorage.removeItem('token'); // Clear the manual token if we still use it for interceptors
 
-        // Clear all other stores
-        // We need to import and clear cart, branch, and society stores
-        // This will be done by clearing their localStorage keys
+        // Clear all other stores persistence as safety
         localStorage.removeItem('pos-cart-storage');
         localStorage.removeItem('branch-storage');
         localStorage.removeItem('society-storage');
