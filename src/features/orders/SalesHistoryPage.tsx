@@ -67,7 +67,7 @@ export default function SalesHistoryPage() {
     });
 
     // Sorting state
-    const [sortBy, setSortBy] = useState<string>('updatedAt');
+    const [sortBy, setSortBy] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -471,47 +471,47 @@ export default function SalesHistoryPage() {
                     <table className="w-full">
                         <thead className="bg-muted/30 border-b border-border">
                             <tr>
-                                <SortableTableHead 
-                                    field="orderCode" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="orderCode"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     ID Venta
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="updatedAt" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="updatedAt"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Fecha de Modificación
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="partnerName" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="partnerName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Cliente
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="totalAmount" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="totalAmount"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Total
                                 </SortableTableHead>
                                 <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
-                                <SortableTableHead 
-                                    field="status" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="status"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
                                 >
@@ -607,8 +607,8 @@ export default function SalesHistoryPage() {
                             const payment = order.OrderPayment && order.OrderPayment.length > 0 ? order.OrderPayment[0] : undefined;
 
                             return (
-                                <div 
-                                    key={order.id} 
+                                <div
+                                    key={order.id}
                                     className="bg-card rounded-2xl border border-border/80 shadow-none active:bg-muted/30 transition-all relative overflow-hidden flex flex-col"
                                     onClick={() => setSearchParams({ id: order.id })}
                                 >
@@ -664,7 +664,7 @@ export default function SalesHistoryPage() {
 
                                     {/* 5. Actions Footer */}
                                     <div className="p-3 bg-muted/20 border-t border-border/30 flex items-center justify-end gap-2">
-                                        <button 
+                                        <button
                                             className="flex-1 flex items-center justify-center gap-2 h-10 bg-card hover:bg-muted text-foreground border border-border/40 rounded-xl transition-all active:scale-95"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -674,7 +674,7 @@ export default function SalesHistoryPage() {
                                             <FileText size={14} className="opacity-50" />
                                             <span className="text-[10px] font-black uppercase tracking-widest">Ver Detalle</span>
                                         </button>
-                                        <button 
+                                        <button
                                             className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 rounded-xl transition-all active:scale-95 shrink-0"
                                             onClick={(e) => e.stopPropagation()}
                                         >

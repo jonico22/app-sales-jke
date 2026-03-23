@@ -59,9 +59,9 @@ export default function PendingOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    
+
     // Sorting state
-    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortBy, setSortBy] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Modal State
@@ -285,38 +285,38 @@ export default function PendingOrdersPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border bg-muted/50">
-                                <SortableTableHead 
-                                    field="orderCode" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="orderCode"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Ticket ID
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="partnerName" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="partnerName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Cliente
                                 </SortableTableHead>
                                 <th className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider">Ítems</th>
-                                <SortableTableHead 
-                                    field="createdAt" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="createdAt"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
                                 >
                                     Espera
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="totalAmount" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="totalAmount"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="px-6 py-3 text-left text-[10px] font-bold text-muted-foreground/70 uppercase tracking-wider"
                                 >
@@ -430,8 +430,8 @@ export default function PendingOrdersPage() {
                         </div>
                     ) : (
                         filteredOrders.map((order) => (
-                            <div 
-                                key={order.id} 
+                            <div
+                                key={order.id}
                                 className="bg-card rounded-2xl border border-border/80 shadow-none active:bg-muted/30 transition-all relative overflow-hidden flex flex-col"
                             >
                                 {/* 1. Header: Ticket ID + Wait Time Status */}

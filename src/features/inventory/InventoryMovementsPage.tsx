@@ -56,7 +56,7 @@ export default function InventoryMovementsPage() {
     const [pageSize] = useState(10);
 
     // Sorting state
-    const [sortBy, setSortBy] = useState<string>('createdAt');
+    const [sortBy, setSortBy] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     const getBranchName = (id: string, type: 'origin' | 'destination') => {
@@ -309,64 +309,64 @@ export default function InventoryMovementsPage() {
                     <Table>
                         <TableHeader className="bg-muted/30 border-b border-border">
                             <TableRow className="hover:bg-transparent border-none">
-                                <SortableTableHead 
-                                    field="referenceCode" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="referenceCode"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6"
                                 >
                                     Referencia
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="createdAt" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="createdAt"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
                                 >
                                     Fecha
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="productName" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="productName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
                                 >
                                     Producto
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="originBranchName" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="originBranchName"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
                                 >
                                     Ruta (Origen → Destino)
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="quantityMoved" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="quantityMoved"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
                                 >
                                     Cant.
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="notes" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="notes"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
                                 >
                                     Observación / Motivo
                                 </SortableTableHead>
-                                <SortableTableHead 
-                                    field="status" 
-                                    currentSortBy={sortBy} 
-                                    currentSortOrder={sortOrder} 
+                                <SortableTableHead
+                                    field="status"
+                                    currentSortBy={sortBy}
+                                    currentSortOrder={sortOrder}
                                     onSort={handleSort}
                                     className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
                                 >
