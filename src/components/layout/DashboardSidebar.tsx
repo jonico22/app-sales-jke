@@ -2,6 +2,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, ChevronDown, ChevronRight, Building2, CreditCard } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 
@@ -160,6 +161,13 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         ? prev.filter(item => item !== name)
         : [...prev, name]
     );
+  };
+
+  const queryClient = useQueryClient();
+
+  const handleLogout = () => {
+    queryClient.clear(); // Clear all React Query cache
+    logout();
   };
 
   return (
@@ -370,10 +378,9 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
           </div>
         )}
 
-        {/* Bottom Section (Logout) */}
         <div className="p-4 border-t border-border/50">
           <button
-            onClick={() => logout()}
+            onClick={handleLogout}
             className={cn(
               "flex items-center gap-3 py-3 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors uppercase tracking-wide",
               isCollapsed ? "justify-center px-0" : "px-3"

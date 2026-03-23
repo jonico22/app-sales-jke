@@ -9,6 +9,8 @@ import { Button, Input, Label, Card, Checkbox } from '@/components/ui';
 import { authService } from '@/services/auth.service';
 import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
+import { useQueryClient } from '@tanstack/react-query';
+import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -36,9 +38,15 @@ export default function LoginPage() {
     }
   }, [setValue]);
 
+  const queryClient = useQueryClient();
+
   const onSubmit = async (data: LoginSchema) => {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
+      
+      // Invalidate permissions to force a re-fetch for the new session/role
+      await queryClient.invalidateQueries({ queryKey: PERMISSIONS_QUERY_KEY });
+
       login(response.data); // Update global store
 
       // Only load society data if password change is not mandatory
