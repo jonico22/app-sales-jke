@@ -278,7 +278,7 @@ export default function AdvancedSearchPage() {
                 }
 
                 const params: any = {
-                    limit: 5, // Load 5 products by default
+                    limit: 10, // Increased limit for better UX
                     page: targetPage,
                     search: debouncedSearchQuery || undefined,
                     categoryId: filters.categoryId || undefined,
@@ -286,6 +286,7 @@ export default function AdvancedSearchPage() {
                     branchId: selectedBranch?.id || undefined,
                     priceFrom: filters.priceFrom > 0 ? filters.priceFrom : undefined,
                     priceTo: filters.priceTo < 1000 ? filters.priceTo : undefined,
+                    color: filters.color || undefined,
                     stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
                 };
 
@@ -294,15 +295,6 @@ export default function AdvancedSearchPage() {
                 if (productsRes.success) {
                     let newData = productsRes.data.data;
                     const pagination = productsRes.data.pagination;
-
-                    if (filters.color) {
-                        const selectedColorObj = colors.find(c => c.id === filters.color);
-                        newData = newData.filter(p => 
-                            p.color === filters.color || 
-                            p.colorCode === filters.color || 
-                            (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
-                        );
-                    }
 
                     if (isLoadMore) {
                         setProducts(prev => {

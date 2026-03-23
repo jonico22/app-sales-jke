@@ -22,8 +22,10 @@ const profileSchema = z.object({
     firstName: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
     lastName: z.string().min(2, { message: "El apellido debe tener al menos 2 caracteres" }),
     phone: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),
     documentType: z.string().optional().nullable(),
     documentNumber: z.string().optional().nullable(),
+    sexo: z.enum(['MALE', 'FEMALE', 'OTHER']).optional().nullable(),
 });
 
 type ProfileSchema = z.infer<typeof profileSchema>;
@@ -41,8 +43,10 @@ export default function ProfilePage() {
             firstName: user?.person?.firstName || '',
             lastName: user?.person?.lastName || '',
             phone: user?.person?.phone || '',
+            address: user?.person?.address || '',
             documentType: user?.person?.documentType?.code || '',
             documentNumber: user?.person?.documentNumber || '',
+            sexo: user?.person?.sexo || 'MALE',
         },
     });
 
@@ -56,8 +60,10 @@ export default function ProfilePage() {
                         firstName: response.data.person?.firstName || '',
                         lastName: response.data.person?.lastName || '',
                         phone: response.data.person?.phone || '',
+                        address: response.data.person?.address || '',
                         documentType: response.data.person?.documentType?.code || '',
                         documentNumber: response.data.person?.documentNumber || '',
+                        sexo: response.data.person?.sexo || 'MALE',
                     });
                     if (response.data.image) {
                         setAvatarPreview(response.data.image);
@@ -75,13 +81,7 @@ export default function ProfilePage() {
     const onSubmit = async (data: ProfileSchema) => {
         try {
             const response = await authService.updateProfile({
-                person: {
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    phone: data.phone,
-                    documentType: data.documentType,
-                    documentNumber: data.documentNumber,
-                },
+                ...data,
                 image: avatarPreview,
             });
 
@@ -207,6 +207,23 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
 
+                                {/* Sexo */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="sexo">Sexo</Label>
+                                    <div className="relative">
+                                        <select
+                                            id="sexo"
+                                            {...register('sexo')}
+                                            className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent appearance-none"
+                                        >
+                                            <option value="MALE">Masculino</option>
+                                            <option value="FEMALE">Femenino</option>
+                                            <option value="OTHER">Otro</option>
+                                        </select>
+                                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 rotate-90 pointer-events-none" />
+                                    </div>
+                                </div>
+
                                 {/* Phone */}
                                 <div className="space-y-2">
                                     <Label htmlFor="phone">Teléfono</Label>
@@ -248,6 +265,16 @@ export default function ProfilePage() {
                                         id="documentNumber"
                                         placeholder="12345678X"
                                         {...register('documentNumber')}
+                                    />
+                                </div>
+
+                                {/* Address */}
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="address">Dirección Fisica</Label>
+                                    <Input
+                                        id="address"
+                                        placeholder="Ej. Calle Principal 123..."
+                                        {...register('address')}
                                     />
                                 </div>
                             </div>

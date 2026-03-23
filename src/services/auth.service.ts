@@ -25,8 +25,10 @@ export interface Person {
   lastName: string;
   email: string;
   phone: string | null;
+  address: string | null;
   documentNumber: string | null;
   documentType?: DocumentType;
+  sexo: 'MALE' | 'FEMALE' | 'OTHER' | null;
 }
 
 export interface UserSession {
@@ -108,16 +110,11 @@ export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phone?: string | null;
-  documentType?: string | null;
+  address?: string | null;
   documentNumber?: string | null;
+  documentType?: string | null; // Leave as optional for compatibility
+  sexo?: 'MALE' | 'FEMALE' | 'OTHER' | string | null;
   image?: string | null;
-  person?: {
-    firstName?: string;
-    lastName?: string;
-    phone?: string | null;
-    documentType?: string | null;
-    documentNumber?: string | null;
-  };
 }
 
 export interface UpdateProfileResponse {

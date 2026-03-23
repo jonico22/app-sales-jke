@@ -140,6 +140,7 @@ export const productService = {
         isActive?: boolean;
         categoryCode?: string;
         categoryId?: string;
+        color?: string;
         stockStatus?: 'all' | 'out';
         branchId?: string;
         createdBy?: string;
