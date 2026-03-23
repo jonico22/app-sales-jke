@@ -51,8 +51,8 @@ export default function SecurityPage() {
             const { setMustChangePassword, updateUser } = useAuthStore.getState();
             setMustChangePassword(false);
 
-            // Invalidate permissions to force a re-fetch
-            await queryClient.invalidateQueries({ queryKey: PERMISSIONS_QUERY_KEY });
+            // Remove permissions to force a clean fetch and show skeleton loader
+            queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
 
             // Fetch me data and society data now that the user is fully authorized
             try {

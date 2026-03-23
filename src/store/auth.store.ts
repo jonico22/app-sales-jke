@@ -33,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
           role: data.role,
           subscription: data.subscription || null,
+          modulePermissions: null, // Clear stale permissions from previous session
         });
         // We can also handle localStorage manually here if needed, 
         // but 'persist' middleware handles it for the store state.

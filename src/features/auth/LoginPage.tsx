@@ -44,8 +44,8 @@ export default function LoginPage() {
     try {
       const response = await authService.login({ email: data.email, password: data.password });
       
-      // Invalidate permissions to force a re-fetch for the new session/role
-      await queryClient.invalidateQueries({ queryKey: PERMISSIONS_QUERY_KEY });
+      // Remove existing permissions to ensure a clean state and show skeleton loader
+      queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
 
       login(response.data); // Update global store
 

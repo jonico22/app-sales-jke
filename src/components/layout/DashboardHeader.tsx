@@ -7,9 +7,10 @@ import NotificationDropdown from './NotificationDropdown';
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
+  hideMenu?: boolean;
 }
 
-export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+export default function DashboardHeader({ onMenuClick, hideMenu = false }: DashboardHeaderProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -78,13 +79,15 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
     <header className="bg-card border-b border-border h-16 px-6 flex items-center justify-between sticky top-0 z-50 transition-colors">
       {/* Left: Title & Menu */}
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="md:hidden p-2 -ml-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
-          onClick={onMenuClick}
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        {!hideMenu && (
+          <button
+            type="button"
+            className="md:hidden p-2 -ml-2 text-muted-foreground hover:bg-muted rounded-md transition-colors"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
         <h1 className="text-foreground font-bold tracking-wider text-sm hidden sm:block">
           {getPageTitle(pathname)}
         </h1>

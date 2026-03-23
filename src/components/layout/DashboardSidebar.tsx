@@ -70,7 +70,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
   const subscription = useAuthStore((state) => state.subscription);
-  const { data: permissionData } = usePermissions();
+  const { data: permissionData, isLoading, isFetching } = usePermissions();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos and Configuración for now
   const [activePopover, setActivePopover] = useState<string | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ top: number }>({ top: 0 });
@@ -113,12 +113,15 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
     'Inventario': 'INVENTARIO',
     'Ventas': 'VENTAS',
     'Usuarios': 'USUARIOS',
-    'Reportes': 'REPORTES',
+    'Reportes': 'REPORTE',
     'Suscripción': 'SUSCRIPCION',
     'Configuración': 'CONFIGURACION'
   };
 
   const getPermittedNavItems = () => {
+    // If no data and loading/fetching, return empty so we show skeleton
+    if (!permissionData?.modules && (isLoading || isFetching)) return [];
+
     // If blocked, only show Configuration -> Subscription
     if (isBlocked) {
       return navItems
@@ -131,7 +134,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
 
     // Normal filtering based on permissions
     const modules = permissionData?.modules;
-    if (!modules) return navItems; // Fallback entirely if no permissions loaded yet (or consider hiding all)
+    if (!modules) return []; // Fallback empty if somehow loaded but no data
 
     return navItems.filter(item => {
       const moduleKey = moduleMap[item.name];
@@ -169,6 +172,20 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
     queryClient.clear(); // Clear all React Query cache
     logout();
   };
+
+  // Skeleton component for loading state
+  const NavItemSkeleton = () => (
+    <div className="space-y-4 px-3">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="flex items-center gap-3 py-3 px-3 rounded-lg animate-pulse">
+          <div className="h-5 w-5 rounded bg-muted-foreground/20 flex-shrink-0" />
+          {!isCollapsed && (
+            <div className="h-4 w-28 rounded bg-muted-foreground/20" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <>
@@ -212,137 +229,142 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
-          {displayNavItems.map((item) => {
-            const hasChildren = item.children && item.children.length > 0;
-            const isExpanded = expandedMenus.includes(item.name);
-            const isActive = pathname === item.href || (hasChildren && item.children?.some(child => pathname === child.href));
+        <nav className="flex-1 py-6 space-y-1 overflow-y-auto overflow-x-hidden">
+          {(isLoading || (isFetching && !permissionData)) ? (
+            <NavItemSkeleton />
+          ) : (
+            displayNavItems.map((item) => {
+              const hasChildren = item.children && item.children.length > 0;
+              const isExpanded = expandedMenus.includes(item.name);
+              const isActive = pathname === item.href || (hasChildren && item.children?.some(child => pathname === child.href));
 
-            if (hasChildren) {
-              return (
-                <div key={item.name} className="space-y-1">
-                  <button
-                    onClick={(e) => toggleMenu(item.name, e)}
-                    className={cn(
-                      "w-full flex items-center justify-between py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide group relative",
-                      isCollapsed ? "justify-center px-0" : "px-3",
-                      // Single item style for active/open collapsed items
-                      (isCollapsed && (isActive || activePopover === item.name))
-                        ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
-                        : isActive
-                          ? "text-sky-600"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                    title={isCollapsed ? item.name : undefined}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0",
-                        (isActive || (isCollapsed && activePopover === item.name)) ? "text-sky-600" : "text-muted-foreground"
-                      )} />
-                      <span className={cn(
-                        "transition-all duration-300 whitespace-nowrap",
-                        isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
-                      )}>
-                        {item.name}
-                      </span>
-                    </div>
-                    {!isCollapsed && (
-                      <div className="text-muted-foreground">
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              if (hasChildren) {
+                return (
+                  <div key={item.name} className="space-y-1 px-3">
+                    <button
+                      onClick={(e) => toggleMenu(item.name, e)}
+                      className={cn(
+                        "w-full flex items-center justify-between py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide group relative",
+                        isCollapsed ? "justify-center px-0" : "px-3",
+                        // Single item style for active/open collapsed items
+                        (isCollapsed && (isActive || activePopover === item.name))
+                          ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
+                          : isActive
+                            ? "text-sky-600"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                      title={isCollapsed ? item.name : undefined}
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon className={cn(
+                          "h-5 w-5 flex-shrink-0",
+                          (isActive || (isCollapsed && activePopover === item.name)) ? "text-sky-600" : "text-muted-foreground"
+                        )} />
+                        <span className={cn(
+                          "transition-all duration-300 whitespace-nowrap",
+                          isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+                        )}>
+                          {item.name}
+                        </span>
                       </div>
-                    )}
+                      {!isCollapsed && (
+                        <div className="text-muted-foreground">
+                          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </div>
+                      )}
 
-                    {/* Floating Popover for Collapsed State */}
-                    {isCollapsed && activePopover === item.name && (
-                      <div
-                        ref={popoverRef}
-                        className="fixed left-[84px] z-[100] bg-card border border-border shadow-2xl rounded-xl py-2 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
-                        style={{
-                          top: `${popoverPosition.top}px`,
-                        }}
-                      >
-                        <div className="px-4 py-3 border-b border-border/50 mb-1 flex items-center gap-2">
-                          <item.icon className="h-4 w-4 text-sky-600" />
-                          <span className="text-[11px] font-bold text-foreground uppercase tracking-wider whitespace-nowrap">{item.name}</span>
+                      {/* Floating Popover for Collapsed State */}
+                      {isCollapsed && activePopover === item.name && (
+                        <div
+                          ref={popoverRef}
+                          className="fixed left-[84px] z-[100] bg-card border border-border shadow-2xl rounded-xl py-2 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
+                          style={{
+                            top: `${popoverPosition.top}px`,
+                          }}
+                        >
+                          <div className="px-4 py-3 border-b border-border/50 mb-1 flex items-center gap-2">
+                            <item.icon className="h-4 w-4 text-sky-600" />
+                            <span className="text-[11px] font-bold text-foreground uppercase tracking-wider whitespace-nowrap">{item.name}</span>
+                          </div>
+                          <div className="px-2 space-y-0.5">
+                            {item.children?.map((child) => {
+                              const isChildActive = pathname === child.href;
+                              return (
+                                <Link
+                                  key={child.href}
+                                  to={child.href}
+                                  className={cn(
+                                    "flex items-center px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors rounded-lg",
+                                    isChildActive
+                                      ? "text-sky-600 bg-sky-50 dark:bg-sky-500/10 font-semibold"
+                                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                  )}
+                                >
+                                  {child.name}
+                                </Link>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="px-2 space-y-0.5">
-                          {item.children?.map((child) => {
-                            const isChildActive = pathname === child.href;
-                            return (
-                              <Link
-                                key={child.href}
-                                to={child.href}
-                                className={cn(
-                                  "flex items-center px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors rounded-lg",
-                                  isChildActive
-                                    ? "text-sky-600 bg-sky-50 dark:bg-sky-500/10 font-semibold"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                                )}
-                              >
-                                {child.name}
-                              </Link>
-                            );
-                          })}
-                        </div>
+                      )}
+                    </button>
+
+                    {/* Submenu */}
+                    <div className={cn(
+                      "overflow-hidden transition-all duration-300 ease-in-out",
+                      !isCollapsed && isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    )}>
+                      <div className="pl-11 pr-3 space-y-1 py-1">
+                        {item.children?.map((child) => {
+                          const isChildActive = pathname === child.href;
+                          return (
+                            <Link
+                              key={child.href}
+                              to={child.href}
+                              className={cn(
+                                "block py-2 text-sm font-medium transition-colors rounded-lg",
+                                isChildActive
+                                  ? "text-sky-600 bg-sky-50/50 dark:bg-sky-500/10 pl-3"
+                                  : "text-muted-foreground hover:text-foreground hover:pl-2"
+                              )}
+                              onClick={() => window.innerWidth < 768 && onClose()}
+                            >
+                              {child.name}
+                            </Link>
+                          );
+                        })}
                       </div>
-                    )}
-                  </button>
-
-                  {/* Submenu */}
-                  <div className={cn(
-                    "overflow-hidden transition-all duration-300 ease-in-out",
-                    !isCollapsed && isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  )}>
-                    <div className="pl-11 pr-3 space-y-1 py-1">
-                      {item.children?.map((child) => {
-                        const isChildActive = pathname === child.href;
-                        return (
-                          <Link
-                            key={child.href}
-                            to={child.href}
-                            className={cn(
-                              "block py-2 text-sm font-medium transition-colors rounded-lg",
-                              isChildActive
-                                ? "text-sky-600 bg-sky-50/50 dark:bg-sky-500/10 pl-3"
-                                : "text-muted-foreground hover:text-foreground hover:pl-2"
-                            )}
-                            onClick={() => window.innerWidth < 768 && onClose()}
-                          >
-                            {child.name}
-                          </Link>
-                        );
-                      })}
                     </div>
                   </div>
+                );
+              }
+
+              return (
+                <div key={item.href || item.name} className="px-3">
+                  <Link
+                    to={item.href || '#'}
+                    className={cn(
+                      "flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide",
+                      isCollapsed ? "justify-center px-0" : "px-3",
+                      isActive
+                        ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                    onClick={() => window.innerWidth < 768 && onClose()} // Close on mobile click
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-muted-foreground")} />
+                    <span className={cn(
+                      "transition-all duration-300 whitespace-nowrap",
+                      isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
+                    )}>
+                      {item.name}
+                    </span>
+                  </Link>
                 </div>
               );
-            }
-
-            return (
-              <Link
-                key={item.href || item.name}
-                to={item.href || '#'}
-                className={cn(
-                  "flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-colors uppercase tracking-wide",
-                  isCollapsed ? "justify-center px-0" : "px-3",
-                  isActive
-                    ? "bg-sky-50/50 dark:bg-sky-500/10 text-sky-600"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-                onClick={() => window.innerWidth < 768 && onClose()} // Close on mobile click
-                title={isCollapsed ? item.name : undefined}
-              >
-                <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-sky-600" : "text-muted-foreground")} />
-                <span className={cn(
-                  "transition-all duration-300 whitespace-nowrap",
-                  isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
-                )}>
-                  {item.name}
-                </span>
-              </Link>
-            );
-          })}
+            })
+          )}
         </nav>
 
         {/* User Info Section */}
