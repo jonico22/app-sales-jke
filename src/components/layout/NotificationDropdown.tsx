@@ -35,21 +35,23 @@ export default function NotificationDropdown() {
             setIsAnimating(true);
             setTimeout(() => setIsAnimating(false), 1000);
 
-            // Show toast
-            toast(newNotification.title, {
-                description: newNotification.message,
-                action: {
-                    label: newNotification.type === 'SYSTEM' ? 'Descargar' : 'Ver',
-                    onClick: () => {
-                        if (newNotification.type === 'SYSTEM' && newNotification.link) {
-                            downloadFileFromUrl(newNotification.link);
-                        } else if (newNotification.link) {
-                            navigate(newNotification.link);
+            // Show toast only for SYSTEM notifications (avoiding clutter from frequent sales)
+            if (newNotification.type === NotificationType.SYSTEM) {
+                toast(newNotification.title, {
+                    description: newNotification.message,
+                    action: {
+                        label: newNotification.type === 'SYSTEM' ? 'Descargar' : 'Ver',
+                        onClick: () => {
+                            if (newNotification.type === 'SYSTEM' && newNotification.link) {
+                                downloadFileFromUrl(newNotification.link);
+                            } else if (newNotification.link) {
+                                navigate(newNotification.link);
+                            }
+                            setIsOpen(true);
                         }
-                        setIsOpen(true);
                     }
-                }
-            });
+                });
+            }
 
             // Update local list state if it's already visible
             setNotifications(prev => {
