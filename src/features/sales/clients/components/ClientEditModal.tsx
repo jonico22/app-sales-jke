@@ -26,7 +26,9 @@ const clientSchema = z.object({
   companyName: z.string().optional(),
   documentNumber: z.string().min(1, 'El número de documento es obligatorio'),
   documentType: z.string().min(1, 'El tipo de documento es obligatorio'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  email: z.string().optional().refine(val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+    message: "Email inválido"
+  }),
   phone: z.string().optional().or(z.literal('')),
   address: z.string().optional().or(z.literal('')),
   societyId: z.string().optional(),
@@ -257,10 +259,12 @@ export function ClientEditModal({
  
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Correo Electrónico</Label>
+                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Correo Electrónico <span className="text-muted-foreground/50 font-normal normal-case">(Opcional)</span>
+                  </Label>
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     placeholder="ejemplo@correo.com"
                     {...register('email')}
                     className={errors.email ? "border-destructive bg-destructive/10 h-10 text-xs" : "bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors"}
