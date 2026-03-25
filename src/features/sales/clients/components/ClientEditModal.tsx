@@ -33,6 +33,60 @@ const clientSchema = z.object({
   address: z.string().optional().or(z.literal('')),
   societyId: z.string().optional(),
   isActive: z.boolean(),
+}).superRefine((data, ctx) => {
+  const { documentType, documentNumber } = data;
+
+  if (documentType === 'DNI') {
+    if (!/^\d{8}$/.test(documentNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El DNI debe tener exactamente 8 dígitos numéricos',
+        path: ['documentNumber'],
+      });
+    }
+  } else if (documentType === 'RUC') {
+    if (!/^\d{11}$/.test(documentNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El RUC debe tener exactamente 11 dígitos numéricos',
+        path: ['documentNumber'],
+      });
+    } else if (!/^(10|20|15)/.test(documentNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El RUC debe empezar con 10, 20 o 15',
+        path: ['documentNumber'],
+      });
+    }
+  } else if (documentType === 'CE') {
+    if (documentNumber.length < 9 || documentNumber.length > 12) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El Carné de Extranjería debe tener entre 9 y 12 caracteres',
+        path: ['documentNumber'],
+      });
+    } else if (!/^[a-zA-Z0-9]+$/.test(documentNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El documento debe ser alfanumérico',
+        path: ['documentNumber'],
+      });
+    }
+  } else if (documentType === 'PASSPORT') {
+    if (documentNumber.length !== 12) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El Pasaporte debe tener exactamente 12 caracteres',
+        path: ['documentNumber'],
+      });
+    } else if (!/^[a-zA-Z0-9]+$/.test(documentNumber)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El documento debe ser alfanumérico',
+        path: ['documentNumber'],
+      });
+    }
+  }
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -200,10 +254,10 @@ export function ClientEditModal({
                       {...register('documentType')}
                       className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all h-10"
                     >
-                      <option value="DNI">DNI (Persona)</option>
-                      <option value="RUC">RUC (Empresa/Persona)</option>
-                      <option value="PASSPORT">PASAPORTE</option>
-                      <option value="CE">C.E.</option>
+                      <option value="DNI">DNI</option>
+                      <option value="RUC">RUC</option>
+                      <option value="PASSPORT">PAS (Pasaporte)</option>
+                      <option value="CE">CE / CEX (Extranjería)</option>
                     </select>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
                       <ChevronDown className="h-4 w-4" />

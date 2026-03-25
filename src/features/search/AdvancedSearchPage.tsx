@@ -25,14 +25,12 @@ import { parseBackendError } from '@/utils/error.utils';
 import { useClients } from '@/hooks/useClients';
 import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
-import { useSessionValidator } from '@/hooks/useSessionValidator';
 import {
     Sheet,
     SheetContent,
 } from "@/components/ui/sheet";
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 export default function AdvancedSearchPage() {
-    useSessionValidator();
     const { data: categories = [] } = useCategories();
     const { data: brands = [] } = useBrands();
     const { selectedBranch } = useBranchStore();
@@ -556,7 +554,7 @@ export default function AdvancedSearchPage() {
 
                 {/* Mobile Filter Sheet */}
                 <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-                    <SheetContent side="bottom" className="h-[92vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
+                    <SheetContent side="bottom" className="h-[90vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
                         <AdvancedFilterModal
                             isOpen={isFilterSheetOpen}
                             onClose={() => setIsFilterSheetOpen(false)}

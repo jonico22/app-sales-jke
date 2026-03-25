@@ -374,7 +374,7 @@ export default function SalesHistoryPage() {
 
     if (detailId) {
         return (
-            <div className="p-6 max-w-[1400px] mx-auto">
+            <div className="max-w-[1400px] mx-auto">
                 <SalesOrderDetailView
                     orderId={detailId}
                     onBack={handleClearDetail}
