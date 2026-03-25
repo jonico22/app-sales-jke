@@ -25,14 +25,12 @@ import { parseBackendError } from '@/utils/error.utils';
 import { useClients } from '@/hooks/useClients';
 import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
-import { useSessionValidator } from '@/hooks/useSessionValidator';
 import {
     Sheet,
     SheetContent,
 } from "@/components/ui/sheet";
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 export default function AdvancedSearchPage() {
-    useSessionValidator();
     const { data: categories = [] } = useCategories();
     const { data: brands = [] } = useBrands();
     const { selectedBranch } = useBranchStore();

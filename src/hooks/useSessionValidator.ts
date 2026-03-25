@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { authService } from '@/services/auth.service';
+import { useAuthQuery } from './useAuthQuery';
 import { useNavigate } from 'react-router-dom';
 
 import { AxiosError } from 'axios';
 
 export function useSessionValidator() {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { isAuthenticated, logout, token, setSubscription, updateUser } = useAuthStore();
+  const { logout, setSubscription, updateUser } = useAuthStore();
   const navigate = useNavigate();
 
   const handleRedirect = useCallback(() => {
@@ -17,39 +17,28 @@ export function useSessionValidator() {
     setIsSessionExpired(false);
   }, [logout, navigate]);
 
+  const { data, error, isError } = useAuthQuery();
+
   useEffect(() => {
-    // Only check if we think we are authenticated
-    if (!isAuthenticated || !token) return;
-
-    const checkSession = async () => {
-      try {
-        const response = await authService.getMe();
-
-        if (response.data) {
-          if (response.data.subscription) {
-            setSubscription(response.data.subscription);
-          }
-          if (response.data.user) {
-            updateUser(response.data.user);
-          }
-        }
-      } catch (error) {
-        const err = error as AxiosError;
-        // If 401 Unauthorized, session is definitely expired/invalid
-        if (err.response?.status === 401 || err.status === 401) {
-          setIsSessionExpired(true);
-        }
-        // We could also check for other specific error codes if needed
+    if (data?.data) {
+      if (data.data.subscription) {
+        setSubscription(data.data.subscription);
       }
-    };
+      if (data.data.user) {
+        updateUser(data.data.user);
+      }
+    }
+  }, [data, setSubscription, updateUser]);
 
-    // Check on mount
-    checkSession();
+  useEffect(() => {
+    if (isError) {
+      const err = error as AxiosError;
+      if (err.response?.status === 401 || err.status === 401) {
+        setIsSessionExpired(true);
+      }
+    }
+  }, [isError, error]);
 
-    // Removed the window.focus listener to prevent redundant /auth/me calls
-    // (e.g., when file dialogs close or clicking back into the window).
-    // The Axios interceptor already handles 401 errors gracefully.
-  }, [isAuthenticated, token]);
 
   return {
     isSessionExpired,

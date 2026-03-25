@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { Button, Input, Label, Card } from '@/components/ui';
 import { authService } from '@/services/auth.service';
-import { userService } from '@/services/user.service';
+import { useQueryClient } from '@tanstack/react-query';
+import { useUserProfileQuery, USER_PROFILE_QUERY_KEY } from '@/hooks/useUserProfileQuery';
 import { useAuthStore } from '@/store/auth.store';
 import { AvatarSelectionModal } from './components/AvatarSelectionModal';
 
@@ -37,6 +38,8 @@ export default function ProfilePage() {
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.image || null);
 
+    const { data: profileResponse } = useUserProfileQuery();
+
     const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<ProfileSchema>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
@@ -50,33 +53,29 @@ export default function ProfilePage() {
         },
     });
 
+    // Sync form with fresh data from /users/me
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await userService.getMe();
-                if (response.success) {
-                    updateUser(response.data);
-                    reset({
-                        firstName: response.data.person?.firstName || '',
-                        lastName: response.data.person?.lastName || '',
-                        phone: response.data.person?.phone || '',
-                        address: response.data.person?.address || '',
-                        documentType: response.data.person?.documentType?.code || '',
-                        documentNumber: response.data.person?.documentNumber || '',
-                        sexo: response.data.person?.sexo || 'MALE',
-                    });
-                    if (response.data.image) {
-                        setAvatarPreview(response.data.image);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                // We don't necessarily want to toast error here as it might just be a first-time load issue
+        if (profileResponse?.data && !isDirty) {
+            const freshUser = profileResponse.data;
+            updateUser(freshUser);
+            reset({
+                firstName: freshUser.person?.firstName || '',
+                lastName: freshUser.person?.lastName || '',
+                phone: freshUser.person?.phone || '',
+                address: freshUser.person?.address || '',
+                documentType: freshUser.person?.documentType?.code || '',
+                documentNumber: freshUser.person?.documentNumber || '',
+                sexo: freshUser.person?.sexo || 'MALE',
+            });
+            if (freshUser.image) {
+                setAvatarPreview(freshUser.image);
             }
-        };
+        }
+    }, [profileResponse, reset, updateUser, isDirty]);
 
-        fetchUserData();
-    }, []); // Only fetch on mount to avoid infinite loops if reset/updateUser change
+
+
+    const queryClient = useQueryClient();
 
     const onSubmit = async (data: ProfileSchema) => {
         try {
@@ -95,6 +94,11 @@ export default function ProfilePage() {
                 } as any; // Cast to bypass strict type if response has different shape
 
                 updateUser(updatedUser);
+                
+                // Invalidate queries to refresh background data
+                queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEY });
+                queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+
                 toast.success('Perfil actualizado correctamente');
             }
         } catch (error: any) {

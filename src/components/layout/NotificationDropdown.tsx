@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, AlertTriangle, CheckCircle2, Info, XCircle, BellOff, Loader2, Download } from 'lucide-react';
+import { Bell, AlertTriangle, CheckCircle2, Info, XCircle, BellOff, Loader2, Download, ShoppingBag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { notificationService, type Notification, NotificationType } from '@/services/notification.service';
 import { socket } from '@/services/socket';
 import { toast } from 'sonner';
 import { downloadFileFromUrl } from '@/utils/download.utils';
+import { useNotificationsQuery, NOTIFICATIONS_QUERY_KEY } from '@/hooks/useNotificationsQuery';
 import { useUnreadCount, UNREAD_COUNT_QUERY_KEY } from '@/hooks/useUnreadCount';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -16,11 +17,15 @@ export default function NotificationDropdown() {
     const { data: unreadCount = 0 } = useUnreadCount();
 
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [loading, setLoading] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [hasFetchedList, setHasFetchedList] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const { data: response, isLoading: loading } = useNotificationsQuery({ 
+        limit: 10, 
+        read: false 
+    });
+    
+    const notifications = response?.data?.items || [];
 
     // Initial effect for socket listeners
     useEffect(() => {
@@ -28,44 +33,39 @@ export default function NotificationDropdown() {
         socket.on('ui_notification', (newNotification: Notification) => {
             console.log("Nueva notificación recibida:", newNotification);
 
-            // Invalidate query to get fresh count from server (deduplicated by React Query)
+            // Invalidate queries to refresh data
             queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
 
             // Trigger animation
             setIsAnimating(true);
             setTimeout(() => setIsAnimating(false), 1000);
 
-            // Show toast only for SYSTEM notifications (avoiding clutter from frequent sales)
-            if (newNotification.type === NotificationType.SYSTEM) {
+            // Show toast only for SYSTEM or SALES notifications
+            if (newNotification.type === NotificationType.SYSTEM || newNotification.type === NotificationType.SALES) {
                 toast(newNotification.title, {
                     description: newNotification.message,
                     action: {
-                        label: newNotification.type === 'SYSTEM' ? 'Descargar' : 'Ver',
+                        label: 'Ver',
                         onClick: () => {
-                            if (newNotification.type === 'SYSTEM' && newNotification.link) {
-                                downloadFileFromUrl(newNotification.link);
-                            } else if (newNotification.link) {
-                                navigate(newNotification.link);
+                            if (newNotification.link) {
+                                if (newNotification.type === 'SYSTEM') {
+                                    downloadFileFromUrl(newNotification.link);
+                                } else {
+                                    navigate(newNotification.link);
+                                }
                             }
                             setIsOpen(true);
                         }
                     }
                 });
             }
-
-            // Update local list state if it's already visible
-            setNotifications(prev => {
-                if (hasFetchedList || prev.length > 0) {
-                    return [newNotification, ...prev];
-                }
-                return prev;
-            });
         });
 
         return () => {
             socket.off('ui_notification');
         };
-    }, [navigate, queryClient, hasFetchedList]);
+    }, [navigate, queryClient]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -79,34 +79,18 @@ export default function NotificationDropdown() {
         };
     }, []);
 
-    const fetchNotificationsList = async () => {
-        if (loading) return;
-        try {
-            setLoading(true);
-            const notifsData = await notificationService.getAll({ limit: 10, read: false });
-            setNotifications(notifsData.data.items);
-            setHasFetchedList(true);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-            toast.error('Error al cargar notificaciones');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleToggle = () => {
-        const newIsOpen = !isOpen;
-        setIsOpen(newIsOpen);
-        if (newIsOpen && (!hasFetchedList || unreadCount > 0)) {
-            fetchNotificationsList();
-        }
+        setIsOpen(!isOpen);
     };
 
     const handleMarkAllAsRead = async () => {
         try {
             await notificationService.markAllAsRead();
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, 0);
+            
+            // Re-fetch or update cache
+            queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+            
             toast.success('Todas las notificaciones marcadas como leídas');
         } catch (error) {
             console.error('Error marking all as read:', error);
@@ -136,12 +120,13 @@ export default function NotificationDropdown() {
         }
 
         // Mark as read if not already
-        if (!notification.isRead) {
+        const isRead = notification.read ?? notification.isRead;
+        if (!isRead) {
             try {
                 await notificationService.markAsRead(notification.id);
-                setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
-                // Decerement unread count in cache
-                queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, (old: number | undefined) => Math.max(0, (old || 0) - 1));
+                // Invalidate to refresh counts and lists
+                queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
+                queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
             } catch (error) {
                 console.error('Error marking as read:', error);
             }
@@ -154,6 +139,7 @@ export default function NotificationDropdown() {
             case NotificationType.SUCCESS: return <CheckCircle2 className="h-5 w-5 text-green-500" />;
             case NotificationType.ERROR: return <XCircle className="h-5 w-5 text-red-500" />;
             case NotificationType.SYSTEM: return <Download className="h-5 w-5 text-slate-600" />;
+            case NotificationType.SALES: return <ShoppingBag className="h-5 w-5 text-indigo-500" />;
             default: return <Info className="h-5 w-5 text-blue-500" />;
         }
     };
@@ -164,6 +150,7 @@ export default function NotificationDropdown() {
             case NotificationType.SUCCESS: return 'bg-green-50 group-hover:bg-green-100';
             case NotificationType.ERROR: return 'bg-red-50 group-hover:bg-red-100';
             case NotificationType.SYSTEM: return 'bg-slate-100 group-hover:bg-slate-200';
+            case NotificationType.SALES: return 'bg-indigo-50 group-hover:bg-indigo-100';
             default: return 'bg-blue-50 group-hover:bg-blue-100';
         }
     };
@@ -217,33 +204,36 @@ export default function NotificationDropdown() {
                                 <p className="text-xs text-muted-foreground">Estás al día con todas tus novedades.</p>
                             </div>
                         ) : (
-                            notifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    onClick={() => handleNotificationClick(notification)}
-                                    className={`px-4 py-3 border-b border-border/60 hover:bg-muted transition-colors cursor-pointer group flex gap-3 ${!notification.isRead ? 'bg-muted/50' : ''}`}
-                                >
-                                    <div className={`${getBgColor(notification.type)} p-2 rounded-full h-fit flex-shrink-0 transition-colors`}>
-                                        {getIcon(notification.type)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start mb-0.5">
-                                            <p className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground'} truncate pr-2`}>
-                                                {notification.title}
-                                            </p>
-                                            {!notification.isRead && (
-                                                <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5 shadow-sm shadow-primary/20"></span>
-                                            )}
+                            notifications.map((notification) => {
+                                const isRead = notification.read ?? notification.isRead;
+                                return (
+                                    <div
+                                        key={notification.id}
+                                        onClick={() => handleNotificationClick(notification)}
+                                        className={`px-4 py-3 border-b border-border/60 hover:bg-muted transition-colors cursor-pointer group flex gap-3 ${!isRead ? 'bg-muted/50' : ''}`}
+                                    >
+                                        <div className={`${getBgColor(notification.type)} p-2 rounded-full h-fit flex-shrink-0 transition-colors`}>
+                                            {getIcon(notification.type)}
                                         </div>
-                                        <p className={`text-xs ${!notification.isRead ? 'text-foreground/80' : 'text-muted-foreground'} mb-1.5 line-clamp-2`}>
-                                            {notification.message}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground font-medium capitalize">
-                                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: es })}
-                                        </p>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start mb-0.5">
+                                                <p className={`text-sm ${!isRead ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground'} truncate pr-2`}>
+                                                    {notification.title}
+                                                </p>
+                                                {!isRead && (
+                                                    <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5 shadow-sm shadow-primary/20"></span>
+                                                )}
+                                            </div>
+                                            <p className={`text-xs ${!isRead ? 'text-foreground/80' : 'text-muted-foreground'} mb-1.5 line-clamp-2`}>
+                                                {notification.message}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground font-medium capitalize">
+                                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: es })}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
 
