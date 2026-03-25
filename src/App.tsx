@@ -22,33 +22,37 @@ import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
 import ResetPasswordPage from './features/auth/ResetPasswordPage';
 
 // App pages — lazy loaded (only downloaded when the user visits them)
-const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage'));
-const CategoriesPage = lazy(() => import('./features/categories/CategoriesPage'));
-const NewCategoryPage = lazy(() => import('./features/categories/NewCategoryPage'));
-const ProductsPage = lazy(() => import('@/features/inventory/ProductsPage'));
-const NewInventoryPage = lazy(() => import('@/features/inventory/NewInventoryPage'));
-const POSPage = lazy(() => import('./features/pos/POSPage'));
-const PendingOrdersPage = lazy(() => import('./features/orders/PendingOrdersPage'));
-const SalesHistoryPage = lazy(() => import('./features/orders/SalesHistoryPage'));
-const AdvancedSearchPage = lazy(() => import('./features/search/AdvancedSearchPage'));
-const SecurityPage = lazy(() => import('./features/security/SecurityPage'));
-const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage'));
-const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
-const GeneralSettingsPage = lazy(() => import('./features/settings/GeneralSettingsPage'));
-const DownloadsPage = lazy(() => import('./features/settings/DownloadsPage'));
-const FileManagerPage = lazy(() => import('./features/settings/FileManagerPage'));
-const UsersAndAccessPage = lazy(() => import('./features/settings/UsersAndAccessPage'));
-const BranchOfficesPage = lazy(() => import('@/features/inventory/BranchOfficesPage'));
-const InventoryMovementsPage = lazy(() => import('@/features/inventory/InventoryMovementsPage'));
-const CreateInventoryMovementPage = lazy(() => import('@/features/inventory/CreateInventoryMovementPage'));
-const BulkTransferPage = lazy(() => import('@/features/inventory/BulkTransferPage'));
-const BillingPage = lazy(() => import('./features/settings/BillingPage'));
-const CashClosingPage = lazy(() => import('./features/sales/CashClosingPage'));
-const CashShiftHistoryPage = lazy(() => import('./features/sales/CashShiftHistoryPage'));
-const CashShiftDetailPage = lazy(() => import('./features/sales/CashShiftDetailPage'));
-const ClientsPage = lazy(() => import('./features/sales/clients/ClientsPage'));
-const PendingPaymentPage = lazy(() => import('./features/onboarding/PendingPaymentPage'));
-const KardexPage = lazy(() => import('@/features/inventory/KardexPage'));
+// Wrapped with lazyRetry to handle stale chunk errors after production deploys
+import { lazyRetry } from '@/utils/lazyRetry';
+
+const DashboardPage = lazy(() => lazyRetry(() => import('./features/dashboard/DashboardPage')));
+const CategoriesPage = lazy(() => lazyRetry(() => import('./features/categories/CategoriesPage')));
+const NewCategoryPage = lazy(() => lazyRetry(() => import('./features/categories/NewCategoryPage')));
+const ProductsPage = lazy(() => lazyRetry(() => import('@/features/inventory/ProductsPage')));
+const NewInventoryPage = lazy(() => lazyRetry(() => import('@/features/inventory/NewInventoryPage')));
+const POSPage = lazy(() => lazyRetry(() => import('./features/pos/POSPage')));
+const PendingOrdersPage = lazy(() => lazyRetry(() => import('./features/orders/PendingOrdersPage')));
+const SalesHistoryPage = lazy(() => lazyRetry(() => import('./features/orders/SalesHistoryPage')));
+const AdvancedSearchPage = lazy(() => lazyRetry(() => import('./features/search/AdvancedSearchPage')));
+const SecurityPage = lazy(() => lazyRetry(() => import('./features/security/SecurityPage')));
+const NotificationsPage = lazy(() => lazyRetry(() => import('./features/notifications/NotificationsPage')));
+const ProfilePage = lazy(() => lazyRetry(() => import('./features/profile/ProfilePage')));
+const GeneralSettingsPage = lazy(() => lazyRetry(() => import('./features/settings/GeneralSettingsPage')));
+const DownloadsPage = lazy(() => lazyRetry(() => import('./features/settings/DownloadsPage')));
+const FileManagerPage = lazy(() => lazyRetry(() => import('./features/settings/FileManagerPage')));
+const UsersAndAccessPage = lazy(() => lazyRetry(() => import('./features/settings/UsersAndAccessPage')));
+const BranchOfficesPage = lazy(() => lazyRetry(() => import('@/features/inventory/BranchOfficesPage')));
+const InventoryMovementsPage = lazy(() => lazyRetry(() => import('@/features/inventory/InventoryMovementsPage')));
+const CreateInventoryMovementPage = lazy(() => lazyRetry(() => import('@/features/inventory/CreateInventoryMovementPage')));
+const BulkTransferPage = lazy(() => lazyRetry(() => import('@/features/inventory/BulkTransferPage')));
+const BillingPage = lazy(() => lazyRetry(() => import('./features/settings/BillingPage')));
+const CashClosingPage = lazy(() => lazyRetry(() => import('./features/sales/CashClosingPage')));
+const CashShiftHistoryPage = lazy(() => lazyRetry(() => import('./features/sales/CashShiftHistoryPage')));
+const CashShiftDetailPage = lazy(() => lazyRetry(() => import('./features/sales/CashShiftDetailPage')));
+const ClientsPage = lazy(() => lazyRetry(() => import('./features/sales/clients/ClientsPage')));
+const PendingPaymentPage = lazy(() => lazyRetry(() => import('./features/onboarding/PendingPaymentPage')));
+const KardexPage = lazy(() => lazyRetry(() => import('@/features/inventory/KardexPage')));
+
 
 // Simple loading fallback shown while a lazy chunk is being fetched
 const PageLoader = () => (
