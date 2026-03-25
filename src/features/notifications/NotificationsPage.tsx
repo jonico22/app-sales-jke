@@ -32,7 +32,6 @@ import { useUnreadCount } from '@/hooks/useUnreadCount';
 import {
     Button,
     Input,
-    Card,
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuContent,
@@ -188,7 +187,7 @@ export default function NotificationsPage() {
                         Administra tus alertas y mensajes de sistema en un solo lugar.
                     </p>
                 </div>
-                
+
                 <div className="flex flex-row md:flex-row items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
                     {unreadCount > 0 && (
                         <Button
@@ -201,7 +200,7 @@ export default function NotificationsPage() {
                             Marcar todo como leído
                         </Button>
                     )}
-                    
+
                     {(search || typeFilter !== 'all' || startDate || endDate) && (
                         <Button
                             variant="ghost"
@@ -246,8 +245,8 @@ export default function NotificationsPage() {
                                     onClick={() => setTypeFilter(type.value as any)}
                                     className={cn(
                                         "rounded-lg py-2 px-4 text-sm mb-1 transition-colors",
-                                        typeFilter === type.value 
-                                            ? "bg-primary text-primary-foreground font-bold" 
+                                        typeFilter === type.value
+                                            ? "bg-primary text-primary-foreground font-bold"
                                             : "hover:bg-primary/10 text-muted-foreground"
                                     )}
                                 >
@@ -349,7 +348,7 @@ export default function NotificationsPage() {
                                         )}>
                                             {notif.message}
                                         </p>
-                                        
+
                                         <div className="flex items-center gap-4 mt-3 sm:mt-4">
                                             <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-muted-foreground/50 uppercase tracking-widest whitespace-nowrap">
                                                 <Calendar className="h-3 w-3" />
@@ -385,7 +384,7 @@ export default function NotificationsPage() {
             {!loading && notifications.length > 0 && (
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-6 bg-card/40 rounded-2xl sm:rounded-[2rem] border border-border/40 backdrop-blur-sm">
                     <p className="text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-widest text-center sm:text-left">
-                         Mostrando <span className="text-primary">{notifications.length}</span> de <span className="text-primary">{total}</span>
+                        Mostrando <span className="text-primary">{notifications.length}</span> de <span className="text-primary">{total}</span>
                     </p>
 
                     <div className="flex items-center gap-2 sm:gap-4">

@@ -6,7 +6,6 @@ import type { Order } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
 import { orderItemService, type OrderItem } from '@/services/order-item.service';
 import { orderService } from '@/services/order.service';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui';
 
 interface SalesOrderDetailViewProps {
@@ -132,7 +131,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                             </div>
                         </div>
                     </div>
-                    
+
                     <Badge variant={order.status === 'COMPLETED' ? 'success' : order.status === 'CANCELLED' ? 'destructive' : 'warning'} className="w-fit h-7 sm:h-8 px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest border border-current/20">
                         {order.status === 'COMPLETED' ? 'Completado' : order.status === 'CANCELLED' ? 'Anulado' : order.status}
                     </Badge>
@@ -148,7 +147,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                 <Package size={18} className="text-primary/40" />
                                 Detalle de Productos
                             </h3>
-                            
+
                             {/* Desktop Table View */}
                             <div className="hidden md:block border border-border/60 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
                                 <table className="w-full text-sm">
@@ -258,7 +257,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {order.partner?.email && (
                                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-bold px-1 truncate">
                                         <Mail size={14} className="text-primary/40" />
@@ -286,7 +285,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                         <span>- {currencySymbol} {formatCurrency(discount)}</span>
                                     </div>
                                 )}
-                                
+
                                 <div className="pt-5 mt-5 border-t-2 border-dashed border-border">
                                     <div className="flex flex-col items-center">
                                         <span className="font-black text-primary text-[10px] uppercase tracking-[0.2em] mb-1">Total a Pagar</span>
