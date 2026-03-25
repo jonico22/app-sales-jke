@@ -23,8 +23,9 @@ export function lazyRetry(
 
         if (!hasReloaded) {
           sessionStorage.setItem(sessionKey, 'true');
-          // Force reload from the server to get the new HTML with updated chunk URLs
-          window.location.reload();
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', Date.now().toString());
+          window.location.href = url.toString();
         } else {
           // Already reloaded once — clear flag and reject so ErrorBoundary can handle it
           sessionStorage.removeItem(sessionKey);
