@@ -54,6 +54,8 @@ const PendingPaymentPage = lazy(() => lazyRetry(() => import('./features/onboard
 const KardexPage = lazy(() => lazyRetry(() => import('@/features/inventory/KardexPage')));
 
 
+import { GlobalErrorBoundary } from '@/components/shared/GlobalErrorBoundary';
+
 // Simple loading fallback shown while a lazy chunk is being fetched
 const PageLoader = () => (
   <div className="flex h-full min-h-[60vh] items-center justify-center">
@@ -65,6 +67,7 @@ const router = createBrowserRouter([
   {
     path: '/auth',
     element: <PublicRoute />,
+    errorElement: <GlobalErrorBoundary />,
     children: [
       {
         path: '',
@@ -89,6 +92,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <ProtectedRoute />,
+    errorElement: <GlobalErrorBoundary />,
     children: [
       {
         path: '',
@@ -215,7 +219,8 @@ const router = createBrowserRouter([
   // Catch-all
   {
     path: '*',
-    element: <Navigate to="/auth/login" replace />
+    element: <Navigate to="/auth/login" replace />,
+    errorElement: <GlobalErrorBoundary />
   }
 ]);
 
