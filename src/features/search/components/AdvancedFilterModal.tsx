@@ -71,13 +71,13 @@ export function AdvancedFilterModal({
     return (
         <div className="flex flex-col h-full bg-card">
             {/* Handle Bar */}
-            <div className="flex justify-center pt-2">
+            <div className="flex justify-center pt-4 pb-1">
                 <div className="w-12 h-1 bg-muted rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-black text-foreground uppercase tracking-tight">Filtros Avanzados</h2>
+            <div className="flex items-center justify-between px-6 py-5">
+                <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Filtros Avanzados</h2>
                 <button 
                     onClick={onClose}
                     className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors"
