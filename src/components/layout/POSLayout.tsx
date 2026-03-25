@@ -35,7 +35,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
   }, []);
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       <SessionExpiredModal
         isOpen={isSessionExpired}
         onLogin={handleRedirect}
