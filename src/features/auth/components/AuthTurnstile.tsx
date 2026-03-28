@@ -19,17 +19,20 @@ export function AuthTurnstile({ onTokenChange }: AuthTurnstileProps) {
   }, [searchParams, onTokenChange]);
 
   if (isTestMode) return null;
+  
+  const currentTheme = (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? 'dark' : 'light';
 
   return (
-    <div className="flex justify-center py-2 min-h-[65px]">
+    <div className="flex justify-center py-2 min-h-[65px] w-full border-none outline-none">
       <Turnstile
         siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
         onSuccess={onTokenChange}
         onExpire={() => onTokenChange('')}
         onError={() => onTokenChange('')}
         options={{
-          theme: 'light',
+          theme: currentTheme as any,
         }}
+
         scriptOptions={{
           async: true,
           defer: true,

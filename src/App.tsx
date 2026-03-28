@@ -2,11 +2,13 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useState } from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 
+// Layout & route guards (eAGERLY loaded — needed immediately for routing)
+import ProtectedRoute from './components/layout/ProtectedRoute';
+import PublicRoute from './components/layout/PublicRoute';
+
 // App layouts — move to lazy because they contain sidebar, nav logic and icons
 const DashboardLayout = lazy(() => lazyRetry(() => import('./components/layout/DashboardLayout')));
 const POSLayout = lazy(() => lazyRetry(() => import('./components/layout/POSLayout')));
-const ProtectedRoute = lazy(() => lazyRetry(() => import('./components/layout/ProtectedRoute')));
-const PublicRoute = lazy(() => lazyRetry(() => import('./components/layout/PublicRoute')));
 
 // Auth Layout & Pages — small, keep eager so login is instant
 import AuthLayout from './features/auth/AuthLayout';
@@ -64,7 +66,7 @@ const PageLoader = () => (
 const router = createBrowserRouter([
   {
     path: '/auth',
-    element: <Suspense fallback={<PageLoader />}><PublicRoute /></Suspense>,
+    element: <PublicRoute />,
     errorElement: <GlobalErrorBoundary />,
     children: [
       {
@@ -89,7 +91,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <Suspense fallback={<PageLoader />}><ProtectedRoute /></Suspense>,
+    element: <ProtectedRoute />,
     errorElement: <GlobalErrorBoundary />,
     children: [
       {
