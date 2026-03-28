@@ -14,7 +14,11 @@ import {
     Hash,
     Wand2
 } from 'lucide-react';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { SlidePanel } from '@/components/shared/SlidePanel';
 import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { useSocietyStore } from '@/store/society.store';

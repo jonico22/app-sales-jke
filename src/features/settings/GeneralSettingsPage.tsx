@@ -16,7 +16,10 @@ import {
     Clock,
     HardDrive
 } from 'lucide-react';
-import { Button, Input, Label, Card } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { societyService } from '@/services/society.service';
 import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
 import { useSocietyStore } from '@/store/society.store';

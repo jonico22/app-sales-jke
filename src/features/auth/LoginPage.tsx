@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Label, Card, Checkbox } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { authService } from '@/services/auth.service';
 import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
@@ -22,6 +26,7 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -30,6 +35,14 @@ export default function LoginPage() {
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Handle Turnstile bypass for testing
+  useEffect(() => {
+    const isTest = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
+    if (isTest) {
+      setTurnstileToken('test-token-bypass');
+    }
+  }, [searchParams]);
 
   // Load saved email on mount
   useEffect(() => {
@@ -164,17 +177,19 @@ export default function LoginPage() {
           </label>
         </div>
 
-        <div className="flex justify-center py-2">
-          <Turnstile
-            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-            onSuccess={(token) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken('')}
-            onError={() => setTurnstileToken('')}
-            options={{
-              theme: 'light',
-            }}
-          />
-        </div>
+        {(searchParams.get('test') !== 'true' && import.meta.env.MODE !== 'test') && (
+          <div className="flex justify-center py-2">
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken('')}
+              onError={() => setTurnstileToken('')}
+              options={{
+                theme: 'light',
+              }}
+            />
+          </div>
+        )}
 
         <Button 
           type="submit" 

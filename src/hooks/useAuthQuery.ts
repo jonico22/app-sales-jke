@@ -12,7 +12,8 @@ export function useAuthQuery() {
     queryFn: () => authService.getMe(),
     // Only run if we have a token and think we are authenticated
     enabled: !!isAuthenticated && !!token,
-    // Global staleTime is 5 min, so it won't refetch on every mount 
-    // unless the data is older than 5 min.
+    // Auth data should be fresh to avoid session desync
+    staleTime: 0,
+    gcTime: 0, 
   });
 }

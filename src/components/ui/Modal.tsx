@@ -57,7 +57,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
                 aria-modal="true"
             >
                 {/* Header */}
-                {!hideHeader && (
+                {!hideHeader ? (
                     <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
                         <h3 className="text-lg font-bold text-foreground">
                             {title}
@@ -69,7 +69,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
                             <X className="h-5 w-5" />
                         </button>
                     </div>
-                )}
+                ) : null}
 
                 {/* Body */}
                 <div className={`p-6 overflow-y-auto custom-scrollbar ${contentClassName}`}>

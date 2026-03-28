@@ -13,7 +13,11 @@ import {
   Palette,
   ChevronDown
 } from 'lucide-react';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { SlidePanel } from '@/components/shared/SlidePanel';
 import { generateSku } from '@/lib/utils';

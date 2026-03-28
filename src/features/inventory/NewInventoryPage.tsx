@@ -1,6 +1,6 @@
 import { BulkUploadCard } from '@/components/shared/BulkUploadCard';
 import ProductForm from './components/ProductForm';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';

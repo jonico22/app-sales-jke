@@ -29,15 +29,13 @@ import {
 import { useNotificationsQuery } from '@/hooks/useNotificationsQuery';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUnreadCount } from '@/hooks/useUnreadCount';
-import {
-    Button,
-    Input,
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    Badge
-} from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Trash2, ShoppingBag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';

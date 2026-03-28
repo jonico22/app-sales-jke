@@ -13,17 +13,15 @@ import {
     PackageSearch,
     Trash2
 } from 'lucide-react';
-import {
-    Button,
-    Input,
-    Textarea,
-    Badge,
-    Card,
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem
-} from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
 import { type Product } from '@/services/product.service';
 import { branchOfficeProductService } from '@/services/branch-office-product.service';

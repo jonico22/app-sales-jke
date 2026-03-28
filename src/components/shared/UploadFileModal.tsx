@@ -16,16 +16,14 @@ import {
     ChevronRight
 } from 'lucide-react';
 
-import {
-    Modal,
-    Button,
-    Input,
-    Label,
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent
-} from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs } from '@/components/ui/tabs';
+import { TabsList } from '@/components/ui/tabs';
+import { TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { fileService, FileCategory, type FileMetadata } from '@/services/file.service';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isValid, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Button, Card, Badge } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { fileService, type FileMetadata } from '@/services/file.service';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

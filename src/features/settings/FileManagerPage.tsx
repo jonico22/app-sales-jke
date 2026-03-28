@@ -13,7 +13,9 @@ import {
     Image as ImageIcon,
     HardDrive
 } from 'lucide-react';
-import { Button, Input, Card } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { fileService, type FileMetadata } from '@/services/file.service';
 import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';

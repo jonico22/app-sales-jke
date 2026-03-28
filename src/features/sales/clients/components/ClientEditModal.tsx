@@ -11,7 +11,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { ChevronDown, Save, User as UserIcon, Building2 } from 'lucide-react';
 import { clientService, type Client } from '@/services/client.service';
 import { useSocietyStore } from '@/store/society.store';

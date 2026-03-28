@@ -8,7 +8,7 @@ import POSLayout from './components/layout/POSLayout';
 import AuthLayout from './features/auth/AuthLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
-import { Toaster } from '@/components/ui';
+import { Toaster } from '@/components/ui/sonner';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';

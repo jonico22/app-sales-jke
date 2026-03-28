@@ -15,20 +15,18 @@ import {
     Mail
 } from 'lucide-react';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
-import {
-    Button,
-    Input,
-    Badge,
-    Table,
-    TableHeader,
-    TableBody,
-    TableRow,
-    TableCell,
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem
-} from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Table } from '@/components/ui/table';
+import { TableHeader } from '@/components/ui/table';
+import { TableBody } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { alerts } from '@/utils/alerts';

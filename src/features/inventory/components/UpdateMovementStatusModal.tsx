@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle, 
-    Button, 
-    Textarea,
-    Label
-} from '@/components/ui';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogHeader } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { MovementStatus, type BranchMovement } from '@/services/branch-movement.service';
 import { cn } from '@/lib/utils';

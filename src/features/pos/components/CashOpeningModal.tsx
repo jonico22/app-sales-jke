@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Wallet, Calendar, Clock, Rocket } from 'lucide-react';
-import { Modal, Button, Label } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useBranchStore } from '@/store/branch.store';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocietyStore } from '@/store/society.store';

@@ -6,7 +6,7 @@ import type { Order } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
 import { orderItemService, type OrderItem } from '@/services/order-item.service';
 import { orderService } from '@/services/order.service';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/badge';
 
 interface SalesOrderDetailViewProps {
     orderId: string;

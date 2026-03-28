@@ -5,7 +5,10 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import { Button, Label, Input, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { categoryService, type CategorySelectOption } from '@/services/category.service';
 import { toast } from 'sonner';
 import { ChevronDown } from 'lucide-react';

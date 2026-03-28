@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
-import { Input } from '@/components/ui';
+import { Input } from '@/components/ui/input';
 import { type Product } from '@/services/product.service';
 import { useProductsSelect } from '@/hooks/useProductsSelect';
 

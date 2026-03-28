@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { User, UserPlus, ChevronDown, Check, Search, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { type ClientSelectOption } from '@/services/client.service';
 import { useClients } from '@/hooks/useClients';
 

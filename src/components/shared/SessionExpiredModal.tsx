@@ -1,6 +1,6 @@
 import React from 'react';
 import { Lock, Clock } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;

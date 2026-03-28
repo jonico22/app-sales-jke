@@ -12,7 +12,10 @@ import {
     ChevronRight,
     Lock
 } from 'lucide-react';
-import { Button, Input, Label, Card } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { authService } from '@/services/auth.service';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserProfileQuery, USER_PROFILE_QUERY_KEY } from '@/hooks/useUserProfileQuery';

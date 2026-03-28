@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, Input, Button } from '@/components/ui';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Search, Plus, FileEdit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { userService, type BusinessUser } from '@/services/user.service';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';

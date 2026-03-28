@@ -20,7 +20,7 @@ import {
     Home,
     ClipboardCheck
 } from 'lucide-react';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 

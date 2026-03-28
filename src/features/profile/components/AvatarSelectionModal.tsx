@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Dices, Check, Loader2, Palette, FlipHorizontal, ChevronDown } from 'lucide-react';
-import { Modal, Button, Input, Label, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DropdownMenu } from '@/components/ui/dropdown-menu';
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 
