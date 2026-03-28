@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +14,10 @@ import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useQueryClient } from '@tanstack/react-query';
 import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
-import { Turnstile } from '@marsidev/react-turnstile';
+
+import { AuthHeader } from './components/AuthHeader';
+import { PasswordInput } from './components/PasswordInput';
+import { AuthTurnstile } from './components/AuthTurnstile';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -26,23 +28,13 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const login = useAuthStore((state) => state.login);
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
-
-  // Handle Turnstile bypass for testing
-  useEffect(() => {
-    const isTest = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
-    if (isTest) {
-      setTurnstileToken('test-token-bypass');
-    }
-  }, [searchParams]);
 
   // Load saved email on mount
   useEffect(() => {
@@ -110,12 +102,10 @@ export default function LoginPage() {
 
   return (
     <Card className="p-8 shadow-xl dark:shadow-none">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold font-headings text-foreground">Iniciar Sesión</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          Ingresa tus credenciales para acceder a tu cuenta
-        </p>
-      </div>
+      <AuthHeader 
+        title="Iniciar Sesión" 
+        description="Ingresa tus credenciales para acceder a tu cuenta" 
+      />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
@@ -132,36 +122,12 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              {...register('password')}
-              className={errors.password ? "border-destructive focus-visible:ring-destructive pr-10" : "pr-10"}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <span className="text-xs text-destructive font-medium">{errors.password.message}</span>
-          )}
-        </div>
-
-
-
+        <PasswordInput
+          id="password"
+          label="Contraseña"
+          registration={register('password')}
+          error={errors.password}
+        />
 
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -169,27 +135,15 @@ export default function LoginPage() {
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
           />
-          <label
+          <Label
             htmlFor="remember"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground"
           >
             Recordar correo
-          </label>
+          </Label>
         </div>
 
-        {(searchParams.get('test') !== 'true' && import.meta.env.MODE !== 'test') && (
-          <div className="flex justify-center py-2">
-            <Turnstile
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-              onSuccess={(token) => setTurnstileToken(token)}
-              onExpire={() => setTurnstileToken('')}
-              onError={() => setTurnstileToken('')}
-              options={{
-                theme: 'light',
-              }}
-            />
-          </div>
-        )}
+        <AuthTurnstile onTokenChange={setTurnstileToken} />
 
         <Button 
           type="submit" 
@@ -206,6 +160,6 @@ export default function LoginPage() {
           </Link>
         </div>
       </form>
-    </Card >
+    </Card>
   );
 }

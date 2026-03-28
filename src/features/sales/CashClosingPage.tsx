@@ -1,41 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-    ArrowLeft,
-    Printer,
-    Wallet,
-    TrendingUp,
-    TrendingDown,
-    CalendarDays,
-    Clock,
-    Banknote,
-    CreditCard,
-    QrCode,
-    CheckCircle2,
-    AlertTriangle,
-    RefreshCw,
-    Lock,
-} from 'lucide-react';
 import { toast } from 'sonner';
 import { cashShiftService } from '@/services/cash-shift.service';
 import type { CashShiftDetail, CashShiftMovement } from '@/services/cash-shift.service';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-// Rule js-cache-function-results (Priority 2)
-const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'PEN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-});
-
-const formatCurrency = (amount: number, symbol: string = 'S/') => {
-    const formatted = CURRENCY_FORMATTER.format(amount).replace(/[^0-9.,]/g, '');
-    return `${symbol} ${formatted}`;
-};
+import { fmtDate } from './components/SalesUtils';
+import { CashClosingHeader } from './components/CashClosingHeader';
+import { CashClosingSummaryStats } from './components/CashClosingSummaryStats';
+import { CashClosingArqueoTable } from './components/CashClosingArqueoTable';
+import { CashClosingFooter, type ValidationItem } from './components/CashClosingFooter';
 
 /** Sum movements for a given type and payment method */
 function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE', method: string): number {
@@ -43,83 +15,6 @@ function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE'
         .filter((m) => m.type === type && m.paymentMethod === method)
         .reduce((acc, m) => acc + Number(m.amount), 0);
 }
-
-// ─── Payment Row ──────────────────────────────────────────────────────────────
-
-interface PaymentRowProps {
-    icon: React.ReactNode;
-    label: string;
-    incomeAmount: number;
-    expenseAmount: number;
-    physicalAmount: string;
-    onPhysicalChange: (val: string) => void;
-    onBlur: () => void;
-}
-
-// Rule rerender-memo (Priority 1)
-const PaymentRow = React.memo(({
-    icon,
-    label,
-    incomeAmount,
-    expenseAmount,
-    physicalAmount,
-    onPhysicalChange,
-    onBlur,
-}: PaymentRowProps) => {
-    const systemAmount = incomeAmount - expenseAmount;
-    const physical = parseFloat(physicalAmount) || 0;
-    const diff = physical - systemAmount;
-    const isOk = Math.abs(diff) < 0.005;
-
-    return (
-        <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] items-center gap-3 py-4 border-b border-border last:border-0">
-            {/* Method */}
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0 text-foreground/70">
-                    {icon}
-                </div>
-                <span className="text-sm font-semibold text-foreground">{label}</span>
-            </div>
-
-            {/* Income */}
-            <span className="text-right text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {formatCurrency(incomeAmount)}
-            </span>
-
-            {/* Expense */}
-            <span className="text-right text-[11px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">
-                {formatCurrency(expenseAmount)}
-            </span>
-
-            {/* Physical input */}
-            <div className="flex justify-end">
-                <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={physicalAmount}
-                    onChange={(e) => onPhysicalChange(e.target.value)}
-                    onBlur={onBlur}
-                    className="w-24 h-9 px-3 text-right text-xs font-bold bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground placeholder:text-muted-foreground"
-                    placeholder="0.00"
-                />
-            </div>
-
-            {/* Difference badge */}
-            <div className="flex justify-end">
-                {isOk ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tabular-nums">
-                        S/ 0.00
-                    </span>
-                ) : (
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black tabular-nums ${diff > 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>
-                        {diff > 0 ? '+' : '-'} S/ {Math.abs(diff).toFixed(2)}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-});
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -207,7 +102,6 @@ export default function CashClosingPage() {
 
     // ── Validation bullets ─────────────────────────────────────────────────
 
-    interface ValidationItem { ok: boolean; msg: string }
     const validations: ValidationItem[] = [
         { ok: true, msg: 'Ventas conciliadas con sistema' },
         {
@@ -271,12 +165,8 @@ export default function CashClosingPage() {
     const openedAt = shift?.openedAt ? new Date(shift.openedAt) : null;
     const branchName = shift?.branch?.name ?? 'Sucursal';
 
-    const formattedDate = openedAt
-        ? format(openedAt, "d 'de' MMMM, yyyy", { locale: es })
-        : '—';
-    const formattedTime = openedAt
-        ? format(openedAt, 'hh:mm a')
-        : '—';
+    const formattedDate = openedAt ? fmtDate(shift?.openedAt, "d 'de' MMMM, yyyy") : '—';
+    const formattedTime = openedAt ? fmtDate(shift?.openedAt, "hh:mm a") : '—';
 
     // ── Loading skeleton ───────────────────────────────────────────────────
 
@@ -300,265 +190,47 @@ export default function CashClosingPage() {
         <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 min-h-screen bg-background pb-24">
 
             {/* ── Page Header ─────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div>
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-1.5 mb-2 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest">
-                        <Lock className="w-3 h-3" />
-                        Proceso de Cierre
-                    </div>
-                    <h1 className="text-2xl font-black text-foreground tracking-tight">
-                        Cierre de Caja – {branchName}
-                    </h1>
-                    <div className="flex items-center gap-3 mt-1.5 text-muted-foreground text-xs font-medium">
-                        <span className="flex items-center gap-1.5">
-                            <CalendarDays className="w-3.5 h-3.5" />
-                            {formattedDate}
-                        </span>
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-                        <span className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            {formattedTime}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
-                        onClick={() => navigate('/pos')}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        Volver
-                    </button>
-                    <button
-                        onClick={() => window.print()}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
-                    >
-                        <Printer className="w-3.5 h-3.5" />
-                        Imprimir Reporte
-                    </button>
-                </div>
-            </div>
+            <CashClosingHeader
+                branchName={branchName}
+                formattedDate={formattedDate}
+                formattedTime={formattedTime}
+            />
 
             {/* ── Summary Stats ────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {/* Saldo Inicial */}
-                <div className="bg-card border border-border rounded-2xl p-4 space-y-1.5 shadow-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Wallet className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Saldo Inicial</span>
-                    </div>
-                    <p className="text-lg font-black text-foreground tabular-nums">
-                        {formatCurrency(openingBalance)}
-                    </p>
-                </div>
-
-                {/* Ventas Totales */}
-                <div className="bg-card border border-border rounded-2xl p-4 space-y-1.5 shadow-sm">
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                        <TrendingUp className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Ventas Totales</span>
-                    </div>
-                    <p className="text-lg font-black text-foreground tabular-nums">
-                        {formatCurrency(totalIncome)}
-                    </p>
-                </div>
-
-                {/* Gastos Totales */}
-                <div className="bg-card border border-border rounded-2xl p-4 space-y-1.5 shadow-sm">
-                    <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-                        <TrendingDown className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Gastos Totales</span>
-                    </div>
-                    <p className="text-lg font-black text-foreground tabular-nums">
-                        {formatCurrency(totalExpenses)}
-                    </p>
-                </div>
-
-                {/* Final Esperado */}
-                <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 space-y-1.5 shadow-sm">
-                    <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">Final Esperado</span>
-                    </div>
-                    <p className="text-lg font-black text-orange-600 dark:text-orange-400 tabular-nums">
-                        {formatCurrency(expectedFinal)}
-                    </p>
-                </div>
-            </div>
+            <CashClosingSummaryStats
+                openingBalance={openingBalance}
+                totalIncome={totalIncome}
+                totalExpenses={totalExpenses}
+                expectedFinal={expectedFinal}
+            />
 
             {/* ── Arqueo Table ─────────────────────────────────────────── */}
-            <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-border">
-                    <h2 className="text-sm font-black text-foreground uppercase tracking-tight">
-                        Arqueo por Medio de Pago
-                    </h2>
-                </div>
+            <CashClosingArqueoTable
+                openingBalance={openingBalance}
+                totalIncome={totalIncome}
+                totalExpenses={totalExpenses}
+                physTotal={physTotal}
+                diffTotal={diffTotal}
+                cashSystem={{ inc: incomeCash, exp: expenseCash }}
+                cardSystem={{ inc: incomeCard, exp: expenseCard }}
+                yapeSystem={{ inc: incomeYape, exp: expenseYape }}
+                plinSystem={{ inc: incomePlin, exp: expensePlin }}
+                physicalData={{
+                    cash: cashPhysical, setCash: setCashPhysical,
+                    card: cardPhysical, setCard: setCardPhysical,
+                    yape: yapePhysical, setYape: setYapePhysical,
+                    plin: plinPhysical, setPlin: setPlinPhysical
+                }}
+            />
 
-                <div className="px-5">
-                    {/* Column headers */}
-                    <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] gap-3 py-3 border-b border-border bg-muted/10 px-5 -mx-5">
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Medio de Pago</span>
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Ingresos Sist.</span>
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Egresos Sist.</span>
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Declarado</span>
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-right">Diferencia</span>
-                    </div>
-
-                    {/* Rows */}
-                    <PaymentRow
-                        icon={<Banknote className="w-4 h-4" />}
-                        label="Efectivo"
-                        incomeAmount={openingBalance + incomeCash}
-                        expenseAmount={expenseCash}
-                        physicalAmount={cashPhysical}
-                        onPhysicalChange={setCashPhysical}
-                        onBlur={() => {
-                            const n = parseFloat(cashPhysical);
-                            if (!isNaN(n)) setCashPhysical(n.toFixed(2));
-                        }}
-                    />
-
-                    <PaymentRow
-                        icon={<CreditCard className="w-4 h-4" />}
-                        label="Tarjeta"
-                        incomeAmount={incomeCard}
-                        expenseAmount={expenseCard}
-                        physicalAmount={cardPhysical}
-                        onPhysicalChange={setCardPhysical}
-                        onBlur={() => {
-                            const n = parseFloat(cardPhysical);
-                            if (!isNaN(n)) setCardPhysical(n.toFixed(2));
-                        }}
-                    />
-
-                    <PaymentRow
-                        icon={<QrCode className="w-4 h-4" />}
-                        label="Yape"
-                        incomeAmount={incomeYape}
-                        expenseAmount={expenseYape}
-                        physicalAmount={yapePhysical}
-                        onPhysicalChange={setYapePhysical}
-                        onBlur={() => {
-                            const n = parseFloat(yapePhysical);
-                            if (!isNaN(n)) setYapePhysical(n.toFixed(2));
-                        }}
-                    />
-
-                    <PaymentRow
-                        icon={<QrCode className="w-4 h-4" />}
-                        label="Plin"
-                        incomeAmount={incomePlin}
-                        expenseAmount={expensePlin}
-                        physicalAmount={plinPhysical}
-                        onPhysicalChange={setPlinPhysical}
-                        onBlur={() => {
-                            const n = parseFloat(plinPhysical);
-                            if (!isNaN(n)) setPlinPhysical(n.toFixed(2));
-                        }}
-                    />
-                </div>
-
-                {/* Totals row */}
-                <div className="px-5 py-5 border-t border-border bg-muted/30">
-                    <div className="grid grid-cols-[1.8fr_1fr_1fr_1.2fr_1.2fr] gap-3 items-center">
-                        <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-foreground uppercase tracking-tight">Diferencia Total</span>
-                            <span className="text-[9px] text-muted-foreground font-medium">Reportado - (Sistema + Inicial)</span>
-                        </div>
-                        <span className="text-xs font-black text-emerald-600 text-right tabular-nums">
-                            {formatCurrency(openingBalance + totalIncome)}
-                        </span>
-                        <span className="text-xs font-black text-rose-600 text-right tabular-nums">
-                            {formatCurrency(totalExpenses)}
-                        </span>
-                        <span className="text-sm font-black text-foreground text-right tabular-nums">
-                            {formatCurrency(physTotal)}
-                        </span>
-                        <div className="flex justify-end">
-                            {Math.abs(diffTotal) < 0.005 ? (
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black tabular-nums border border-emerald-500/20">
-                                    S/ 0.00
-                                </span>
-                            ) : (
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black tabular-nums border ${diffTotal > 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'}`}>
-                                    {diffTotal > 0 ? '+' : '-'} S/ {Math.abs(diffTotal).toFixed(2)}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Bottom Two-Column Section ─────────────────────────────── */}
-            <div className="grid md:grid-cols-2 gap-4">
-                {/* Observations */}
-                <div className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
-                    <h3 className="text-[11px] font-black text-foreground uppercase tracking-wider">
-                        Observaciones del Cierre
-                    </h3>
-                    <textarea
-                        value={observations}
-                        onChange={(e) => setObservations(e.target.value)}
-                        rows={5}
-                        placeholder="Ingrese cualquier discrepancia, nota sobre billetes falsos, o gastos extraordinarios..."
-                        className="w-full resize-none bg-muted/50 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
-                </div>
-
-                {/* Validation Summary */}
-                <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-5 space-y-3 shadow-sm">
-                    <div className="flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-orange-500" />
-                        <h3 className="text-[11px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                            Resumen de Validación
-                        </h3>
-                    </div>
-                    <ul className="space-y-2.5">
-                        {validations.map((v, i) => (
-                            <li key={i} className="flex items-start gap-2.5">
-                                {v.ok ? (
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-px" />
-                                ) : (
-                                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-px" />
-                                )}
-                                <span className={`text-xs font-semibold ${v.ok ? 'text-foreground' : 'text-amber-600 dark:text-amber-400'}`}>
-                                    {v.msg}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-
-            {/* ── Footer Actions ────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                    onClick={() => navigate('/pos')}
-                    className="flex-1 sm:flex-none sm:w-44 h-12 rounded-xl border border-border bg-card text-foreground text-[11px] font-black uppercase tracking-wider hover:bg-muted transition-all active:scale-95"
-                >
-                    Cancelar y Revisar
-                </button>
-                <button
-                    onClick={handleConfirmClose}
-                    disabled={isSubmitting}
-                    className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting ? (
-                        <>
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            Procesando...
-                        </>
-                    ) : (
-                        <>
-                            <Lock className="w-4 h-4" />
-                            Confirmar Arqueo y Cerrar Caja
-                        </>
-                    )}
-                </button>
-            </div>
+            {/* ── Footer ─────────────────────────────── */}
+            <CashClosingFooter
+                observations={observations}
+                setObservations={setObservations}
+                validations={validations}
+                isSubmitting={isSubmitting}
+                onConfirmClose={handleConfirmClose}
+            />
         </div>
     );
 }

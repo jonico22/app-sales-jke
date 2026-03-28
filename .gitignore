@@ -34,3 +34,8 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Performance Reports
+.lighthouseci/
+stats.html
+imagemin-testing/

@@ -25,15 +25,6 @@ export function POSClientSelector({
     // Set default client once loaded if none selected
     useEffect(() => {
         if (!isLoading && clients.length > 0 && (!selectedClient || selectedClient.id === 'public')) {
-            // Try to find "Público General" or take first
-            // Only set if we don't have a valid selected client (mock 'public' is considered invalid/placeholder here for initial load)
-            // But wait, if selectedClient is passed as prop, we should respect it?
-            // The original logic was: "If no client is selected (or only mock default), try to find..."
-            // We should maintain that behavior but be careful not to override if user selected someone else.
-
-            // Actually, selectedClient is controlled by parent. We should only trigger this if parent passes null or 'public' AND we haven't done it yet?
-            // The previous effect ran ONCE on mount.
-            // We can replicate "run once when data matches"
 
             const defaultClient = clients.find(c => c.name === 'PÚBLICO GENERAL') || clients[0];
             if (defaultClient && selectedClient?.id === 'public') {
@@ -41,7 +32,6 @@ export function POSClientSelector({
             }
         }
     }, [clients, isLoading]);
-    // Note: removed selectedClient from deps to avoid loop if onSelectClient changes ID but we check against 'public'
 
     // Close dropdown when clicking outside
     useEffect(() => {

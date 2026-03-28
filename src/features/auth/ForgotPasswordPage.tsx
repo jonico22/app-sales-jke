@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ArrowLeft, MailCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Modal } from '@/components/ui/Modal';
 import { authService } from '@/services/auth.service';
-import { Turnstile } from '@marsidev/react-turnstile';
+import { AuthHeader } from './components/AuthHeader';
+import { AuthTurnstile } from './components/AuthTurnstile';
+import { SuccessModal } from './components/SuccessModal';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -20,8 +21,6 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string>('');
@@ -29,14 +28,6 @@ export default function ForgotPasswordPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
   });
-
-  // Handle Turnstile bypass for testing
-  useEffect(() => {
-    const isTest = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
-    if (isTest) {
-      setTurnstileToken('test-token-bypass');
-    }
-  }, [searchParams]);
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
     try {
@@ -54,12 +45,10 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <Card className="p-10 shadow-xl dark:shadow-none text-center">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold font-headings text-foreground mb-3">Recuperar Contraseña</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed px-4">
-            Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.
-          </p>
-        </div>
+        <AuthHeader 
+          title="Recuperar Contraseña" 
+          description="Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña."
+        />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
           <div className="space-y-2">
@@ -76,19 +65,7 @@ export default function ForgotPasswordPage() {
             )}
           </div>
 
-          {(searchParams.get('test') !== 'true' && import.meta.env.MODE !== 'test') && (
-            <div className="flex justify-center py-2">
-              <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                onSuccess={(token) => setTurnstileToken(token)}
-                onExpire={() => setTurnstileToken('')}
-                onError={() => setTurnstileToken('')}
-                options={{
-                  theme: 'light',
-                }}
-              />
-            </div>
-          )}
+          <AuthTurnstile onTokenChange={setTurnstileToken} />
 
           <Button
             type="submit"
@@ -111,35 +88,11 @@ export default function ForgotPasswordPage() {
         </form>
       </Card>
 
-      {/* Success Modal */}
-      <Modal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        title="Correo Enviado"
-        size="sm"
-      >
-        <div className="flex flex-col items-center text-center space-y-5">
-          <div className="p-4 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500">
-            <MailCheck className="w-10 h-10" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold text-foreground">¡Revisa tu bandeja de entrada!</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Hemos enviado las instrucciones para restablecer tu contraseña a{' '}
-              <span className="font-semibold text-foreground">{submittedEmail}</span>.
-              Si no lo encuentras, revisa tu carpeta de spam.
-            </p>
-          </div>
-          <Button
-            variant="primary"
-            className="w-full text-white font-bold h-11 text-sm shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-            onClick={() => navigate('/auth/login')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio de sesión
-          </Button>
-        </div>
-      </Modal>
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        email={submittedEmail} 
+      />
     </>
   );
 }

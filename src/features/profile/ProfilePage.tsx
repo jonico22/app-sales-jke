@@ -88,17 +88,13 @@ export default function ProfilePage() {
             });
 
             if (response.success) {
-                // Ensure we merge with existing user to prevent missing fields (like emailVerified) 
-                // which would cause an infinite redirect loop in ProtectedRoute
                 const updatedUser = {
                     ...user,
                     ...response.data,
                     image: avatarPreview || user?.image,
-                } as any; // Cast to bypass strict type if response has different shape
-
+                } as any;
                 updateUser(updatedUser);
-                
-                // Invalidate queries to refresh background data
+
                 queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEY });
                 queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
 

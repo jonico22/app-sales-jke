@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FilterSidebar } from './components/FilterSidebar';
 import { SearchHeader } from './components/SearchHeader';
-import { ProductCard } from './components/ProductCard';
+import { SearchCashBanners } from './components/SearchCashBanners';
+import { SearchClientHeader } from './components/SearchClientHeader';
+import { SearchProductGrid } from './components/SearchProductGrid';
+import { SearchCartFooter } from './components/SearchCartFooter';
 import { productService, type Product, type Color } from '@/services/product.service';
 import { favoritesService } from '@/services/favorites.service';
-
-import { Loader2, ShoppingCart, User } from 'lucide-react';
-import { CashOpeningBanner } from '../pos/components/CashOpeningBanner';
-import { CashClosingBanner } from '../pos/components/CashClosingBanner';
 import { useBranchStore } from '@/store/branch.store';
 import { useSocietyStore } from '@/store/society.store';
 import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
@@ -112,12 +110,6 @@ export default function AdvancedSearchPage() {
         stockStatus: 'all' as 'all' | 'available' | 'low' | 'out'
     });
 
-
-
-
-
-
-
     // Debounce Search
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
@@ -219,9 +211,9 @@ export default function AdvancedSearchPage() {
                     if (filters.brand) data = data.filter(p => p.brand === filters.brand);
                     if (filters.color) {
                         const selectedColorObj = colors.find(c => c.id === filters.color);
-                        data = data.filter(p => 
-                            p.color === filters.color || 
-                            p.colorCode === filters.color || 
+                        data = data.filter(p =>
+                            p.color === filters.color ||
+                            p.colorCode === filters.color ||
                             (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
                         );
                     }
@@ -251,9 +243,9 @@ export default function AdvancedSearchPage() {
                         if (filters.brand) data = data.filter(p => p.brand === filters.brand);
                         if (filters.color) {
                             const selectedColorObj = colors.find(c => c.id === filters.color);
-                            data = data.filter(p => 
-                                p.color === filters.color || 
-                                p.colorCode === filters.color || 
+                            data = data.filter(p =>
+                                p.color === filters.color ||
+                                p.colorCode === filters.color ||
                                 (selectedColorObj && p.color?.toLowerCase() === selectedColorObj.color.toLowerCase())
                             );
                         }
@@ -473,49 +465,22 @@ export default function AdvancedSearchPage() {
         }
     };
 
-    const navigate = useNavigate();
     const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
 
     return (
         <div className="flex flex-col bg-background min-h-[calc(100vh-4rem)]">
-            {/* Cash Banners */}
-            {isShiftLoading ? (
-                <div className="px-4 md:px-6 pt-3 md:pt-4">
-                    <CashOpeningBanner isLoading={true} />
-                </div>
-            ) : !isShiftOpen ? (
-                <div className="px-4 md:px-6 pt-3 md:pt-4">
-                    <CashOpeningBanner refreshShift={refresh} />
-                </div>
-            ) : (
-                <div className="px-4 md:px-6 pt-3 md:pt-4">
-                    <CashClosingBanner
-                        branchName={selectedBranch?.name}
-                        onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)}
-                    />
-                </div>
-            )}
+            <SearchCashBanners
+                isShiftLoading={isShiftLoading}
+                isShiftOpen={isShiftOpen}
+                refreshShift={refresh}
+                branchName={selectedBranch?.name}
+                currentShiftId={currentShift?.id}
+            />
 
-            {/* Client Context Header */}
-            <div className="px-4 md:px-6 py-1">
-                <div className="flex items-center justify-between gap-2 bg-card/50 px-4 py-2 rounded-xl border border-border/50 transition-colors">
-                    <div className="flex items-center gap-2 overflow-hidden min-w-0">
-                        <User className="w-[12px] h-[12px] text-muted-foreground shrink-0" />
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
-                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">CLIENTE:</span>
-                            <span className="text-[12px] font-black text-foreground truncate uppercase min-w-0">
-                                {selectedClient?.name || 'Público General'}
-                            </span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => setIsSelectClientModalOpen(true)}
-                        className="text-[10px] font-bold text-[#4096d8] dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all uppercase tracking-tight bg-card border border-[#4096d8]/30 px-2.5 py-1 rounded-[10px] shadow-sm whitespace-nowrap shrink-0"
-                    >
-                        CAMBIAR
-                    </button>
-                </div>
-            </div>
+            <SearchClientHeader
+                selectedClient={selectedClient}
+                onChangeClient={() => setIsSelectClientModalOpen(true)}
+            />
 
             {/* Global Search Header spans full width */}
             <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border">
@@ -573,57 +538,14 @@ export default function AdvancedSearchPage() {
                 {/* Main Content */}
                 <div className="flex-1 bg-muted/10 p-3 md:p-6">
                     {/* Product Grid */}
-                    {loading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        </div>
-                    ) : (
-                        <div className="space-y-3 md:space-y-4">
-                            {/* RESULTS HEADER */}
-                            <div className="flex justify-between items-center mb-2 hidden">
-                                <h2 className="text-[12px] md:text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                                    Resultados ({filteredProducts.length})
-                                </h2>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3">
-                                {filteredProducts.map((product, index) => {
-                                    if (filteredProducts.length === index + 1) {
-                                        return (
-                                            <div ref={lastProductElementRef} key={product.id}>
-                                                <ProductCard
-                                                    product={product}
-                                                    isFavorite={favorites.has(product.id)}
-                                                    onToggleFavorite={handleToggleFavorite}
-                                                />
-                                            </div>
-                                        );
-                                    } else {
-                                        return (
-                                            <ProductCard
-                                                key={product.id}
-                                                product={product}
-                                                isFavorite={favorites.has(product.id)}
-                                                onToggleFavorite={handleToggleFavorite}
-                                            />
-                                        );
-                                    }
-                                })}
-                            </div>
-
-                            {isLoadingMore && (
-                                <div className="flex justify-center items-center py-4">
-                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                </div>
-                            )}
-
-                            {filteredProducts.length === 0 && (
-                                <div className="text-center py-20 text-muted-foreground">
-                                    <p>No se encontraron productos con los filtros seleccionados.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <SearchProductGrid
+                        products={filteredProducts}
+                        loading={loading}
+                        isLoadingMore={isLoadingMore}
+                        favorites={favorites}
+                        onToggleFavorite={handleToggleFavorite}
+                        lastProductElementRef={lastProductElementRef}
+                    />
                 </div>
             </div>
 
@@ -631,7 +553,7 @@ export default function AdvancedSearchPage() {
                 open={isAddClientModalOpen}
                 onOpenChange={setIsAddClientModalOpen}
                 client={null}
-                onSave={() => {}}
+                onSave={() => { }}
                 onSuccess={handleClientSuccess}
             />
 
@@ -646,65 +568,15 @@ export default function AdvancedSearchPage() {
             />
 
             {/* Cart Footer Integration */}
-            {totalItems > 0 && (
-                <div className="sticky bottom-0 left-0 w-full bg-card border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
-                    <div className="max-w-7xl mx-auto p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                        {/* Summary Info */}
-                        <div className="flex items-center gap-6">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
-                                    Productos Seleccionados
-                                </span>
-                                <span className="text-lg font-bold text-foreground leading-none">{totalItems}</span>
-                            </div>
-                            <div className="w-px h-8 bg-border" />
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
-                                    Subtotal Estimado
-                                </span>
-                                <span className="text-lg font-bold text-[#4096d8] leading-none">
-                                    {society?.mainCurrency?.symbol || 'S/'} {totalPrice.toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex items-center justify-end gap-3 w-full md:w-auto">
-                            <button
-                                onClick={clearCart}
-                                className="hidden md:flex px-6 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors active:scale-95"
-                            >
-                                CANCELAR
-                            </button>
-                            <button
-                                onClick={() => setIsCartOpen(true)}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-[#4096d8] text-[#4096d8] hover:bg-blue-50 transition-all active:scale-95 bg-white"
-                            >
-                                <span className="font-medium text-sm">EDITAR PEDIDO</span>
-                            </button>
-                            <button
-                                onClick={handleDirectPay}
-                                disabled={isCreatingOrder}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-[#4096d8] text-white hover:bg-blue-500 transition-all active:scale-95 shadow-md shadow-[#4096d8]/20 disabled:opacity-50"
-                            >
-                                {isCreatingOrder ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        <span className="font-medium text-sm">PAGAR</span>
-                                        <div className="relative flex items-center justify-center ml-1">
-                                            <ShoppingCart className="w-[18px] h-[18px]" />
-                                            <div className="absolute -top-1.5 -right-2 bg-cyan-400 text-white text-[9px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center">
-                                                {totalItems}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <SearchCartFooter
+                totalItems={totalItems}
+                totalPrice={totalPrice}
+                currencySymbol={society?.mainCurrency?.symbol || 'S/'}
+                isCreatingOrder={isCreatingOrder}
+                onClearCart={clearCart}
+                onEditOrder={() => setIsCartOpen(true)}
+                onPay={handleDirectPay}
+            />
 
             <POSCartPanel
                 isOpen={isCartOpen}
@@ -738,8 +610,8 @@ export default function AdvancedSearchPage() {
                     setIsSuccessModalOpen(false);
                     clearCurrentOrder();
                 }}
-                onPrintTicket={() => console.log('Print ticket')}
-                onShareWhatsApp={() => console.log('Share WhatsApp')}
+                onPrintTicket={() => { /* TODO: Implement print ticket */ }}
+                onShareWhatsApp={() => { /* TODO: Implement WhatsApp share */ }}
             />
 
             <POSAlertModal

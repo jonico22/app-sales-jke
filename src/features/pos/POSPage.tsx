@@ -50,7 +50,6 @@ export default function POSPage() {
 
         // Prevent duplicate processing
         if (processingCloneRef.current === orderId) {
-          console.log('[CLONE] Already processing order:', orderId);
           return;
         }
         processingCloneRef.current = orderId;
@@ -71,7 +70,6 @@ export default function POSPage() {
                   const productRes = await productService.getById(item.productId);
                   return { productRes, quantity: item.quantity };
                 } catch (e) {
-                  console.error("[CLONE] Failed to load product", item.productId, e);
                   return null;
                 }
               })
@@ -88,11 +86,9 @@ export default function POSPage() {
             if (response.data.orderItems.length > 0) {
               setIsCartOpen(true);
             }
-          } else {
-            console.warn('[CLONE] No items found in order or fetch failed');
           }
         } catch (error) {
-          console.error('[CLONE] Error cloning order:', error);
+          // Error loading order
         }
 
 
@@ -242,11 +238,9 @@ export default function POSPage() {
           }}
           onPrintTicket={() => {
             // TODO: Implement print ticket functionality
-            console.log('Print ticket');
           }}
           onShareWhatsApp={() => {
             // TODO: Implement WhatsApp share functionality
-            console.log('Share via WhatsApp');
           }}
         />
 
