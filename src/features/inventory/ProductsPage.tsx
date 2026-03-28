@@ -34,6 +34,17 @@ import { ProductEditPanel } from './components/ProductEditPanel';
 import { ProductFilterPanel, type FilterValues } from './components/ProductFilterPanel';
 import { useSocietyStore } from '@/store/society.store';
 
+// Rule js-cache-function-results (Priority 2)
+// Move Intl.NumberFormat instantiation outside to avoid repeated heavy creation.
+const CURRENCY_FORMATTER = new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN'
+});
+
+const formatCurrency = (value: string | number) => {
+    return CURRENCY_FORMATTER.format(Number(value));
+};
+
 export default function ProductsPage() {
     const { society } = useSocietyStore();
     const [products, setProducts] = useState<Product[]>([]);
@@ -187,13 +198,6 @@ export default function ProductsPage() {
         if (hasPrevPage) {
             setCurrentPage(prev => prev - 1);
         }
-    };
-
-    const formatCurrency = (value: string | number) => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN'
-        }).format(Number(value));
     };
 
     const handleApplyFilters = (filters: FilterValues) => {

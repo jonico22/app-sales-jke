@@ -22,16 +22,20 @@ export function exportToExcel<T>(
     fileName: string = 'Report',
     sheetName: string = 'Data'
 ) {
+    // Early exit if no data
+    if (!data?.length) return;
+
     // 1. Map data to rows based on column definitions
-    const rows = data.map(item => {
-        const row: Record<string, string | number | null | undefined> = {};
-        columns.forEach(col => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const value = typeof col.key === 'function' ? col.key(item) : (item as any)[col.key];
+    const rows = data.map(item => 
+        columns.reduce((row, col) => {
+            const value = typeof col.key === 'function' 
+                ? col.key(item) 
+                : (item as any)[col.key];
+            
             row[col.header] = value as string | number | null | undefined;
-        });
-        return row;
-    });
+            return row;
+        }, {} as Record<string, string | number | null | undefined>)
+    );
 
     // 2. Create worksheet
     const worksheet = utils.json_to_sheet(rows);

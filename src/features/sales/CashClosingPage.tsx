@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -24,8 +24,18 @@ import { es } from 'date-fns/locale';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const formatCurrency = (amount: number) =>
-    `S/ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+// Rule js-cache-function-results (Priority 2)
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+const formatCurrency = (amount: number, symbol: string = 'S/') => {
+    const formatted = CURRENCY_FORMATTER.format(amount).replace(/[^0-9.,]/g, '');
+    return `${symbol} ${formatted}`;
+};
 
 /** Sum movements for a given type and payment method */
 function sumMovements(movements: CashShiftMovement[], type: 'INCOME' | 'EXPENSE', method: string): number {
@@ -46,7 +56,8 @@ interface PaymentRowProps {
     onBlur: () => void;
 }
 
-function PaymentRow({
+// Rule rerender-memo (Priority 1)
+const PaymentRow = React.memo(({
     icon,
     label,
     incomeAmount,
@@ -54,7 +65,7 @@ function PaymentRow({
     physicalAmount,
     onPhysicalChange,
     onBlur,
-}: PaymentRowProps) {
+}: PaymentRowProps) => {
     const systemAmount = incomeAmount - expenseAmount;
     const physical = parseFloat(physicalAmount) || 0;
     const diff = physical - systemAmount;
@@ -108,7 +119,7 @@ function PaymentRow({
             </div>
         </div>
     );
-}
+});
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

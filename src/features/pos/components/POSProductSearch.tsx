@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { type Product } from '@/services/product.service';
@@ -13,7 +13,7 @@ interface POSProductSearchProps {
     refreshTrigger?: number;
 }
 
-export function POSProductSearch({
+export const POSProductSearch = memo(function POSProductSearch({
     searchQuery,
     setSearchQuery,
     onAdvancedSearch,
@@ -149,4 +149,4 @@ export function POSProductSearch({
             </div>
         </div>
     );
-}
+});

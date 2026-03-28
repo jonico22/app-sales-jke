@@ -14,22 +14,17 @@ import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Table } from '@/components/ui/table';
-import { TableHeader } from '@/components/ui/table';
-import { TableBody } from '@/components/ui/table';
-import { TableRow } from '@/components/ui/table';
-import { TableHead } from '@/components/ui/table';
-import { TableCell } from '@/components/ui/table';
-import { DropdownMenu } from '@/components/ui/dropdown-menu';
-import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CategoryEditModal } from './components/CategoryEditModal';
 import { CategoryFilterPanel, type FilterValues } from './components/CategoryFilterPanel';
 import { categoryService, type Category } from '@/services/category.service';
 import { alerts } from '@/utils/alerts';
+
+// Rule css-content-visibility (Priority 2)
+const TABLE_BODY_STYLE = { contentVisibility: 'auto' } as React.CSSProperties;
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -320,7 +315,7 @@ export default function CategoriesPage() {
                 <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody style={TABLE_BODY_STYLE}>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
@@ -494,4 +489,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-

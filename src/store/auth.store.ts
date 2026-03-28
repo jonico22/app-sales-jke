@@ -67,13 +67,13 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
       updateUser: (user: User) => {
-        set({ user });
+        set((state) => ({ ...state, user }));
       },
       setSubscription: (subscription: SubscriptionInfo | null) => {
-        set({ subscription });
+        set((state) => ({ ...state, subscription }));
       },
       setModulePermissions: (modulePermissions: Record<string, boolean> | null) => {
-        set({ modulePermissions });
+        set((state) => ({ ...state, modulePermissions }));
       },
     }),
     {

@@ -63,23 +63,26 @@ export default function POSPage() {
 
             clearCurrentOrder(); // Ensure clean slate
             const productService = await import('@/services/product.service').then(m => m.productService);
-            for (const item of response.data.orderItems) {
-              try {
-
-                const productRes = await productService.getById(item.productId);
-
-                if (productRes.success && productRes.data) {
-                  const product = productRes.data;
-
-                  // Add item directly with quantity
-                  addItemToCart(product, item.quantity);
-                } else {
-                  console.warn('[CLONE] Product fetch failed:', productRes);
+            
+            // Parallel fetch all products (Rule async-parallel)
+            const productResults = await Promise.all(
+              response.data.orderItems.map(async (item) => {
+                try {
+                  const productRes = await productService.getById(item.productId);
+                  return { productRes, quantity: item.quantity };
+                } catch (e) {
+                  console.error("[CLONE] Failed to load product", item.productId, e);
+                  return null;
                 }
-              } catch (e) {
-                console.error("[CLONE] Failed to load product for clone", item.productId, e);
+              })
+            );
+
+            // Add all valid products to cart
+            productResults.forEach((result) => {
+              if (result && result.productRes.success && result.productRes.data) {
+                addItemToCart(result.productRes.data, result.quantity);
               }
-            }
+            });
 
             // Open the cart panel to show the added items
             if (response.data.orderItems.length > 0) {

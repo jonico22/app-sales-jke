@@ -26,6 +26,18 @@ function getTimeAgo(dateString: string) {
     return `Hace ${diffInDays} días`;
 }
 
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+const formatCurrency = (value: string | number, symbol: string = 'S/.') => {
+    // We can swap currency symbol if needed, but Intl.NumberFormat is primarily for the formatting rules.
+    return `${symbol} ${CURRENCY_FORMATTER.format(Number(value)).replace(/[^0-9.,]/g, '')}`;
+};
+
 // Status Badge Component
 function StatusBadge({ date }: { date: string }) {
     const timeAgo = getTimeAgo(date);
@@ -371,7 +383,7 @@ export default function PendingOrdersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="font-black text-[12px] text-foreground">
-                                                {order.currency?.symbol || 'S/.'} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/.')}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -474,9 +486,8 @@ export default function PendingOrdersPage() {
                                         <span className="text-[10px] font-bold text-primary/60 leading-none">Total Pedido</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="text-[11px] font-black text-muted-foreground">{order.currency?.symbol || 'S/.'}</span>
                                         <span className="text-2xl font-black text-foreground tracking-tighter leading-none">
-                                            {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/.')}
                                         </span>
                                     </div>
                                 </div>

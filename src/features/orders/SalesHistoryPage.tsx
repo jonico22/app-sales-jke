@@ -32,6 +32,20 @@ import { exportToExcel } from '@/utils/excel.utils';
 import { ReportGenerationModal } from './components/ReportGenerationModal';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 
+// Rule js-cache-function-results (Priority 2)
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+const formatCurrency = (value: string | number, symbol: string = 'S/') => {
+    // We replace the symbol to match the society symbol if needed
+    const formatted = CURRENCY_FORMATTER.format(Number(value)).replace(/[^0-9.,]/g, '');
+    return `${symbol} ${formatted}`;
+};
+
 export default function SalesHistoryPage() {
     // const user = useAuthStore((state) => state.user); // Not needed for societyId anymore if we trust backend context
     const navigate = useNavigate();
@@ -222,7 +236,7 @@ export default function SalesHistoryPage() {
             key: (order: Order) => order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`.trim() || 'Cliente General',
             width: 30
         },
-        { header: 'Total', key: (order: Order) => Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), width: 15 },
+        { header: 'Total', key: (order: Order) => formatCurrency(order.totalAmount, ''), width: 15 },
         {
             header: 'Método de Pago',
             key: (order: Order) => {
@@ -557,7 +571,7 @@ export default function SalesHistoryPage() {
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-xs font-bold text-foreground">
-                                                {order.currency?.symbol} {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/')}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {getPaymentBadge(payment)}
@@ -655,9 +669,8 @@ export default function SalesHistoryPage() {
                                             <span className="text-[10px] font-bold text-muted-foreground/60 leading-none">Total Final</span>
                                         </div>
                                         <div className="flex items-baseline gap-1.5">
-                                            <span className="text-[11px] font-black text-primary/60">{order.currency?.symbol}</span>
                                             <span className="text-xl font-black text-foreground tracking-tighter leading-none">
-                                                {Number(order.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/')}
                                             </span>
                                         </div>
                                     </div>

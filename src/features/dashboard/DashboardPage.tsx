@@ -26,8 +26,21 @@ import {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+// Rule js-cache-function-results (Priority 2)
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'PEN',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0
+});
+
+const formatCurrency = (value: number, symbol: string = 'S/') => {
+  const formatted = CURRENCY_FORMATTER.format(value).replace(/[^0-9.,]/g, '');
+  return `${symbol}${formatted}`;
+};
+
 export default function DashboardPage() {
-  const { society } = useSocietyStore();
+  const society = useSocietyStore(state => state.society);
   const currencySymbol = society?.mainCurrency?.symbol || 'S/';
   const {
     data: salesPerformance = [],
@@ -118,7 +131,7 @@ export default function DashboardPage() {
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center text-xs font-semibold">
                     <span className="text-foreground">{cat.category}</span>
-                    <span className="text-foreground">{currencySymbol}{cat.revenue.toLocaleString()}</span>
+                    <span className="text-foreground">{formatCurrency(cat.revenue, currencySymbol)}</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-3">
                     <div
@@ -211,7 +224,7 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `${currencySymbol}${Number(value).toLocaleString()}`} />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value), currencySymbol)} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>

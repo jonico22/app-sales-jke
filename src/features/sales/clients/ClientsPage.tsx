@@ -35,6 +35,9 @@ import { clientService, type Client } from '@/services/client.service';
 import { alerts } from '@/utils/alerts';
 import { cn } from '@/lib/utils';
 
+// Rule css-content-visibility (Priority 2)
+const TABLE_BODY_STYLE = { contentVisibility: 'auto' } as React.CSSProperties;
+
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -334,7 +337,7 @@ export default function ClientsPage() {
                 <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pr-6">Acciones</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody style={TABLE_BODY_STYLE}>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
