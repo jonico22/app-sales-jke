@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, ArrowLeft, Info } from 'lucide-react';
 import { Button, Input, Label, Card } from '@/components/ui';
 import { authService } from '@/services/auth.service';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
@@ -27,6 +28,7 @@ export default function ResetPasswordPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<ResetPasswordSchema>({
     resolver: zodResolver(resetPasswordSchema),
@@ -64,7 +66,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      await authService.resetPassword({ token, newPassword: data.password });
+      await authService.resetPassword({ token, newPassword: data.password, turnstileToken });
       toast.success('¡Contraseña actualizada correctamente!');
       navigate('/auth/login');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,11 +158,23 @@ export default function ResetPasswordPage() {
           </div>
         </div>
 
+        <div className="flex justify-center py-2">
+          <Turnstile
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken('')}
+            onError={() => setTurnstileToken('')}
+            options={{
+              theme: 'light',
+            }}
+          />
+        </div>
+
         <Button
           type="submit"
           variant="primary"
           className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !turnstileToken}
         >
           {isSubmitting ? 'Actualizando...' : 'Actualizar Contraseña'}
         </Button>

@@ -11,6 +11,7 @@ import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useQueryClient } from '@tanstack/react-query';
 import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
@@ -42,7 +44,11 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginSchema) => {
     try {
-      const response = await authService.login({ email: data.email, password: data.password });
+      const response = await authService.login({ 
+        email: data.email, 
+        password: data.password,
+        turnstileToken 
+      });
       
       // Remove existing permissions to ensure a clean state and show skeleton loader
       queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
@@ -158,7 +164,24 @@ export default function LoginPage() {
           </label>
         </div>
 
-        <Button type="submit" variant="primary" className="w-full text-white font-bold" disabled={isSubmitting}>
+        <div className="flex justify-center py-2">
+          <Turnstile
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken('')}
+            onError={() => setTurnstileToken('')}
+            options={{
+              theme: 'light',
+            }}
+          />
+        </div>
+
+        <Button 
+          type="submit" 
+          variant="primary" 
+          className="w-full text-white font-bold" 
+          disabled={isSubmitting || !turnstileToken}
+        >
           {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </Button>
 

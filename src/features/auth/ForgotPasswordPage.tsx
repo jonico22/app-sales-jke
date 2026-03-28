@@ -8,6 +8,7 @@ import { ArrowLeft, MailCheck } from 'lucide-react';
 import { Button, Input, Label, Card } from '@/components/ui';
 import { Modal } from '@/components/ui/Modal';
 import { authService } from '@/services/auth.service';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
@@ -19,6 +20,7 @@ export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -26,7 +28,7 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordSchema) => {
     try {
-      await authService.forgotPassword({ email: data.email });
+      await authService.forgotPassword({ email: data.email, turnstileToken });
       setSubmittedEmail(data.email);
       setShowSuccessModal(true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,11 +64,23 @@ export default function ForgotPasswordPage() {
             )}
           </div>
 
+          <div className="flex justify-center py-2">
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken('')}
+              onError={() => setTurnstileToken('')}
+              options={{
+                theme: 'light',
+              }}
+            />
+          </div>
+
           <Button
             type="submit"
             variant="primary"
             className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !turnstileToken}
           >
             {isSubmitting ? 'Enviando...' : 'Enviar Instrucciones'}
           </Button>
