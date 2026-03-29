@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -8,9 +8,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
-import { TagInput, type TagOption } from '@/components/shared/TagInput';
-import { categoryService } from '@/services/category.service';
-import { toast } from 'sonner';
+import { TagInput } from '@/components/shared/TagInput';
+import { useCreatedByUsersQuery } from '../hooks/useCategoryQueries';
+
+import { type UserSelectOption } from '@/services/category.service';
 
 interface CategoryFilterPanelProps {
   open: boolean;
@@ -26,8 +27,6 @@ export interface FilterValues {
   updatedAtTo: Date | null;
 }
 
-
-
 export function CategoryFilterPanel({
   open,
   onOpenChange,
@@ -40,28 +39,12 @@ export function CategoryFilterPanel({
     updatedAtFrom: null,
     updatedAtTo: null,
   });
-  const [availableUsers, setAvailableUsers] = useState<TagOption[]>([]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await categoryService.getCreatedByUsers();
-        if (response.success && response.data) {
-          setAvailableUsers(response.data.map(user => ({
-            id: user.id,
-            name: user.name
-          })));
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast.error('Error al cargar lista de usuarios');
-      }
-    };
-
-    if (open) {
-      fetchUsers();
-    }
-  }, [open]);
+  const { data: usersResponse } = useCreatedByUsersQuery();
+  const availableUsers = (usersResponse?.data || []).map((user: UserSelectOption) => ({
+    id: user.id,
+    name: user.name
+  }));
 
   const handleClear = () => {
     const emptyFilters = {
