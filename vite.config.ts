@@ -7,9 +7,10 @@ import { visualizer } from 'rollup-plugin-visualizer'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const isProd = mode === 'production';
-  // Use CDN URL only in production explicitly, fallback to local relative assets
-  const basePath = isProd && env.VITE_ASSET_URL ? env.VITE_ASSET_URL : '/';
+  
+  // Si existe VITE_ASSET_URL, usamos esa base (ideal para Cloudflare Pages + R2)
+  // De lo contrario, usamos '/' para desarrollo local o builds estándar
+  const basePath = env.VITE_ASSET_URL || '/';
 
   return {
     base: basePath,
