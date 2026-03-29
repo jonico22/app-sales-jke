@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { ClientEditModal } from './components/ClientEditModal';
 import { ClientFilterPanel } from './components/ClientFilterPanel';
 import { type Client } from '@/services/client.service';
@@ -22,7 +21,6 @@ export default function ClientsPage() {
     currentPage,
     setCurrentPage,
     pageSize,
-    setPageSize,
     sortBy,
     sortOrder,
     handleSort,

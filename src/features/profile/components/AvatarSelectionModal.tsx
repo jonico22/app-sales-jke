@@ -8,7 +8,7 @@ import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { DropdownMenuContent } from '@/components/ui/dropdown-menu';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { authService } from '@/services/auth.service';
+import { useUpdateProfile } from '../hooks/useUpdateProfile';
 import { toast } from 'sonner';
 
 interface AvatarSelectionModalProps {
@@ -22,7 +22,6 @@ export function AvatarSelectionModal({ isOpen, onClose, onConfirm, initialName =
     const [style, setStyle] = useState('adventurer');
     const [seed, setSeed] = useState(initialName);
     const [previewUrl, setPreviewUrl] = useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
 
     // Advanced options
     const [backgroundColor, setBackgroundColor] = useState('transparent');
@@ -101,23 +100,18 @@ export function AvatarSelectionModal({ isOpen, onClose, onConfirm, initialName =
         setSeed(randomString);
     };
 
-    const handleConfirm = async () => {
-        try {
-            setIsUpdating(true);
-            const response = await authService.updateProfile({ image: previewUrl });
+    const { mutate: updateProfile, isPending } = useUpdateProfile();
 
-            if (response.success) {
-                toast.success('Avatar actualizado correctamente');
-                onConfirm(previewUrl, response.data);
-                onClose();
+    const handleConfirm = () => {
+        updateProfile({ image: previewUrl }, {
+            onSuccess: (response) => {
+                if (response.success) {
+                    toast.success('Avatar actualizado correctamente');
+                    onConfirm(previewUrl, response.data);
+                    onClose();
+                }
             }
-        } catch (error: any) {
-            console.error('Error updating avatar:', error);
-            const message = error.response?.data?.message || 'Error al actualizar el avatar';
-            toast.error(message);
-        } finally {
-            setIsUpdating(false);
-        }
+        });
     };
 
     return (
@@ -365,19 +359,19 @@ export function AvatarSelectionModal({ isOpen, onClose, onConfirm, initialName =
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        disabled={isUpdating}
+                        disabled={isPending}
                         className="px-6 py-2.5 bg-muted/50 border border-border text-foreground hover:bg-muted rounded-lg text-xs font-bold uppercase tracking-wider"
                     >
                         Cancelar
                     </Button>
                     <Button
                         onClick={handleConfirm}
-                        disabled={isUpdating}
+                        disabled={isPending}
                         variant="primary"
                         className="px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2"
                     >
-                        {isUpdating && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {isUpdating ? 'Guardando...' : 'Confirmar e Insertar'}
+                        {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isPending ? 'Guardando...' : 'Confirmar e Insertar'}
                     </Button>
                 </div>
             </div>

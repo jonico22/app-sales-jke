@@ -13,7 +13,7 @@ interface FilterSidebarProps {
     };
     categories: CategorySelectOption[];
     brands: Brand[];
-    onFilterChange: (key: string, value: any) => void;
+    onFilterChange: (key: string, value: unknown) => void;
     onClearFilters: () => void;
 }
 
