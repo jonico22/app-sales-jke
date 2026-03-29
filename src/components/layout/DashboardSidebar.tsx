@@ -70,7 +70,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   const user = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
   const subscription = useAuthStore((state) => state.subscription);
-  const { data: permissionData, isLoading, isFetching } = usePermissions();
+  const { data: permissionData, isLoading } = usePermissions();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['Pedidos']); // Default expand Pedidos and Configuración for now
   const [activePopover, setActivePopover] = useState<string | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ top: number }>({ top: 0 });
@@ -119,8 +119,8 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
   };
 
   const getPermittedNavItems = () => {
-    // If no data and loading/fetching, return empty so we show skeleton
-    if (!permissionData?.modules && (isLoading || isFetching)) return [];
+    // If no data and loading, return empty so we show skeleton
+    if (!permissionData?.modules && isLoading) return [];
 
     // If blocked, only show Configuration -> Subscription
     if (isBlocked) {
@@ -230,7 +230,7 @@ export default function DashboardSidebar({ isOpen, onClose, isCollapsed, toggleC
 
         {/* Navigation Links */}
         <nav className="flex-1 py-6 space-y-1 overflow-y-auto overflow-x-hidden">
-          {(isLoading || (isFetching && !permissionData)) ? (
+          {isLoading ? (
             <NavItemSkeleton />
           ) : (
             displayNavItems.map((item) => {

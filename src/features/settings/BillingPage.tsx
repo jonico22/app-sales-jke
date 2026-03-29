@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSocietyStore } from '@/store/society.store';
 import { societyService } from '@/services/society.service';
-import { subscriptionService, type SubscriptionDetails } from '@/services/subscription.service';
+import { subscriptionService } from '@/services/subscription.service';
 import { AlertCircle } from 'lucide-react';
 
 import { BillingHeader } from './components/BillingHeader';
@@ -21,8 +21,6 @@ import { Card } from '@/components/ui/card';
 
 export default function BillingPage() {
     const { society } = useSocietyStore();
-    const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
-    const [loading, setLoading] = useState(true);
     const [updatingRenew, setUpdatingRenew] = useState(false);
     const [isRenewing, setIsRenewing] = useState(false);
     const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
@@ -37,57 +35,53 @@ export default function BillingPage() {
     const [isCancelling, setIsCancelling] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
-    const [error, setError] = useState<string | null>(null);
 
     const [activeTab, setActiveTab] = useState<'history' | 'billing'>('history');
 
-    // React Query for History
+    // 1. Main Subscription Query
+    const { 
+        data: subscription, 
+        isLoading: loadingSub, 
+        isError: isErrorSub,
+        refetch: refetchSub
+    } = useQuery({
+        queryKey: ['subscriptionDetails', society?.subscriptionId],
+        queryFn: () => subscriptionService.getSubscriptionDetails(society!.subscriptionId!),
+        enabled: !!society?.subscriptionId,
+        staleTime: 300000, // 5 minutes cache
+    });
+
+    // 2. History Query (Depends on Main Query)
     const { data: history = [], isLoading: loadingHistory } = useQuery({
         queryKey: ['subscriptionHistory', society?.subscriptionId],
         queryFn: () => subscriptionService.getSubscriptionHistory(society!.subscriptionId!),
         enabled: !!society?.subscriptionId && !!subscription,
+        staleTime: 300000,
     });
 
-    // React Query for Billing (Lazy loaded when activeTab === 'billing')
+    // 3. Billing Query (Depends on Main Query and Tab)
     const { data: billingHistory = [], isLoading: loadingBilling } = useQuery({
         queryKey: ['subscriptionBilling', society?.subscriptionId],
         queryFn: () => subscriptionService.getSubscriptionBilling(society!.subscriptionId!),
         enabled: !!society?.subscriptionId && !!subscription && activeTab === 'billing',
+        staleTime: 300000,
     });
 
-    useEffect(() => {
-        const fetchSubscription = async () => {
-            if (!society?.subscriptionId) return;
-            try {
-                setLoading(true);
-                const response = await subscriptionService.getSubscriptionDetails(society.subscriptionId);
-                if (response && response.id) {
-                    setSubscription(response);
-                } else {
-                    setError('No se pudo cargar la información de la suscripción.');
-                }
-            } catch (err: any) {
-                setError(err.message || 'Error al cargar la suscripción.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchSubscription();
-    }, [society?.subscriptionId]);
-
-    useEffect(() => {
-        societyService.getCurrent().catch((err) => {
-            console.error('Error fetching latest society usage data:', err);
-        });
-    }, []);
+    // Refresh society usage data (cached, only re-fetches when stale)
+    useQuery({
+        queryKey: ['societyCurrent'],
+        queryFn: () => societyService.getCurrent(),
+        staleTime: 300000, // 5 minutes — same as subscription
+    });
 
     const handleToggleAutoRenew = async () => {
         if (!subscription || !society?.subscriptionId) return;
         try {
             setUpdatingRenew(true);
             const newStatus = !subscription.autoRenew;
-            const updated = await subscriptionService.updateAutoRenew(society.subscriptionId, newStatus);
-            setSubscription({ ...subscription, autoRenew: updated.autoRenew });
+            await subscriptionService.updateAutoRenew(society.subscriptionId, newStatus);
+            // Re-fetch to update cache and UI
+            await refetchSub();
         } catch (err: any) {
             console.error('Error al actualizar la renovación automática:', err);
         } finally {
@@ -105,12 +99,12 @@ export default function BillingPage() {
                 file: renewFile
             });
             if (response && response.status === 'PENDING') {
-                setSubscription({ ...subscription, hasPendingPayment: true });
                 setSubmittedReferenceCode(renewReferenceCode);
                 setIsRenewModalOpen(false);
                 setIsSuccessModalOpen(true);
                 setRenewFile(null);
                 setRenewReferenceCode('');
+                await refetchSub();
             }
         } catch (err: any) {
             console.error('Error al renovar la suscripción:', err);
@@ -123,16 +117,8 @@ export default function BillingPage() {
         if (!subscription || !society?.subscriptionId) return;
         try {
             setIsReactivating(true);
-            const response = await subscriptionService.reactivateSubscription(society.subscriptionId);
-            if (response && response.status) {
-                setSubscription({
-                    ...subscription,
-                    status: response.status,
-                    isActive: response.isActive,
-                    autoRenew: response.autoRenew,
-                    endDate: response.endDate
-                });
-            }
+            await subscriptionService.reactivateSubscription(society.subscriptionId);
+            await refetchSub();
         } catch (err: any) {
             console.error('Error al reactivar la suscripción:', err);
         } finally {
@@ -144,17 +130,10 @@ export default function BillingPage() {
         if (!subscription || !society?.subscriptionId) return;
         try {
             setIsCancelling(true);
-            const response = await subscriptionService.cancelSubscription(society.subscriptionId, cancelReason);
-            if (response) {
-                setSubscription({
-                    ...subscription,
-                    status: response.status,
-                    isActive: response.isActive,
-                    endDate: response.endDate
-                });
-                setIsCancelModalOpen(false);
-                setCancelReason('');
-            }
+            await subscriptionService.cancelSubscription(society.subscriptionId, cancelReason);
+            setIsCancelModalOpen(false);
+            setCancelReason('');
+            await refetchSub();
         } catch (err: any) {
             console.error('Error al cancelar la suscripción:', err);
         } finally {
@@ -192,7 +171,7 @@ export default function BillingPage() {
         };
     }, [society, subscription]);
 
-    if (loading) {
+    if (loadingSub && !subscription) {
         return (
             <div className="flex h-full min-h-[60vh] items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
@@ -200,12 +179,12 @@ export default function BillingPage() {
         );
     }
 
-    if (error || !subscription) {
+    if (isErrorSub || !subscription) {
         return (
             <div className="p-8 max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
                 <h2 className="text-lg font-bold text-foreground mb-2">Error</h2>
-                <p className="text-muted-foreground text-sm">{error || 'No se encontró una suscripción activa.'}</p>
+                <p className="text-muted-foreground text-sm">No se pudo cargar la información de la suscripción.</p>
             </div>
         );
     }
