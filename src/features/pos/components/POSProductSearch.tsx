@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
-import { Input } from '@/components/ui';
-import { productService, type Product } from '@/services/product.service';
+import { Input } from '@/components/ui/input';
+import { type Product } from '@/services/product.service';
+import { useProductsSelect } from '@/hooks/useProductsSelect';
 
 interface POSProductSearchProps {
     searchQuery: string;
@@ -12,49 +13,29 @@ interface POSProductSearchProps {
     refreshTrigger?: number;
 }
 
-export function POSProductSearch({
+export const POSProductSearch = memo(function POSProductSearch({
     searchQuery,
     setSearchQuery,
     onAdvancedSearch,
     selectedProduct,
     onSelectProduct,
-    refreshTrigger = 0
 }: POSProductSearchProps) {
-    const [products, setProducts] = useState<Product[]>([]);
+    const { data: products = [] } = useProductsSelect();
     const [showDropdown, setShowDropdown] = useState(false);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const searchRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await productService.getForSelect();
-                // Handle various response structures
-                if (response.success && response.data) {
-                    // Check if it's paginated (response.data.data) or flat array (response.data)
-                    const productData = (response.data as any).data || response.data;
-                    if (Array.isArray(productData)) {
-                        setProducts(productData);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
-        };
-        fetchProducts();
-    }, [refreshTrigger]);
-
     // Filter products when search query changes
-    useEffect(() => {
+    const filteredProducts = useMemo(() => {
+        if (!products) return [];
         let filtered = products;
         if (searchQuery.trim().length > 0) {
             const query = searchQuery.toLowerCase();
-            filtered = products.filter(product =>
+            filtered = products.filter((product: Product) =>
                 product.name.toLowerCase().includes(query) ||
                 (product.code && product.code.toLowerCase().includes(query))
             );
         }
-        setFilteredProducts(filtered.slice(0, 5)); // Limit to 5 results for dropdown
+        return filtered.slice(0, 5); // Limit to 5 results for dropdown
     }, [searchQuery, products]);
 
     // Close dropdown when clicking outside
@@ -134,7 +115,7 @@ export function POSProductSearch({
                         {/* Dropdown Results */}
                         {showDropdown && filteredProducts.length > 0 && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-xl shadow-xl border border-border z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                                {filteredProducts.map((product) => (
+                                {filteredProducts.map((product: Product) => (
                                     <button
                                         key={product.id}
                                         onClick={() => handleSelect(product)}
@@ -168,4 +149,4 @@ export function POSProductSearch({
             </div>
         </div>
     );
-}
+});

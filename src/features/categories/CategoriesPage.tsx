@@ -1,36 +1,16 @@
 import { useState, useEffect } from 'react';
-import {
-  Plus,
-  Search,
-  SlidersHorizontal,
-  ChevronDown,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Loader2
-} from 'lucide-react';
-import {
-  Button,
-  Input,
-  Badge,
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from '@/components/ui';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CategoryEditModal } from './components/CategoryEditModal';
 import { CategoryFilterPanel, type FilterValues } from './components/CategoryFilterPanel';
 import { categoryService, type Category } from '@/services/category.service';
 import { alerts } from '@/utils/alerts';
+import { CategoriesHeader } from './components/CategoriesHeader';
+import { CategoriesFilterBar } from './components/CategoriesFilterBar';
+import { CategoriesTable } from './components/CategoriesTable';
+import { CategoriesMobileList } from './components/CategoriesMobileList';
+import { CategoriesPagination } from './components/CategoriesPagination';
+
+
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,6 +27,10 @@ export default function CategoriesPage() {
     updatedAtFrom: null,
     updatedAtTo: null,
   });
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
@@ -112,6 +96,9 @@ export default function CategoriesPage() {
         params.updatedAtTo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       }
 
+      params.sortBy = sortBy;
+      params.sortOrder = sortOrder;
+
       const response = await categoryService.getAll(params);
 
       setCategories(response.data.data || []);
@@ -130,7 +117,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters]);
+  }, [currentPage, debouncedSearchTerm, statusFilter, advancedFilters, sortBy, sortOrder]);
 
   const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
@@ -168,16 +155,19 @@ export default function CategoriesPage() {
     setIsFilterPanelOpen(false);
   };
 
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
   // We now use server-side filtering, so we don't need to filter on the client
   const filteredCategories = categories; // Alias for compatibility with existing render code
 
-  const getStatusLabel = () => {
-    switch (statusFilter) {
-      case 'active': return 'Activos';
-      case 'inactive': return 'Inactivos';
-      default: return 'Todos los estados';
-    }
-  };
+
 
   const handleNextPage = () => {
     if (hasNextPage) {
@@ -193,188 +183,46 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-bold text-foreground tracking-tight uppercase">Listado de Categorías</h2>
-          <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Gestione su inventario organizando productos por categorías.</p>
-        </div>
-        <Link to="/categories/new">
-          <Button className="h-9 px-4 flex items-center gap-2 shadow-lg shadow-primary/20 text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95">
-            <Plus className="h-3.5 w-3.5" /> Nueva Categoría
-          </Button>
-        </Link>
-      </div>
+      <CategoriesHeader />
 
-      {/* Filters Bar */}
-      <div className="bg-card p-4 rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o código..."
-            className="pl-9 bg-background border-input focus-visible:ring-primary"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      <CategoriesFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        onOpenFilters={() => setIsFilterPanelOpen(true)}
+      />
 
-        <div className="flex w-full sm:w-auto gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex-1 sm:flex-none justify-between text-secondary border-border font-normal hover:bg-accent/10 hover:text-foreground min-w-[160px]">
-                {getStatusLabel()}
-                <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-                Todos los estados
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('active')}>
-                Activo
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>
-                Inactivo
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button
-            variant="outline"
-            className="flex-1 sm:flex-none text-secondary border-border font-normal gap-2 hover:bg-accent/10 hover:text-foreground"
-            onClick={() => setIsFilterPanelOpen(true)}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Más Filtros
-          </Button>
-        </div>
-      </div>
-
-      {/* Data Table */}
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/30 border-b border-border">
-            <TableRow className="hover:bg-muted/40 border-none h-10">
-              <TableHead className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Código</TableHead>
-              <TableHead className="w-[300px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Nombre de la Categoría</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Descripción</TableHead>
-              <TableHead className="w-[130px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Fecha Creación</TableHead>
-              <TableHead className="w-[90px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Estado</TableHead>
-              <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center">
-                  <div className="flex items-center justify-center gap-2 text-slate-500">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Cargando categorías...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : filteredCategories.length > 0 ? (
-              filteredCategories.map((category) => (
-                <TableRow key={category.id} className="hover:bg-muted/30 border-border transition-colors h-11">
-                  <TableCell className="font-bold text-foreground text-[11px]">{category.code}</TableCell>
-                  <TableCell className="font-bold text-foreground text-xs">{category.name}</TableCell>
-                  <TableCell className="text-muted-foreground/80 text-[11px] max-w-[300px] truncate">{category.description || '-'}</TableCell>
-                  <TableCell className="text-muted-foreground/80 text-[11px]">
-                    {category.createdAt}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] tracking-wide px-2 py-0.5 border border-current/20">
-                      {category.isActive ? 'Activo' : 'Inactivo'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                        onClick={() => handleEditClick(category)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteCategory(category.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-64 text-center">
-                  <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in-50">
-                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4 border border-border">
-                      <Search className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-1">
-                      No se encontraron categorías
-                    </h3>
-                    <p className="text-muted-foreground max-w-sm mb-6">
-                      No hay categorías que coincidan con tu búsqueda o los filtros seleccionados.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSearchTerm('');
-                        setStatusFilter('all');
-                        setAdvancedFilters({
-                          createdBy: undefined,
-                          createdAtFrom: null,
-                          createdAtTo: null,
-                          updatedAtFrom: null,
-                          updatedAtTo: null,
-                        });
-                      }}
-                      className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                    >
-                      Limpiar filtros
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <CategoriesTable
+          categories={filteredCategories}
+          isLoading={isLoading}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteCategory}
+        />
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-border bg-card">
-          <div className="text-sm text-muted-foreground">
-            Mostrando <span className="font-semibold text-foreground">{filteredCategories.length > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-foreground">{totalCategories}</span> categorías
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0 disabled:opacity-50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-              disabled={!hasPrevPage || isLoading}
-              onClick={handlePrevPage}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="text-sm text-muted-foreground min-w-[80px] text-center">
-              Página {currentPage} de {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0 text-muted-foreground border-border hover:bg-muted hover:text-foreground disabled:opacity-50"
-              disabled={!hasNextPage || isLoading}
-              onClick={handleNextPage}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <CategoriesMobileList
+          categories={filteredCategories}
+          isLoading={isLoading}
+          onEdit={handleEditClick}
+          onDelete={handleDeleteCategory}
+        />
+
+        <CategoriesPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCategories={totalCategories}
+          pageLimit={pageLimit}
+          categoriesCount={filteredCategories.length}
+          hasPrevPage={hasPrevPage}
+          hasNextPage={hasNextPage}
+          isLoading={isLoading}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+        />
       </div>
 
       <CategoryFilterPanel
@@ -392,4 +240,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
-import { useCategories } from '@/hooks/useCategories';
-import { useBrands } from '@/hooks/useBrands';
+import type { CategorySelectOption } from '@/services/category.service';
+import type { Brand } from '@/services/product.service';
 
 interface FilterSidebarProps {
     filters: {
@@ -11,39 +11,24 @@ interface FilterSidebarProps {
         priceTo: number;
         stockStatus: 'all' | 'available' | 'low' | 'out';
     };
+    categories: CategorySelectOption[];
+    brands: Brand[];
     onFilterChange: (key: string, value: any) => void;
     onClearFilters: () => void;
 }
 
-export function FilterSidebar({ filters, onFilterChange, onClearFilters }: FilterSidebarProps) {
-    // Categories and brands are now fetched via hooks
+export function FilterSidebar({ filters, categories, brands, onFilterChange, onClearFilters }: FilterSidebarProps) {
     const [categorySearch, setCategorySearch] = useState('');
-
-    // Fetch categories and brands using custom hooks
-    const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories();
-    const { data: brands = [], isLoading: brandsLoading, error: brandsError } = useBrands();
-
-    // Optionally handle loading/error states
-    if (categoriesLoading || brandsLoading) {
-        // You could render a loading indicator here
-    }
-    if (categoriesError) {
-        console.error('Failed to load categories', categoriesError);
-    }
-    if (brandsError) {
-        console.error('Failed to load brands', brandsError);
-    }
-
 
     const filteredCategories = categories.filter(c =>
         c.name.toLowerCase().includes(categorySearch.toLowerCase())
     );
 
     return (
-        <aside className="shrink-0 space-y-8">
+        <aside className="shrink-0 space-y-5">
             {/* Categories */}
             <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Categoría</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Categoría</h3>
                 <div className="relative mb-3">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
@@ -54,11 +39,15 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
                         className="w-full pl-9 pr-3 py-2.5 text-sm bg-muted/30 border border-input rounded-lg text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                     />
                 </div>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                     {filteredCategories.map(cat => (
                         <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.categoryId === cat.id ? 'bg-primary border-primary' : 'border-input bg-background group-hover:border-primary/50'}`}>
-                                {filters.categoryId === cat.id && <div className="w-2 h-2 bg-primary-foreground rounded-full" />}
+                            <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filters.categoryId === cat.id ? 'bg-[#4096d8] border-[#4096d8]' : 'border-input bg-background group-hover:border-[#4096d8]/50'}`}>
+                                {filters.categoryId === cat.id && (
+                                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
                             </div>
                             <input
                                 type="radio"
@@ -77,12 +66,16 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
 
             {/* Brands */}
             <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Marca</h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Marca</h3>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                     {brands.map(brand => (
                         <label key={brand.id} className="flex items-center gap-3 cursor-pointer group">
-                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.brand === brand.brand ? 'bg-primary border-primary' : 'border-input bg-background group-hover:border-primary/50'}`}>
-                                {filters.brand === brand.brand && <div className="w-2 h-2 bg-primary-foreground rounded-full" />}
+                            <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filters.brand === brand.brand ? 'bg-[#4096d8] border-[#4096d8]' : 'border-input bg-background group-hover:border-[#4096d8]/50'}`}>
+                                {filters.brand === brand.brand && (
+                                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
                             </div>
                             <input
                                 type="radio"
@@ -101,7 +94,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
 
             {/* Price Range */}
             <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Rango de Precio</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Rango de Precio</h3>
                 <div className="px-2 space-y-3">
                     {/* Min Price Slider */}
                     <div>
@@ -119,7 +112,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
                                 const val = parseInt(e.target.value);
                                 if (val <= filters.priceTo) onFilterChange('priceFrom', val);
                             }}
-                            className="w-full accent-primary h-1 bg-muted rounded-lg appearance-none cursor-pointer"
+                            className="w-full accent-[#4096d8] h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                     {/* Max Price Slider */}
@@ -140,7 +133,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
                                 const val = parseInt(e.target.value);
                                 if (val >= filters.priceFrom) onFilterChange('priceTo', val);
                             }}
-                            className="w-full accent-primary h-1 bg-muted rounded-lg appearance-none cursor-pointer"
+                            className="w-full accent-[#4096d8] h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                     </div>
                 </div>
@@ -148,7 +141,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
 
             {/* Stock Status */}
             <div>
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Estado de Stock</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Estado de Stock</h3>
                 <div className="space-y-3">
                     {[
                         { id: 'all', label: 'Todos' },
@@ -157,14 +150,17 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters }: Filte
                         { id: 'out', label: 'Agotado', color: 'bg-muted' }
                     ].map((status) => (
                         <label key={status.id} className="flex items-center gap-3 cursor-pointer group">
+                            <div className={`w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center transition-colors ${filters.stockStatus === status.id ? 'border-[#4096d8]' : 'border-input bg-background group-hover:border-[#4096d8]/50'}`}>
+                                {filters.stockStatus === status.id && <div className="w-2.5 h-2.5 bg-[#4096d8] rounded-full" />}
+                            </div>
                             <input
                                 type="radio"
                                 name="stockStatus"
+                                className="hidden"
                                 checked={filters.stockStatus === status.id}
                                 onChange={() => onFilterChange('stockStatus', status.id)}
-                                className="w-4 h-4 text-primary border-input bg-background focus:ring-primary focus:ring-offset-background"
                             />
-                            <span className={`text-sm ${filters.stockStatus === status.id ? 'text-primary font-bold' : 'text-muted-foreground group-hover:text-foreground'}`}>{status.label}</span>
+                            <span className={`text-[13px] ${filters.stockStatus === status.id ? 'text-foreground font-medium' : 'text-muted-foreground group-hover:text-foreground'}`}>{status.label}</span>
                         </label>
                     ))}
                 </div>

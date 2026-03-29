@@ -5,7 +5,9 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { Lock } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Button, Input, Label } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { roleService, type Role } from '@/services/role.service';
 import { userService, type BusinessUser } from '@/services/user.service';
 import { isAxiosError } from 'axios';
@@ -62,6 +64,22 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
             fetchRoles();
         }
     }, [isOpen]);
+
+    // Robust role selection: Sync form when both user and roles are available
+    useEffect(() => {
+        if (user && roles.length > 0) {
+            const currentRoleCode = user.role?.code || '';
+            const baseRoleCode = currentRoleCode.split('-')[0];
+            
+            // Try to find exact match first, then base match
+            const matchedRole = roles.find(r => r.code === currentRoleCode) || 
+                               roles.find(r => r.code === baseRoleCode);
+            
+            if (matchedRole) {
+                setValue('roleCode', matchedRole.code);
+            }
+        }
+    }, [user, roles, setValue]);
 
     const fetchRoles = async () => {
         try {

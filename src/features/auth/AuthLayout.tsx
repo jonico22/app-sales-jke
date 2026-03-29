@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useThemeStore } from '@/store/theme.store';
-import logo from '@/assets/logo.png'; // Assuming logo is in src/assets
+import logo from '@/assets/logo.webp'; // Optimized WebP version
 
 export default function AuthLayout() {
   const { theme } = useThemeStore();
@@ -15,15 +15,19 @@ export default function AuthLayout() {
         <img
           src={logo}
           alt="JKE Solutions Logo"
+          width={180}
+          height={48}
+          fetchPriority="high"
+          loading="eager"
           className={`h-12 w-auto object-contain transition-all ${isDark ? 'brightness-0 invert' : ''}`}
         />
       </div>
 
-      <div className="relative w-full max-w-md z-10">
+      <main className="relative w-full max-w-md z-10">
         <Outlet />
-      </div>
+      </main>
 
-      <footer className="relative mt-8 text-center text-xs text-muted-foreground/80 z-10">
+      <footer className="relative mt-8 text-center text-xs text-muted-foreground font-medium z-10">
         © {new Date().getFullYear()} JKE Solutions. All rights reserved.
       </footer>
     </div>

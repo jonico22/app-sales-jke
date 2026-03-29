@@ -1,5 +1,5 @@
 import { FileSpreadsheet, CloudUpload, FileDown, Loader2, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { useDropzone } from 'react-dropzone';
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';

@@ -3,6 +3,7 @@ import api from './api.client';
 export interface LoginRequest {
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 export interface Role {
@@ -25,8 +26,10 @@ export interface Person {
   lastName: string;
   email: string;
   phone: string | null;
+  address: string | null;
   documentNumber: string | null;
   documentType?: DocumentType;
+  sexo: 'MALE' | 'FEMALE' | 'OTHER' | null;
 }
 
 export interface UserSession {
@@ -77,6 +80,7 @@ export interface LoginResponse {
 
 export interface ForgotPasswordRequest {
   email: string;
+  turnstileToken?: string;
 }
 
 export interface ForgotPasswordResponse {
@@ -87,6 +91,7 @@ export interface ForgotPasswordResponse {
 export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
+  turnstileToken?: string;
 }
 
 export interface ResetPasswordResponse {
@@ -108,8 +113,10 @@ export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phone?: string | null;
-  documentType?: string | null;
+  address?: string | null;
   documentNumber?: string | null;
+  documentType?: string | null; // Leave as optional for compatibility
+  sexo?: 'MALE' | 'FEMALE' | 'OTHER' | string | null;
   image?: string | null;
 }
 
@@ -157,7 +164,10 @@ export interface PermissionsResponse {
 
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await api.post<LoginResponse>('/auth/login', credentials);
+    const { turnstileToken, ...loginData } = credentials;
+    const response = await api.post<LoginResponse>('/auth/login', loginData, {
+      headers: turnstileToken ? { 'x-turnstile-token': turnstileToken } : {},
+    });
     return response.data;
   },
   logout: async (): Promise<void> => {
@@ -176,11 +186,17 @@ export const authService = {
     return response.data;
   },
   forgotPassword: async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
-    const response = await api.post<ForgotPasswordResponse>('/auth/forgot-password', data);
+    const { turnstileToken, ...forgotData } = data;
+    const response = await api.post<ForgotPasswordResponse>('/auth/forgot-password', forgotData, {
+      headers: turnstileToken ? { 'x-turnstile-token': turnstileToken } : {},
+    });
     return response.data;
   },
   resetPassword: async (data: ResetPasswordRequest): Promise<ResetPasswordResponse> => {
-    const response = await api.post<ResetPasswordResponse>('/auth/reset-password', data);
+    const { turnstileToken, ...resetData } = data;
+    const response = await api.post<ResetPasswordResponse>('/auth/reset-password', resetData, {
+      headers: turnstileToken ? { 'x-turnstile-token': turnstileToken } : {},
+    });
     return response.data;
   },
   changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {

@@ -95,7 +95,14 @@ export interface BulkUploadResponse {
 
 export const categoryService = {
     // Get all categories
-    getAll: async (params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<CategoriesResponse> => {
+    getAll: async (params?: { 
+        page?: number; 
+        limit?: number; 
+        search?: string; 
+        isActive?: boolean;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<CategoriesResponse> => {
         const response = await api.get<CategoriesResponse>('/sales/categories', { params });
         return response.data;
     },

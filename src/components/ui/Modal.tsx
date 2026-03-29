@@ -52,13 +52,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
             {/* Modal Content */}
             <div
                 ref={modalRef}
-                className={`relative bg-card rounded-2xl shadow-xl w-full ${sizeClasses[size]} transform transition-all animate-in fade-in zoom-in-95 duration-200`}
+                className={`relative bg-card rounded-2xl shadow-xl w-full ${sizeClasses[size]} max-h-[calc(100vh-2rem)] flex flex-col transform transition-all animate-in fade-in zoom-in-95 duration-200`}
                 role="dialog"
                 aria-modal="true"
             >
                 {/* Header */}
-                {!hideHeader && (
-                    <div className="flex items-center justify-between p-6 border-b border-border">
+                {!hideHeader ? (
+                    <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
                         <h3 className="text-lg font-bold text-foreground">
                             {title}
                         </h3>
@@ -69,10 +69,10 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
                             <X className="h-5 w-5" />
                         </button>
                     </div>
-                )}
+                ) : null}
 
                 {/* Body */}
-                <div className={`p-6 ${contentClassName}`}>
+                <div className={`p-6 overflow-y-auto custom-scrollbar ${contentClassName}`}>
                     {children}
                 </div>
             </div>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { POSWelcomeHeader } from './components/POSWelcomeHeader';
+import { CashOpeningBanner } from './components/CashOpeningBanner';
+import { CashClosingBanner } from './components/CashClosingBanner';
+import { useBranchStore } from '@/store/branch.store';
 import { POSClientSelector } from './components/POSClientSelector';
 import { POSProductSearch } from './components/POSProductSearch';
 import { POSCatalogButton } from './components/POSCatalogButton';
@@ -8,15 +11,16 @@ import { POSQuickActions } from './components/POSQuickActions';
 import { POSFloatingCart } from './components/POSFloatingCart';
 import { POSCartPanel } from './components/POSCartPanel';
 import { POSMobileFooter } from './components/POSMobileFooter';
-import { POSTopBar } from './components/POSTopBar';
 import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
 import { useCartStore } from '@/store/cart.store';
-import { AddClientModal } from './components/AddClientModal'; // Import Modal
-import type { ClientSelectOption } from '@/services/client.service';
+import { useCashShift } from '@/hooks/useCashShift';
+import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
+import type { Client, ClientSelectOption } from '@/services/client.service';
 import type { Product } from '@/services/product.service';
 
 export default function POSPage() {
+  const { selectedBranch } = useBranchStore();
   const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
     id: 'public', // Mock ID for default
     name: 'Público General',
@@ -46,7 +50,6 @@ export default function POSPage() {
 
         // Prevent duplicate processing
         if (processingCloneRef.current === orderId) {
-          console.log('[CLONE] Already processing order:', orderId);
           return;
         }
         processingCloneRef.current = orderId;
@@ -59,33 +62,33 @@ export default function POSPage() {
 
             clearCurrentOrder(); // Ensure clean slate
             const productService = await import('@/services/product.service').then(m => m.productService);
-            for (const item of response.data.orderItems) {
-              try {
-
-                const productRes = await productService.getById(item.productId);
-
-                if (productRes.success && productRes.data) {
-                  const product = productRes.data;
-
-                  // Add item directly with quantity
-                  addItemToCart(product, item.quantity);
-                } else {
-                  console.warn('[CLONE] Product fetch failed:', productRes);
+            
+            // Parallel fetch all products (Rule async-parallel)
+            const productResults = await Promise.all(
+              response.data.orderItems.map(async (item) => {
+                try {
+                  const productRes = await productService.getById(item.productId);
+                  return { productRes, quantity: item.quantity };
+                } catch (e) {
+                  return null;
                 }
-              } catch (e) {
-                console.error("[CLONE] Failed to load product for clone", item.productId, e);
+              })
+            );
+
+            // Add all valid products to cart
+            productResults.forEach((result) => {
+              if (result && result.productRes.success && result.productRes.data) {
+                addItemToCart(result.productRes.data, result.quantity);
               }
-            }
+            });
 
             // Open the cart panel to show the added items
             if (response.data.orderItems.length > 0) {
               setIsCartOpen(true);
             }
-          } else {
-            console.warn('[CLONE] No items found in order or fetch failed');
           }
         } catch (error) {
-          console.error('[CLONE] Error cloning order:', error);
+          // Error loading order
         }
 
 
@@ -104,7 +107,13 @@ export default function POSPage() {
   }, [location]);
 
 
-  const handleClientRegistered = (newClient: ClientSelectOption) => {
+  const handleClientSuccess = (client: Client) => {
+    // Map full Client to ClientSelectOption for POS
+    const newClient: ClientSelectOption = {
+      id: client.id,
+      name: client.name || `${client.firstName} ${client.lastName}`.trim(),
+      documentNumber: client.documentNumber || ''
+    };
     setSelectedClient(newClient);
     setIsAddClientModalOpen(false);
   };
@@ -126,15 +135,29 @@ export default function POSPage() {
 
 
 
-  return (
-    <div className=" bg-background pb-24 md:pb-6 md:pt-6 p-4 md:p-6 min-h-[calc(100vh-64px)]">
-      <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
+  const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
 
-        {/* Top Bar */}
-        <POSTopBar />
+  return (
+    <div className=" bg-background pb-20 md:pb-6 md:pt-6 p-2 md:p-6 min-h-[calc(100vh-64px)]">
+      <div className="max-w-3xl mx-auto space-y-4 md:space-y-8">
+
+
+        {/* Cash Opening Banner */}
+        {/* Cash Banners (Opening/Closing) - Layout Stability */}
+        {isShiftLoading ? (
+          <CashOpeningBanner isLoading={true} />
+        ) : !isShiftOpen ? (
+          <CashOpeningBanner refreshShift={refresh} />
+        ) : (
+          <CashClosingBanner 
+            branchName={selectedBranch?.name}
+            onCloseCash={() => navigate(`/pos/cash-closing/${currentShift?.id}`)}
+          />
+        )}
 
         {/* Header Section */}
         <POSWelcomeHeader />
+
 
         {/* Main Card */}
         <div className="bg-card md:rounded-2xl md:border md:border-border md:shadow-sm md:p-6 space-y-6">
@@ -215,11 +238,9 @@ export default function POSPage() {
           }}
           onPrintTicket={() => {
             // TODO: Implement print ticket functionality
-            console.log('Print ticket');
           }}
           onShareWhatsApp={() => {
             // TODO: Implement WhatsApp share functionality
-            console.log('Share via WhatsApp');
           }}
         />
 
@@ -228,11 +249,13 @@ export default function POSPage() {
 
 
 
-        {/* Add Client Modal */}
-        <AddClientModal
-          isOpen={isAddClientModalOpen}
-          onClose={() => setIsAddClientModalOpen(false)}
-          onClientRegistered={handleClientRegistered}
+        {/* Client Edit/Add Modal */}
+        <ClientEditModal
+          open={isAddClientModalOpen}
+          onOpenChange={setIsAddClientModalOpen}
+          client={null}
+          onSave={() => {}}
+          onSuccess={handleClientSuccess}
         />
 
       </div>

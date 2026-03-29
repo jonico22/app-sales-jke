@@ -20,9 +20,9 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
   // Auto-collapse on tablet screens
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+      if (window.innerWidth >= 768 && window.innerWidth < 1023) {
         setIsCollapsed(true);
-      } else if (window.innerWidth >= 1024) {
+      } else if (window.innerWidth >= 1023) {
         setIsCollapsed(false);
       }
     };
@@ -35,7 +35,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
   }, []);
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       <SessionExpiredModal
         isOpen={isSessionExpired}
         onLogin={handleRedirect}

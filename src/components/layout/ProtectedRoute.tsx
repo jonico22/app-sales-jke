@@ -1,7 +1,13 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
+import { useSocketConnection } from '@/hooks/useSocketConnection';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 
 export default function ProtectedRoute() {
+    // Initializing real-time features only if the route is active (authenticated)
+    useSocketConnection();
+    useRealtimeUpdates();
+    
     const { isAuthenticated, user, subscription } = useAuthStore();
     const location = useLocation();
 

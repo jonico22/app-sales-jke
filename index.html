@@ -7,15 +7,75 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="manifest" href="/site.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventario JKE</title>
+  <title>Inventario JKE | Gestión de Ventas y Almacén</title>
+  <meta name="description" content="Sistema de gestión de ventas e inventario para JKE Solutions. Accede a tu cuenta para gestionar productos, pedidos y reportes con una interfaz moderna y rápida." />
+  <meta name="keywords" content="inventario, gestión de ventas, jke solutions, pos, almacén, reportes de ventas, ecommerce" />
+  <meta name="author" content="JKE Solutions" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <style>
+    /* Critical CSS: covers above-the-fold content before Tailwind CSS is injected by JS */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --foreground: #334155;
+      --border: #e2e8f0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) {
+        --background: #0f172a;
+        --card: #1e293b;
+        --foreground: #f8fafc;
+        --border: #334155;
+      }
+    }
+
+    html.dark {
+      --background: #0f172a;
+      --card: #1e293b;
+      --foreground: #f8fafc;
+      --border: #334155;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Root container */
+    #root {
+      min-height: 100vh;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://challenges.cloudflare.com">
+  <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
 </head>
 
 <body>
   <div id="root"></div>
   <div id="datepicker-portal"></div>
+  <link rel="manifest" href="/site.webmanifest" />
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

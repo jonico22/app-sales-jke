@@ -57,8 +57,11 @@ export const userService = {
     /**
      * Get business users
      */
-    getBusinessUsers: async () => {
-        const response = await api.get<BusinessUsersResponse>('/users/business');
+    getBusinessUsers: async (params?: { 
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }) => {
+        const response = await api.get<BusinessUsersResponse>('/users/business', { params });
         return response.data;
     },
 

@@ -5,7 +5,8 @@ export const NotificationType = {
     SUCCESS: 'SUCCESS',
     WARNING: 'WARNING',
     ERROR: 'ERROR',
-    SYSTEM: 'SYSTEM'
+    SYSTEM: 'SYSTEM',
+    SALES: 'SALES'
 } as const;
 
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
@@ -28,7 +29,8 @@ export interface Notification {
     data?: any;
     link?: string;
     metadata?: any;
-    isRead: boolean;
+    read: boolean;
+    isRead?: boolean; // Keep for safety during transition
     userId: string;
     createdAt: string;
     updatedAt: string;

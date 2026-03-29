@@ -1,5 +1,5 @@
-import { Modal } from '@/components/ui';
-import { Button } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { userService } from '@/services/user.service';
 import { toast } from 'sonner';

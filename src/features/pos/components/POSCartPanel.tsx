@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { X, Trash2, ShoppingBag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
 import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
@@ -8,6 +8,8 @@ import { useBranchStore } from '@/store/branch.store';
 import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
+import { useQueryClient } from '@tanstack/react-query';
+import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
 
 
 interface POSCartPanelProps {
@@ -17,8 +19,22 @@ interface POSCartPanelProps {
     onSaleSuccess: () => void;
 }
 
-export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
-    const { items, removeItem, updateQuantity, updatePrice, discount, setDiscount, orderNotes, setOrderNotes, setCurrentOrder, clearCart, currencyId } = useCartStore();
+export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
+    const queryClient = useQueryClient();
+    
+    // Using granular selectors instead of destructuring the state (Rule rerender-defer-reads)
+    const items = useCartStore(state => state.items);
+    const removeItem = useCartStore(state => state.removeItem);
+    const updateQuantity = useCartStore(state => state.updateQuantity);
+    const updatePrice = useCartStore(state => state.updatePrice);
+    const discount = useCartStore(state => state.discount);
+    const setDiscount = useCartStore(state => state.setDiscount);
+    const orderNotes = useCartStore(state => state.orderNotes);
+    const setOrderNotes = useCartStore(state => state.setOrderNotes);
+    const setCurrentOrder = useCartStore(state => state.setCurrentOrder);
+    const clearCart = useCartStore(state => state.clearCart);
+    const currencyId = useCartStore(state => state.currencyId);
+
     const society = useSocietyStore(state => state.society);
     const selectedBranch = useBranchStore(state => state.selectedBranch);
     const totalWithTax = useCartStore(selectTotalPrice);
@@ -72,6 +88,9 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
             const response = await orderService.create(orderData);
 
             if (response.success && response.data) {
+                // Invalidate products cache to refresh stock in selection
+                queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+
                 // If it's PENDING_PAYMENT, we prepare for payment modal
                 if (targetStatus === OrderStatus.PENDING_PAYMENT) {
                     // Save order details to store for payment modal
@@ -358,4 +377,4 @@ export function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }:
 
         </>
     );
-}
+});

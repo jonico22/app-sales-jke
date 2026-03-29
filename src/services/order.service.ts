@@ -192,6 +192,8 @@ export const orderService = {
         updatedAtFrom?: string;
         updatedAtTo?: string;
         include?: string; // Allow including relations
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
     }): Promise<OrdersResponse> => {
         const response = await api.get<OrdersResponse>('/sales/orders', { params });
         return response.data;

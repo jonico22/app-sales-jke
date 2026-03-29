@@ -1,5 +1,5 @@
 import { X, FileText, CheckCircle2, AlertCircle, CloudUpload, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 
 export interface AnalyzedRow {
     row: number;

@@ -2,7 +2,7 @@ import { Store, BadgeCheck, Hash, Coins, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocietyStore } from '@/store/society.store';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 
 export function BusinessHeader() {
   const navigate = useNavigate();

@@ -131,10 +131,10 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
                                             </td>
                                             <td className="px-5 py-4 text-center text-foreground font-medium">{item.quantity}</td>
                                             <td className="px-5 py-4 text-right text-muted-foreground">
-                                                {currencySymbol} {Number(item.unitPrice).toFixed(2)}
+                                                {currencySymbol} {Number(item.unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="px-5 py-4 text-right font-black text-foreground">
-                                                {currencySymbol} {Number(item.total).toFixed(2)}
+                                                {currencySymbol} {Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
                                     ))
@@ -155,21 +155,21 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
                         <div className="w-full md:w-3/5 bg-muted/20 p-5 rounded-2xl border border-border space-y-3">
                             <div className="flex justify-between text-sm text-muted-foreground">
                                 <span className="font-medium">Subtotal</span>
-                                <span className="font-bold text-foreground">{currencySymbol} {subtotal.toFixed(2)}</span>
+                                <span className="font-bold text-foreground">{currencySymbol} {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex justify-between text-sm text-muted-foreground">
                                 <span className="font-medium">IGV (18%)</span>
-                                <span className="font-bold text-foreground">{currencySymbol} {tax.toFixed(2)}</span>
+                                <span className="font-bold text-foreground">{currencySymbol} {tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             {discount > 0 && (
                                 <div className="flex justify-between text-sm text-emerald-500 font-bold border-t border-emerald-500/10 pt-2">
                                     <span>Descuento</span>
-                                    <span>- {currencySymbol} {discount.toFixed(2)}</span>
+                                    <span>- {currencySymbol} {discount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             )}
                             <div className="flex justify-between items-center pt-3 border-t-2 border-border mt-3">
                                 <span className="font-black text-foreground uppercase tracking-tight text-base">Total Pagado</span>
-                                <span className="text-2xl font-black text-foreground tracking-tighter">{currencySymbol} {total.toFixed(2)}</span>
+                                <span className="text-2xl font-black text-foreground tracking-tighter">{currencySymbol} {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                         </div>
                     </div>
