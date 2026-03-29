@@ -16,13 +16,12 @@ import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
 import { AuthHeader } from './components/AuthHeader';
 import { PasswordInput } from './components/PasswordInput';
 import { AuthTurnstile } from './components/AuthTurnstile';
+import { parseZodErrors } from './auth.utils';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
-
-// type LoginSchema... (removed)
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -56,13 +55,7 @@ export default function LoginPage() {
     const result = loginSchema.safeParse(data);
     
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
+      setErrors(parseZodErrors(result));
       setIsSubmitting(false);
       return;
     }
@@ -81,7 +74,6 @@ export default function LoginPage() {
       login(response.data); // Update global store
 
       // Only load society data if password change is not mandatory
-      // The backend likely blocks normal endpoints until the password is changed
       if (!response.data.user.mustChangePassword) {
         try {
           await societyService.getCurrent();
@@ -112,9 +104,7 @@ export default function LoginPage() {
           navigate('/');
         }
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
       toast.error(errorMessage);
     } finally {
@@ -123,25 +113,25 @@ export default function LoginPage() {
   };
 
   return (
-    <Card className="p-8 shadow-xl dark:shadow-none">
+    <Card className="p-8 shadow-2xl dark:shadow-none border-none">
       <AuthHeader 
         title="Iniciar Sesión" 
         description="Ingresa tus credenciales para acceder a tu cuenta" 
       />
 
-      <form onSubmit={onSubmit} className="space-y-5">
+      <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Correo Electrónico</Label>
+          <Label htmlFor="email" className="font-medium">Correo Electrónico</Label>
           <Input
             id="email"
             name="email"
             type="email"
             defaultValue={defaultEmail}
             placeholder="usuario@jkesolutions.com"
-            className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+            className={`h-12 text-base transition-all ${errors.email ? "border-destructive focus-visible:ring-destructive" : "focus:border-primary focus:ring-4 focus:ring-primary/10"}`}
           />
           {errors.email && (
-            <span className="text-xs text-destructive font-medium">{errors.email}</span>
+            <span className="text-xs text-destructive font-semibold animate-in fade-in slide-in-from-top-1 duration-200">{errors.email}</span>
           )}
         </div>
 
@@ -149,10 +139,11 @@ export default function LoginPage() {
           id="password"
           name="password"
           label="Contraseña"
+          className="h-12 text-base"
           error={errors.password ? { message: errors.password } : undefined}
         />
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 py-1">
           <Checkbox
             id="remember"
             name="remember"
@@ -161,25 +152,25 @@ export default function LoginPage() {
           />
           <Label
             htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground select-none"
           >
             Recordar correo
           </Label>
         </div>
 
-        <AuthTurnstile onTokenChange={setTurnstileToken} />
+        <AuthTurnstile onTokenChange={(token) => setTurnstileToken(token)} />
 
         <Button 
           type="submit" 
           variant="primary" 
-          className="w-full text-white font-bold" 
+          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all active:scale-[0.99]" 
           disabled={isSubmitting || !turnstileToken}
         >
           {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </Button>
 
         <div className="text-center pt-2">
-          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-medium">
+          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-bold transition-colors">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
@@ -187,3 +178,4 @@ export default function LoginPage() {
     </Card>
   );
 }
+

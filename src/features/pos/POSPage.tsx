@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { usePOS } from './hooks/usePOS';
 import { POSWelcomeHeader } from './components/POSWelcomeHeader';
 import { CashOpeningBanner } from './components/CashOpeningBanner';
 import { CashClosingBanner } from './components/CashClosingBanner';
-import { useBranchStore } from '@/store/branch.store';
 import { POSClientSelector } from './components/POSClientSelector';
 import { POSProductSearch } from './components/POSProductSearch';
 import { POSCatalogButton } from './components/POSCatalogButton';
@@ -13,141 +11,50 @@ import { POSCartPanel } from './components/POSCartPanel';
 import { POSMobileFooter } from './components/POSMobileFooter';
 import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
-import { useCartStore } from '@/store/cart.store';
-import { useCashShift } from '@/hooks/useCashShift';
 import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
-import type { Client, ClientSelectOption } from '@/services/client.service';
-import type { Product } from '@/services/product.service';
 
 export default function POSPage() {
-  const { selectedBranch } = useBranchStore();
-  const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
-    id: 'public', // Mock ID for default
-    name: 'Público General',
-    documentNumber: '00000000'
-  });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false); // Modal State
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [productsRefreshTrigger, setProductsRefreshTrigger] = useState(0);
-  const { clearCurrentOrder, currentOrderCode, currentOrderTotal } = useCartStore();
-  const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
-  const processingCloneRef = useRef<string | null>(null);
-
-  const location = useLocation();
-  const navigate = useNavigate();
-  const addItemToCart = useCartStore(state => state.addItem);
-
-  // Handle "Resume/Clone" order from Pending Orders
-  useEffect(() => {
-    const handleCloneOrder = async () => {
-
-      if (location.state && (location.state as any).cloneFromOrderId) {
-        const orderId = (location.state as any).cloneFromOrderId;
-
-        // Prevent duplicate processing
-        if (processingCloneRef.current === orderId) {
-          return;
-        }
-        processingCloneRef.current = orderId;
-
-        try {
-          const response = await import('@/services/order.service').then(m => m.orderService.getById(orderId));
-
-
-          if (response.success && response.data && response.data.orderItems) {
-
-            clearCurrentOrder(); // Ensure clean slate
-            const productService = await import('@/services/product.service').then(m => m.productService);
-            
-            // Parallel fetch all products (Rule async-parallel)
-            const productResults = await Promise.all(
-              response.data.orderItems.map(async (item) => {
-                try {
-                  const productRes = await productService.getById(item.productId);
-                  return { productRes, quantity: item.quantity };
-                } catch (e) {
-                  return null;
-                }
-              })
-            );
-
-            // Add all valid products to cart
-            productResults.forEach((result) => {
-              if (result && result.productRes.success && result.productRes.data) {
-                addItemToCart(result.productRes.data, result.quantity);
-              }
-            });
-
-            // Open the cart panel to show the added items
-            if (response.data.orderItems.length > 0) {
-              setIsCartOpen(true);
-            }
-          }
-        } catch (error) {
-          // Error loading order
-        }
-
-
-        // Clean up state so it doesn't run again on reload
-        window.history.replaceState({}, document.title);
-
-        // Reset ref after a delay to allow re-cloning if needed (though location state is cleared)
-        setTimeout(() => {
-          processingCloneRef.current = null;
-        }, 1000);
-
-      }
-    };
-
-    handleCloneOrder();
-  }, [location]);
-
-
-  const handleClientSuccess = (client: Client) => {
-    // Map full Client to ClientSelectOption for POS
-    const newClient: ClientSelectOption = {
-      id: client.id,
-      name: client.name || `${client.firstName} ${client.lastName}`.trim(),
-      documentNumber: client.documentNumber || ''
-    };
-    setSelectedClient(newClient);
-    setIsAddClientModalOpen(false);
-  };
-
-  const handleProductSelect = (product: Product | null) => {
-    setSelectedProduct(product);
-    if (product) {
-      addItemToCart(product);
-      // Clear selected product after adding to cart
-      setTimeout(() => setSelectedProduct(null), 100);
-    }
-  };
-
-  const handleCartOpen = () => {
-    setIsCartOpen(true);
-    // Clear selected product when cart opens
-    setSelectedProduct(null);
-  };
-
-
-
-  const { currentShift, isShiftOpen, isLoading: isShiftLoading, refresh } = useCashShift();
+  const {
+    selectedBranch,
+    selectedClient,
+    setSelectedClient,
+    searchQuery,
+    setSearchQuery,
+    selectedProduct,
+    isAddClientModalOpen,
+    setIsAddClientModalOpen,
+    isCartOpen,
+    productsRefreshTrigger,
+    currentOrderCode,
+    currentOrderTotal,
+    lastPaymentMethod,
+    currentShift,
+    isShiftOpen,
+    isShiftLoading,
+    isPaymentModalOpen,
+    isSuccessModalOpen,
+    refreshShift,
+    handleClientSuccess,
+    handleProductSelect,
+    handleCartOpen,
+    handleSaleSuccess,
+    handlePaymentSuccess,
+    handleCloseSuccessModal,
+    openAddClientModal,
+    closeCart,
+    closePaymentModal,
+    navigate,
+  } = usePOS();
 
   return (
     <div className=" bg-background pb-20 md:pb-6 md:pt-6 p-2 md:p-6 min-h-[calc(100vh-64px)]">
       <div className="max-w-3xl mx-auto space-y-4 md:space-y-8">
 
-
-        {/* Cash Opening Banner */}
         {/* Cash Banners (Opening/Closing) - Layout Stability */}
         {isShiftLoading ? (
           <CashOpeningBanner isLoading={true} />
         ) : !isShiftOpen ? (
-          <CashOpeningBanner refreshShift={refresh} />
+          <CashOpeningBanner refreshShift={refreshShift} />
         ) : (
           <CashClosingBanner 
             branchName={selectedBranch?.name}
@@ -158,14 +65,13 @@ export default function POSPage() {
         {/* Header Section */}
         <POSWelcomeHeader />
 
-
         {/* Main Card */}
         <div className="bg-card md:rounded-2xl md:border md:border-border md:shadow-sm md:p-6 space-y-6">
           {/* Client Selector */}
           <POSClientSelector
             selectedClient={selectedClient}
             onSelectClient={setSelectedClient}
-            onNewClient={() => setIsAddClientModalOpen(true)}
+            onNewClient={openAddClientModal}
           />
 
           {/* Product Search */}
@@ -189,40 +95,22 @@ export default function POSPage() {
           />
         </div>
 
-
-
         {/* Floating Cart Button */}
         <POSFloatingCart onClick={handleCartOpen} />
 
         {/* Cart Panel */}
         <POSCartPanel
           isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
+          onClose={closeCart}
           selectedClient={selectedClient}
-          onSaleSuccess={() => {
-            setIsPaymentModalOpen(true);
-            // Clear selected product when order is created
-            setSelectedProduct(null);
-            // Refresh products explicitly
-            setProductsRefreshTrigger(prev => prev + 1);
-          }}
+          onSaleSuccess={handleSaleSuccess}
         />
 
-        {/* Payment Modal placed here to persist when CartPanel is unmounted/hidden */}
+        {/* Payment Modal */}
         <POSPaymentModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          onPaymentSuccess={(paymentMethod: string) => {
-            // Save payment method for success modal
-            setLastPaymentMethod(paymentMethod);
-            // Close payment modal and open success modal
-            setIsPaymentModalOpen(false);
-            setIsSuccessModalOpen(true);
-            // Clear selected product after successful payment
-            setSelectedProduct(null);
-            // Refresh products explicitly
-            setProductsRefreshTrigger(prev => prev + 1);
-          }}
+          onClose={closePaymentModal}
+          onPaymentSuccess={handlePaymentSuccess}
         />
 
         {/* Success Modal */}
@@ -232,10 +120,7 @@ export default function POSPage() {
           clientName={selectedClient?.name || 'Cliente'}
           paymentMethod={lastPaymentMethod}
           total={currentOrderTotal}
-          onClose={() => {
-            setIsSuccessModalOpen(false);
-            clearCurrentOrder();
-          }}
+          onClose={handleCloseSuccessModal}
           onPrintTicket={() => {
             // TODO: Implement print ticket functionality
           }}
@@ -246,8 +131,6 @@ export default function POSPage() {
 
         {/* Mobile Footer */}
         <POSMobileFooter />
-
-
 
         {/* Client Edit/Add Modal */}
         <ClientEditModal
@@ -262,3 +145,4 @@ export default function POSPage() {
     </div>
   );
 }
+

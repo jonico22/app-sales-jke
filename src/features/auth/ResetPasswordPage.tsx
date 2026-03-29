@@ -10,6 +10,7 @@ import { AuthHeader } from './components/AuthHeader';
 import { PasswordInput } from './components/PasswordInput';
 import { AuthTurnstile } from './components/AuthTurnstile';
 import { PasswordStrengthMeter } from './components/PasswordStrengthMeter';
+import { parseZodErrors } from './auth.utils';
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
@@ -20,8 +21,6 @@ const resetPasswordSchema = z.object({
   message: "Las contraseñas no coinciden",
   path: ["confirmPassword"],
 });
-
-// type ResetPasswordSchema... (removed)
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -50,13 +49,7 @@ export default function ResetPasswordPage() {
     const result = resetPasswordSchema.safeParse(data);
     
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        if (issue.path[0]) {
-          fieldErrors[issue.path[0].toString()] = issue.message;
-        }
-      });
-      setErrors(fieldErrors);
+      setErrors(parseZodErrors(result));
       setIsSubmitting(false);
       return;
     }
@@ -65,9 +58,7 @@ export default function ResetPasswordPage() {
       await authService.resetPassword({ token, newPassword: result.data.password, turnstileToken });
       toast.success('¡Contraseña actualizada correctamente!');
       navigate('/auth/login');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al restablecer la contraseña.';
       toast.error(errorMessage);
     } finally {
@@ -76,7 +67,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <Card className="p-10 shadow-xl dark:shadow-none">
+    <Card className="p-10 shadow-2xl dark:shadow-none border-none">
       <AuthHeader 
         title="Restablecer Contraseña" 
         description="Crea una nueva contraseña segura para tu cuenta" 
@@ -89,9 +80,10 @@ export default function ResetPasswordPage() {
           id="password"
           name="password"
           label="Nueva Contraseña"
+          className="h-12 text-base"
           value={passwordValue}
           onChange={(e) => setPasswordValue(e.target.value)}
-          error={errors.password}
+          error={errors.password ? { message: errors.password } : undefined}
         />
 
         {/* Confirm Password */}
@@ -99,18 +91,19 @@ export default function ResetPasswordPage() {
           id="confirmPassword"
           name="confirmPassword"
           label="Confirmar Nueva Contraseña"
-          error={errors.confirmPassword}
+          className="h-12 text-base"
+          error={errors.confirmPassword ? { message: errors.confirmPassword } : undefined}
         />
 
         {/* Strength Meter */}
         <PasswordStrengthMeter password={passwordValue} />
 
-        <AuthTurnstile onTokenChange={setTurnstileToken} />
+        <AuthTurnstile onTokenChange={(token) => setTurnstileToken(token)} />
 
         <Button
           type="submit"
           variant="primary"
-          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
+          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all active:scale-[0.99]"
           disabled={isSubmitting || !turnstileToken}
         >
           {isSubmitting ? 'Actualizando...' : 'Actualizar Contraseña'}
@@ -119,7 +112,7 @@ export default function ResetPasswordPage() {
         <div className="text-center pt-2">
           <Link
             to="/auth/login"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium gap-2"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-bold gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al inicio de sesión
@@ -130,3 +123,4 @@ export default function ResetPasswordPage() {
     </Card>
   );
 }
+

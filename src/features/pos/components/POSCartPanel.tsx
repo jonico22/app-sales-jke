@@ -52,23 +52,15 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
 
         setProcessingStatus(targetStatus);
         try {
-            // Construct Order Request
-            // Note: We need actual IDs for society, branch, currency, partner. 
-            // For now, hardcoding or assuming defaults/mock until we pull from global store/context properly.
-            // In a real app, these would come from the auth context or selected values in the POS page.
-
-            // Construct Order Request with correct keys matching backend validation
-
+            // Construct Order Request with correct IDs from stores
             const orderData: CreateOrderRequest = {
-                societyId: society?.id || '1',
-                branchId: selectedBranch?.id || '1',
-                // Use currency from society store
-                currencyId: society?.mainCurrency?.id || currencyId || '1',
-                partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2',
-                // The user validation error for customerId was just "Required", not "Invalid".
+                societyId: society?.id || '',
+                branchId: selectedBranch?.id || '',
+                currencyId: society?.mainCurrency?.id || currencyId || '',
+                partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2', // Fallback for public client if needed by API
 
                 exchangeRate: 1.0,
-                status: OrderStatus.PENDING_PAYMENT, // Use the target status
+                status: targetStatus, // Use the target status (PENDING or PENDING_PAYMENT)
                 subtotal: subtotal,
                 taxAmount: igv,
                 total: total,
@@ -84,6 +76,12 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
                     };
                 })
             };
+
+            // Validation: Ensure we have required IDs
+            if (!orderData.societyId || !orderData.branchId) {
+                setErrorMessage('Información de sucursal o sociedad no disponible.');
+                return;
+            }
 
             const response = await orderService.create(orderData);
 
