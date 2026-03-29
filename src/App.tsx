@@ -18,7 +18,7 @@ import ResetPasswordPage from './features/auth/ResetPasswordPage';
 import { Toaster } from '@/components/ui/sonner';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
-import { DatePickerStyles } from './components/shared/DatePickerInput';
+
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 // App pages — lazy loaded (only downloaded when the user visits them)
@@ -256,7 +256,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      <DatePickerStyles />
       <RouterProvider router={router} />
       <Toaster />
       <SessionExpiredModal
