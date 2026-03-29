@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocketConnection } from '@/hooks/useSocketConnection';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 
-export default function ProtectedRoute() {
+export const ProtectedRoute = memo(() => {
     // Initializing real-time features only if the route is active (authenticated)
     useSocketConnection();
     useRealtimeUpdates();
@@ -38,4 +39,7 @@ export default function ProtectedRoute() {
     }
 
     return <Outlet />;
-}
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';
+export default ProtectedRoute;

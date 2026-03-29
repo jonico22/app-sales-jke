@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, AlertTriangle, CheckCircle2, Info, XCircle, BellOff, Loader2, Download, ShoppingBag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -11,7 +11,7 @@ import { useNotificationsQuery, NOTIFICATIONS_QUERY_KEY } from '@/hooks/useNotif
 import { useUnreadCount, UNREAD_COUNT_QUERY_KEY } from '@/hooks/useUnreadCount';
 import { useQueryClient } from '@tanstack/react-query';
 
-export default function NotificationDropdown() {
+export const NotificationDropdown = memo(() => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { data: unreadCount = 0 } = useUnreadCount();
@@ -31,8 +31,6 @@ export default function NotificationDropdown() {
     useEffect(() => {
         // Listen for real-time notifications
         socket.on('ui_notification', (newNotification: Notification) => {
-            console.log("Nueva notificación recibida:", newNotification);
-
             // Invalidate queries to refresh data
             queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
             queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
@@ -79,27 +77,22 @@ export default function NotificationDropdown() {
         };
     }, []);
 
-    const handleToggle = () => {
-        setIsOpen(!isOpen);
-    };
+    const handleToggle = useCallback(() => {
+        setIsOpen(prev => !prev);
+    }, []);
 
-    const handleMarkAllAsRead = async () => {
+    const handleMarkAllAsRead = useCallback(async () => {
         try {
             await notificationService.markAllAsRead();
-            
-            // Re-fetch or update cache
             queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
             queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
-            
             toast.success('Todas las notificaciones marcadas como leídas');
         } catch (error) {
-            console.error('Error marking all as read:', error);
             toast.error('Error al marcar como leídas');
         }
-    };
+    }, [queryClient]);
 
-    const handleNotificationClick = async (notification: Notification) => {
-        // Handle action based on type
+    const handleNotificationClick = useCallback(async (notification: Notification) => {
         if (notification.type === NotificationType.SYSTEM) {
             const url = notification.link || notification.metadata?.downloadUrl;
             if (url) downloadFileFromUrl(url);
@@ -119,19 +112,17 @@ export default function NotificationDropdown() {
             }
         }
 
-        // Mark as read if not already
         const isRead = notification.read ?? notification.isRead;
         if (!isRead) {
             try {
                 await notificationService.markAsRead(notification.id);
-                // Invalidate to refresh counts and lists
                 queryClient.invalidateQueries({ queryKey: UNREAD_COUNT_QUERY_KEY });
                 queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
             } catch (error) {
                 console.error('Error marking as read:', error);
             }
         }
-    };
+    }, [navigate, queryClient]);
 
     const getIcon = (type: NotificationType) => {
         switch (type) {
@@ -253,4 +244,7 @@ export default function NotificationDropdown() {
             )}
         </div>
     );
-}
+});
+
+NotificationDropdown.displayName = 'NotificationDropdown';
+export default NotificationDropdown;

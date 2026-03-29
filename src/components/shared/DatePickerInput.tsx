@@ -33,7 +33,7 @@ export interface DatePickerInputProps {
  * Uses react-datepicker under the hood with custom styling to match the design system.
  * Supports min/max date validation, custom formatting, and icon positioning.
  */
-export const DatePickerInput = React.forwardRef<HTMLDivElement, DatePickerInputProps>(
+export const DatePickerInput = React.memo(React.forwardRef<HTMLDivElement, DatePickerInputProps>(
   (
     {
       value,
@@ -86,6 +86,6 @@ export const DatePickerInput = React.forwardRef<HTMLDivElement, DatePickerInputP
       </div>
     );
   }
-);
+));
 
 DatePickerInput.displayName = 'DatePickerInput';

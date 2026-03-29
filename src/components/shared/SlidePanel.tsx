@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -14,13 +14,13 @@ interface SlidePanelProps {
   footer?: ReactNode;
 }
 
-export function SlidePanel({
+export const SlidePanel = memo(({
   open,
   onOpenChange,
   title,
   children,
   footer,
-}: SlidePanelProps) {
+}: SlidePanelProps) => {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-card">
@@ -40,4 +40,6 @@ export function SlidePanel({
       </SheetContent>
     </Sheet>
   );
-}
+});
+
+SlidePanel.displayName = 'SlidePanel';

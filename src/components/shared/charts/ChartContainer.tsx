@@ -15,7 +15,7 @@ interface ChartContainerProps {
   actions?: React.ReactNode;
 }
 
-export function ChartContainer({
+export const ChartContainer = React.memo(({
   title,
   subtitle,
   isLoading,
@@ -26,7 +26,7 @@ export function ChartContainer({
   children,
   headerColor = 'border-primary',
   actions
-}: ChartContainerProps) {
+}: ChartContainerProps) => {
   return (
     <div className={cn("bg-card rounded-2xl p-6 border border-border shadow-sm flex flex-col min-h-[400px]", className)}>
       <div className="flex items-center justify-between mb-8">
@@ -57,4 +57,6 @@ export function ChartContainer({
       </div>
     </div>
   );
-}
+});
+
+ChartContainer.displayName = 'ChartContainer';

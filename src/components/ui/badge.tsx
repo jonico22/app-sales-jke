@@ -1,11 +1,11 @@
-import { type HTMLAttributes, forwardRef } from 'react';
+import { type HTMLAttributes, forwardRef, memo } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'success' | 'secondary' | 'outline' | 'destructive' | 'warning';
 }
 
-const Badge = forwardRef<HTMLDivElement, BadgeProps>(
+const Badge = memo(forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     return (
       <div
@@ -26,7 +26,7 @@ const Badge = forwardRef<HTMLDivElement, BadgeProps>(
       />
     );
   }
-);
+));
 Badge.displayName = 'Badge';
 
 export { Badge };

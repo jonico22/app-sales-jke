@@ -5,7 +5,7 @@ interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   onCheckedChange?: (checked: boolean) => void
 }
 
-const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
+const Switch = React.memo(React.forwardRef<HTMLInputElement, SwitchProps>(
   ({ className, checked, onCheckedChange, onChange, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange?.(e)
@@ -30,7 +30,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
       </label>
     )
   }
-)
+))
 Switch.displayName = "Switch"
 
 export { Switch }

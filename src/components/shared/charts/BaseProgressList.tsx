@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ProgressItem {
@@ -13,11 +14,11 @@ interface BaseProgressListProps {
   className?: string;
 }
 
-export function BaseProgressList({
+export const BaseProgressList = memo(({
   items,
   barColor = 'bg-indigo-500',
   className
-}: BaseProgressListProps) {
+}: BaseProgressListProps) => {
   return (
     <div className={cn("space-y-4", className)}>
       {items.map((item, index) => (
@@ -39,4 +40,6 @@ export function BaseProgressList({
       ))}
     </div>
   );
-}
+});
+
+BaseProgressList.displayName = 'BaseProgressList';

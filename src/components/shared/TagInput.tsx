@@ -36,7 +36,7 @@ export interface TagInputProps {
  */
 import { Portal } from './Portal';
 
-export function TagInput({
+export const TagInput = React.memo(({
   options,
   value,
   onChange,
@@ -46,7 +46,7 @@ export function TagInput({
   maxTags,
   allowCreate = false,
   onCreateTag,
-}: TagInputProps) {
+}: TagInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
@@ -282,4 +282,6 @@ export function TagInput({
       )}
     </div>
   );
-}
+});
+
+TagInput.displayName = 'TagInput';

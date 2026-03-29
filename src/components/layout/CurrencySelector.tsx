@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Banknote, ChevronDown, Check, RefreshCw, TrendingUp } from 'lucide-react';
 import { type CurrencySelectOption } from '@/services/currency.service';
 import { useCurrencies } from '@/hooks/useCurrencies';
 import { useCartStore } from '@/store/cart.store';
 
-export function CurrencySelector() {
+export const CurrencySelector = memo(() => {
     const { data: currencies = [] } = useCurrencies();
     const { currencyId, setCurrencyId } = useCartStore();
     const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +14,6 @@ export function CurrencySelector() {
 
     useEffect(() => {
         // Set default currency if loaded and none selected
-        // Assuming '1' is the default mock ID or we want to pick the first one/PEN
         if (currencies.length > 0 && (!currencyId || currencyId === '1')) {
             const defaultCurrency = currencies.find(c => c.code === 'PEN') || currencies[0];
             if (defaultCurrency && defaultCurrency.id !== currencyId) {
@@ -23,15 +22,19 @@ export function CurrencySelector() {
         }
     }, [currencies, currencyId, setCurrencyId]);
 
-    const handleSelectCurrency = (currency: CurrencySelectOption) => {
+    const handleSelectCurrency = useCallback((currency: CurrencySelectOption) => {
         setCurrencyId(currency.id);
         setIsOpen(false);
-    };
+    }, [setCurrencyId]);
+
+    const toggleOpen = useCallback(() => {
+        setIsOpen(prev => !prev);
+    }, []);
 
     return (
         <div className="relative">
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={toggleOpen}
                 className="flex items-center gap-1.5 md:gap-3 px-2 md:px-4 py-1.5 md:py-2 border border-input rounded-lg md:rounded-xl hover:bg-muted transition-colors bg-background shadow-sm w-full min-w-[65px] md:min-w-[100px] h-[36px] md:h-auto"
             >
                 <div className="bg-primary/10 p-1 md:p-1.5 rounded-md md:rounded-lg shrink-0">
@@ -51,7 +54,6 @@ export function CurrencySelector() {
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
                     <div className="absolute top-full right-0 mt-2 w-72 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                        {/* Currencies List */}
                         <div className="p-2 space-y-1">
                             {currencies.map((currency) => (
                                 <button
@@ -77,7 +79,6 @@ export function CurrencySelector() {
                             ))}
                         </div>
 
-                        {/* Exchange Rate Section */}
                         <div className="border-t border-border p-4 bg-muted/50">
                             <div className="flex items-center justify-between mb-3">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">TIPO DE CAMBIO</p>
@@ -101,4 +102,6 @@ export function CurrencySelector() {
             )}
         </div>
     );
-}
+});
+
+CurrencySelector.displayName = 'CurrencySelector';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import { POSHeader } from './POSHeader';
@@ -10,12 +10,14 @@ interface POSLayoutProps {
   title?: string;
 }
 
-export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) {
+export const POSLayout = memo(({ title = 'Punto de Venta' }: POSLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isSessionExpired, handleRedirect } = useSessionValidator();
 
-  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+  const toggleCollapse = useCallback(() => setIsCollapsed(prev => !prev), []);
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
 
   // Auto-collapse on tablet screens
   useEffect(() => {
@@ -27,9 +29,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
       }
     };
 
-    // Run on mount
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -44,7 +44,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
       {/* Sidebar - with user info enabled */}
       <DashboardSidebar
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
         isCollapsed={isCollapsed}
         toggleCollapse={toggleCollapse}
         showUserInfo={true}
@@ -61,7 +61,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
         {/* POS Header */}
         <POSHeader
           title={title}
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onMenuClick={toggleSidebar}
         />
 
         {/* Page Content */}
@@ -71,4 +71,7 @@ export default function POSLayout({ title = 'Punto de Venta' }: POSLayoutProps) 
       </div>
     </div>
   );
-}
+});
+
+POSLayout.displayName = 'POSLayout';
+export default POSLayout;

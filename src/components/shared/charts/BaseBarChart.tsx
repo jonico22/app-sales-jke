@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   BarChart,
   Bar,
@@ -36,7 +37,7 @@ interface BaseBarChartProps {
   gridHorizontal?: boolean;
 }
 
-export function BaseBarChart({
+export const BaseBarChart = memo(({
   data,
   bars,
   layout = 'horizontal',
@@ -46,7 +47,7 @@ export function BaseBarChart({
   showLegend = false,
   gridVertical = false,
   gridHorizontal = true
-}: BaseBarChartProps) {
+}: BaseBarChartProps) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
@@ -117,4 +118,6 @@ export function BaseBarChart({
       </BarChart>
     </ResponsiveContainer>
   );
-}
+});
+
+BaseBarChart.displayName = 'BaseBarChart';

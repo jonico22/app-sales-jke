@@ -13,7 +13,7 @@ interface SortableTableHeadProps {
   disabled?: boolean;
 }
 
-export const SortableTableHead = ({
+export const SortableTableHead = React.memo(({
   field,
   currentSortBy,
   currentSortOrder,
@@ -39,8 +39,11 @@ export const SortableTableHead = ({
     );
   }
 
+  const sortOrder = isActive ? (currentSortOrder === 'asc' ? 'ascending' : 'descending') : 'none';
+
   return (
     <TableHead
+      aria-sort={sortOrder as any}
       className={cn(
         "cursor-pointer hover:bg-muted/50 select-none transition-colors group", 
         className
@@ -61,4 +64,6 @@ export const SortableTableHead = ({
       </div>
     </TableHead>
   );
-};
+});
+
+SortableTableHead.displayName = 'SortableTableHead';

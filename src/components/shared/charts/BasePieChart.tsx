@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   PieChart,
   Pie,
@@ -24,7 +25,7 @@ interface BasePieChartProps {
 
 const DEFAULT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-export function BasePieChart({
+export const BasePieChart = memo(({
   data,
   dataKey,
   nameKey,
@@ -33,7 +34,7 @@ export function BasePieChart({
   outerRadius = 80,
   paddingAngle = 5,
   tooltipFormatter
-}: BasePieChartProps) {
+}: BasePieChartProps) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -56,4 +57,6 @@ export function BasePieChart({
       </PieChart>
     </ResponsiveContainer>
   );
-}
+});
+
+BasePieChart.displayName = 'BasePieChart';

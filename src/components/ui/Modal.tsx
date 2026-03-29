@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -12,7 +12,7 @@ interface ModalProps {
     contentClassName?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false, contentClassName = '' }: ModalProps) {
+export const Modal = memo(({ isOpen, onClose, title, children, size = 'md', hideHeader = false, contentClassName = '' }: ModalProps) => {
     const modalRef = useRef<HTMLDivElement>(null);
 
     // Initial focus and Escape key handling
@@ -65,6 +65,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
                         <button
                             onClick={onClose}
                             className="text-muted-foreground hover:text-foreground hover:bg-muted p-2 rounded-lg transition-colors"
+                            aria-label="Cerrar"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -79,4 +80,6 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', hideHeade
         </div>,
         document.body
     );
-}
+});
+
+Modal.displayName = 'Modal';

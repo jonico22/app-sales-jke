@@ -1,7 +1,7 @@
-import { type LabelHTMLAttributes, forwardRef } from 'react';
+import { type LabelHTMLAttributes, forwardRef, memo } from 'react';
 import { cn } from '@/lib/utils';
 
-const Label = forwardRef<HTMLLabelElement, LabelHTMLAttributes<HTMLLabelElement>>(
+const Label = memo(forwardRef<HTMLLabelElement, LabelHTMLAttributes<HTMLLabelElement>>(
   ({ className, ...props }, ref) => (
     <label
       ref={ref}
@@ -12,7 +12,7 @@ const Label = forwardRef<HTMLLabelElement, LabelHTMLAttributes<HTMLLabelElement>
       {...props}
     />
   )
-);
+));
 Label.displayName = 'Label';
 
 export { Label };
