@@ -14,7 +14,11 @@
 
   <style>
     /* Critical CSS: covers above-the-fold content before Tailwind CSS is injected by JS */
-    *, *::before, *::after { box-sizing: border-box; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
     :root {
       --background: #f8fafc;
@@ -22,6 +26,7 @@
       --foreground: #334155;
       --border: #e2e8f0;
     }
+
     @media (prefers-color-scheme: dark) {
       :root:not(.light) {
         --background: #0f172a;
@@ -30,6 +35,7 @@
         --border: #334155;
       }
     }
+
     html.dark {
       --background: #0f172a;
       --card: #1e293b;
@@ -37,7 +43,8 @@
       --border: #334155;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       background-color: var(--background);
@@ -47,14 +54,10 @@
       overflow-x: hidden;
     }
 
-    /* Root container — AuthLayout uses flex centering, pre-apply it */
+    /* Root container */
     #root {
       min-height: 100vh;
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
     }
   </style>
 
