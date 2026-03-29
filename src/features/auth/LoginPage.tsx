@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,34 +22,56 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
+// type LoginSchema... (removed)
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [rememberMe, setRememberMe] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
-
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
-  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [defaultEmail, setDefaultEmail] = useState('');
 
   // Load saved email on mount
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
-      setValue('email', savedEmail);
+      setDefaultEmail(savedEmail);
       setRememberMe(true);
     }
-  }, [setValue]);
+  }, []);
 
   const queryClient = useQueryClient();
 
-  const onSubmit = async (data: LoginSchema) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    
+    // Validate with Zod
+    const result = loginSchema.safeParse(data);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
+      const loginData = result.data;
       const response = await authService.login({ 
-        email: data.email, 
-        password: data.password,
+        email: loginData.email, 
+        password: loginData.password,
         turnstileToken 
       });
       
@@ -72,7 +92,7 @@ export default function LoginPage() {
 
       // Handle Remember Me
       if (rememberMe) {
-        localStorage.setItem('rememberedEmail', data.email);
+        localStorage.setItem('rememberedEmail', loginData.email);
       } else {
         localStorage.removeItem('rememberedEmail');
       }
@@ -97,6 +117,8 @@ export default function LoginPage() {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,31 +129,33 @@ export default function LoginPage() {
         description="Ingresa tus credenciales para acceder a tu cuenta" 
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Correo Electrónico</Label>
           <Input
             id="email"
+            name="email"
             type="email"
+            defaultValue={defaultEmail}
             placeholder="usuario@jkesolutions.com"
-            {...register('email')}
             className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
           />
           {errors.email && (
-            <span className="text-xs text-destructive font-medium">{errors.email.message}</span>
+            <span className="text-xs text-destructive font-medium">{errors.email}</span>
           )}
         </div>
 
         <PasswordInput
           id="password"
+          name="password"
           label="Contraseña"
-          registration={register('password')}
-          error={errors.password}
+          error={errors.password ? { message: errors.password } : undefined}
         />
 
         <div className="flex items-center space-x-2">
           <Checkbox
             id="remember"
+            name="remember"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
           />

@@ -2,18 +2,15 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { UseFormRegisterReturn, FieldError } from 'react-hook-form';
-
-interface PasswordInputProps {
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string;
   label: string;
-  placeholder?: string;
-  error?: FieldError;
-  registration: UseFormRegisterReturn;
+  error?: { message?: string } | string;
 }
 
-export function PasswordInput({ id, label, placeholder = '••••••••', error, registration }: PasswordInputProps) {
+export function PasswordInput({ id, label, placeholder = '••••••••', error, ...props }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const errorMessage = typeof error === 'string' ? error : error?.message;
 
   return (
     <div className="space-y-2">
@@ -23,24 +20,24 @@ export function PasswordInput({ id, label, placeholder = '•••••••�
           id={id}
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
-          {...registration}
-          className={error ? "border-destructive focus-visible:ring-destructive pr-10" : "pr-10"}
+          {...props}
+          className={errorMessage ? "border-destructive focus-visible:ring-destructive pr-10" : "pr-10"}
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus:outline-none rounded-md hover:bg-muted/30"
           aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
         >
           {showPassword ? (
-            <EyeOff className="h-4 w-4" />
+            <EyeOff className="h-5 w-5" />
           ) : (
-            <Eye className="h-4 w-4" />
+            <Eye className="h-5 w-5" />
           )}
         </button>
       </div>
-      {error && (
-        <span className="text-xs text-destructive font-medium">{error.message}</span>
+      {errorMessage && (
+        <span className="text-xs text-destructive font-medium">{errorMessage}</span>
       )}
     </div>
   );

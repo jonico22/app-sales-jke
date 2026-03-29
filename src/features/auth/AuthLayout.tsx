@@ -23,11 +23,11 @@ export default function AuthLayout() {
         />
       </div>
 
-      <div className="relative w-full max-w-md z-10">
+      <main className="relative w-full max-w-md z-10">
         <Outlet />
-      </div>
+      </main>
 
-      <footer className="relative mt-8 text-center text-xs text-muted-foreground/80 z-10">
+      <footer className="relative mt-8 text-center text-xs text-muted-foreground font-medium z-10">
         © {new Date().getFullYear()} JKE Solutions. All rights reserved.
       </footer>
     </div>

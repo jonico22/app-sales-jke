@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
@@ -23,7 +21,7 @@ const resetPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
-type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+// type ResetPasswordSchema... (removed)
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -31,21 +29,40 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token');
 
   const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [passwordValue, setPasswordValue] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
-  });
-
-  const password = watch('password', '');
-
-  const onSubmit = async (data: ResetPasswordSchema) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!token) {
       toast.error('Token inválido o faltante.');
       return;
     }
 
+    setIsSubmitting(true);
+    setErrors({});
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    
+    // Validate with Zod
+    const result = resetPasswordSchema.safeParse(data);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          fieldErrors[issue.path[0].toString()] = issue.message;
+        }
+      });
+      setErrors(fieldErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await authService.resetPassword({ token, newPassword: data.password, turnstileToken });
+      await authService.resetPassword({ token, newPassword: result.data.password, turnstileToken });
       toast.success('¡Contraseña actualizada correctamente!');
       navigate('/auth/login');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,6 +70,8 @@ export default function ResetPasswordPage() {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al restablecer la contraseña.';
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,26 +82,28 @@ export default function ResetPasswordPage() {
         description="Crea una nueva contraseña segura para tu cuenta" 
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-6">
 
         {/* New Password */}
         <PasswordInput
           id="password"
+          name="password"
           label="Nueva Contraseña"
-          registration={register('password')}
+          value={passwordValue}
+          onChange={(e) => setPasswordValue(e.target.value)}
           error={errors.password}
         />
 
         {/* Confirm Password */}
         <PasswordInput
           id="confirmPassword"
+          name="confirmPassword"
           label="Confirmar Nueva Contraseña"
-          registration={register('confirmPassword')}
           error={errors.confirmPassword}
         />
 
         {/* Strength Meter */}
-        <PasswordStrengthMeter password={password} />
+        <PasswordStrengthMeter password={passwordValue} />
 
         <AuthTurnstile onTokenChange={setTurnstileToken} />
 

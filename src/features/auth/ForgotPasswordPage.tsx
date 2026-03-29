@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
@@ -18,27 +16,50 @@ const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
 });
 
-type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
+// type ForgotPasswordSchema... (removed)
 
 export default function ForgotPasswordPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordSchema>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
 
-  const onSubmit = async (data: ForgotPasswordSchema) => {
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    
+    // Validate with Zod
+    const result = forgotPasswordSchema.safeParse(data);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          fieldErrors[issue.path[0].toString()] = issue.message;
+        }
+      });
+      setErrors(fieldErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await authService.forgotPassword({ email: data.email, turnstileToken });
-      setSubmittedEmail(data.email);
+      const email = result.data.email;
+      await authService.forgotPassword({ email, turnstileToken });
+      setSubmittedEmail(email);
       setShowSuccessModal(true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error(error);
       const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud.';
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -50,18 +71,18 @@ export default function ForgotPasswordPage() {
           description="Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña."
         />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
+        <form onSubmit={onSubmit} className="space-y-6 text-left">
           <div className="space-y-2">
             <Label htmlFor="email" className="font-medium text-foreground">Correo Electrónico</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="nombre@empresa.com"
-              {...register('email')}
               className={errors.email ? "border-destructive focus-visible:ring-destructive h-12" : "h-12"}
             />
             {errors.email && (
-              <span className="text-xs text-destructive font-medium">{errors.email.message}</span>
+              <span className="text-xs text-destructive font-medium">{errors.email}</span>
             )}
           </div>
 
