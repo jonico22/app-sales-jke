@@ -3,12 +3,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(), 
     tailwindcss(),
+    // Converts the generated CSS file into a JS-injected style to avoid render-blocking.
+    // Critical CSS is already inlined in index.html so there's no FOUC risk.
+    cssInjectedByJsPlugin(),
     visualizer({
       filename: 'stats.html',
       gzipSize: true,

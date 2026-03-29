@@ -13,38 +13,48 @@
   <title>Inventario JKE</title>
 
   <style>
+    /* Critical CSS: covers above-the-fold content before Tailwind CSS is injected by JS */
+    *, *::before, *::after { box-sizing: border-box; }
+
     :root {
       --background: #f8fafc;
       --card: #ffffff;
       --foreground: #334155;
+      --border: #e2e8f0;
     }
-
     @media (prefers-color-scheme: dark) {
       :root:not(.light) {
         --background: #0f172a;
         --card: #1e293b;
         --foreground: #f8fafc;
+        --border: #334155;
       }
     }
-
     html.dark {
       --background: #0f172a;
       --card: #1e293b;
       --foreground: #f8fafc;
+      --border: #334155;
     }
 
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
       background-color: var(--background);
       color: var(--foreground);
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      overflow-x: hidden;
+      font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
+    /* Root container — AuthLayout uses flex centering, pre-apply it */
     #root {
       min-height: 100vh;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 
