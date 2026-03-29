@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
 import { ArrowLeft, User, ShoppingBag, FileText, Printer, Mail, Clock, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Order } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
-import { orderItemService, type OrderItem } from '@/services/order-item.service';
-import { orderService } from '@/services/order.service';
 import { Badge } from '@/components/ui/badge';
+import { useOrderDetailsQuery, useOrderItemsQuery } from '../hooks/useOrderQueries';
 
 interface SalesOrderDetailViewProps {
     orderId: string;
@@ -16,46 +14,19 @@ interface SalesOrderDetailViewProps {
 
 export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrderDetailViewProps) {
     const society = useSocietyStore(state => state.society);
-    const [order, setOrder] = useState<Order | null>(initialOrder || null);
-    const [items, setItems] = useState<OrderItem[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                let currentOrder = order;
-                if (!currentOrder || currentOrder.id !== orderId) {
-                    const orderRes = await orderService.getById(orderId);
-                    if (orderRes.success && orderRes.data) {
-                        currentOrder = orderRes.data;
-                        setOrder(currentOrder);
-                    } else {
-                        setError("No se pudo cargar la información de la venta.");
-                        return;
-                    }
-                }
+    const { data: orderDetailsRes, isLoading: isLoadingOrder, error: orderError } = useOrderDetailsQuery(orderId);
+    const { data: itemsRes, isLoading: isLoadingItems } = useOrderItemsQuery(orderId);
 
-                const itemsRes = await orderItemService.getAll({ orderId });
-                if (itemsRes.success && itemsRes.data) {
-                    setItems(itemsRes.data.data || []);
-                }
-            } catch (err) {
-                console.error("Error loading order details:", err);
-                setError("Ocurrió un error al cargar los detalles.");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const order = orderDetailsRes?.data || initialOrder || null;
+    const items = itemsRes?.data?.data || [];
+    const isLoading = isLoadingOrder || isLoadingItems;
+    const error = orderError ? 'Error al cargar los detalles del pedido' : (!order && !isLoading ? 'No se encontró el pedido' : null);
 
-        loadData();
-    }, [orderId]);
-
-    if (loading && !order) {
+    if (isLoading && !order) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
                 <p className="text-muted-foreground text-sm">Cargando detalles de la venta...</p>
             </div>
         );

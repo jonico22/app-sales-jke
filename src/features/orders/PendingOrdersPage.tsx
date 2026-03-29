@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { orderService, type Order, OrderStatus } from '@/services/order.service';
 import { useCartStore } from '@/store/cart.store';
 import { useNavigate } from 'react-router-dom';
 import { POSPaymentModal } from '../pos/components/POSPaymentModal';
@@ -12,19 +11,28 @@ import { PendingOrdersHeader } from './components/PendingOrdersHeader';
 import { PendingOrdersFilterBar } from './components/PendingOrdersFilterBar';
 import { PendingOrdersTable } from './components/PendingOrdersTable';
 import { PendingOrdersMobileList } from './components/PendingOrdersMobileList';
-
-
+import { useOrdersQuery, useUpdateOrderMutation } from './hooks/useOrderQueries';
+import { usePendingOrdersFilters } from './hooks/useOrderFilters';
+import { type Order, OrderStatus } from '@/services/order.service';
 
 export default function PendingOrdersPage() {
     const navigate = useNavigate();
     const { setCurrentOrder, clearCurrentOrder } = useCartStore();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
+    
+    // Filters and Query
+    const { 
+        searchQuery, 
+        setSearchQuery, 
+        sortBy, 
+        setSortBy, 
+        sortOrder, 
+        setSortOrder,
+        setCurrentPage,
+        queryParams 
+    } = usePendingOrdersFilters();
 
-    // Sorting state
-    const [sortBy, setSortBy] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const { data: ordersResponse, isLoading } = useOrdersQuery(queryParams);
+    const updateOrderMutation = useUpdateOrderMutation();
 
     // Modal State
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -37,43 +45,9 @@ export default function PendingOrdersPage() {
     const [selectedOrderForDetail, setSelectedOrderForDetail] = useState<Order | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
-    const [isProcessingCancel, setIsProcessingCancel] = useState(false);
-    const [isProcessingResume, setIsProcessingResume] = useState(false);
 
-    // Fetch orders
-    const fetchOrders = async () => {
-        setIsLoading(true);
-        try {
-            const pendingPaymentResponse = await orderService.getAll({
-                status: OrderStatus.PENDING_PAYMENT,
-                limit: 50,
-                include: 'allItems',
-                sortBy,
-                sortOrder,
-            });
-
-            let allOrders: Order[] = [];
-
-            if (pendingPaymentResponse.success && pendingPaymentResponse.data) {
-                const pendingPaymentOrders = (pendingPaymentResponse.data as any).data || pendingPaymentResponse.data;
-                if (Array.isArray(pendingPaymentOrders)) {
-                    allOrders = [...pendingPaymentOrders];
-                }
-            }
-
-            const uniqueOrders = Array.from(new Map(allOrders.map(item => [item.id, item])).values());
-            setOrders(uniqueOrders);
-
-        } catch (error) {
-            // Error fetching orders
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchOrders();
-    }, [sortBy, sortOrder]);
+    const orders = useMemo(() => ordersResponse?.data?.data || [], [ordersResponse]);
+    const pagination = ordersResponse?.data?.pagination;
 
     // Handlers
     const handleResume = (order: Order) => {
@@ -89,20 +63,17 @@ export default function PendingOrdersPage() {
     const handleConfirmResume = async () => {
         if (!selectedOrderForResume) return;
 
-        setIsProcessingResume(true);
         try {
-            const fullOrderResponse = await orderService.getById(selectedOrderForResume.id);
-            if (!fullOrderResponse.success || !fullOrderResponse.data) {
-                return;
-            }
+            await updateOrderMutation.mutateAsync({
+                id: selectedOrderForResume.id,
+                data: {
+                    status: OrderStatus.CANCELLED,
+                    cancellationReason: 'Clonado/Retomado',
+                    comment: `Pedido original #${selectedOrderForResume.orderCode} retomado.`
+                }
+            });
 
             clearCurrentOrder();
-
-            await orderService.update(selectedOrderForResume.id, {
-                status: OrderStatus.CANCELLED,
-                cancellationReason: 'Clonado/Retomado',
-                comment: `Pedido original #${selectedOrderForResume.orderCode} retomado.`
-            });
 
             navigate('/pos', {
                 state: {
@@ -111,9 +82,8 @@ export default function PendingOrdersPage() {
             });
 
         } catch (error) {
-            // Error resuming order
+            // Error handling is managed by the mutation hook
         } finally {
-            setIsProcessingResume(false);
             setIsResumeModalOpen(false);
         }
     };
@@ -132,20 +102,19 @@ export default function PendingOrdersPage() {
     const handleConfirmCancel = async (reason: string, notes: string) => {
         if (!selectedOrderForCancellation) return;
 
-        setIsProcessingCancel(true);
         try {
-            await orderService.update(selectedOrderForCancellation.id, {
-                status: OrderStatus.CANCELLED,
-                cancellationReason: reason,
-                comment: notes
+            await updateOrderMutation.mutateAsync({
+                id: selectedOrderForCancellation.id,
+                data: {
+                    status: OrderStatus.CANCELLED,
+                    cancellationReason: reason,
+                    comment: notes
+                }
             });
-            fetchOrders();
             setIsCancelModalOpen(false);
             setSelectedOrderForCancellation(null);
         } catch (error) {
-            // Error cancelling order
-        } finally {
-            setIsProcessingCancel(false);
+            // Error handled by mutation
         }
     };
 
@@ -153,7 +122,6 @@ export default function PendingOrdersPage() {
         setLastPaymentMethod(paymentMethod);
         setIsPaymentModalOpen(false);
         setIsSuccessModalOpen(true);
-        fetchOrders();
     };
 
     const handleSort = (field: string) => {
@@ -171,22 +139,10 @@ export default function PendingOrdersPage() {
         clearCurrentOrder();
     };
 
-    // Filter (Sort is now server-side)
-    const filteredOrders = orders
-        .filter(order => {
-            const query = searchQuery.toLowerCase();
-            const clientName = (order.partner?.companyName || `${order.partner?.firstName || ''} ${order.partner?.lastName || ''}`).toLowerCase();
-            return (
-                order.orderCode.toLowerCase().includes(query) ||
-                clientName.includes(query) ||
-                order.totalAmount.toString().includes(query)
-            );
-        });
-
     return (
         <div className="space-y-6">
             <PendingOrdersHeader
-                ordersCount={filteredOrders.length}
+                ordersCount={pagination?.total || 0}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
             />
@@ -201,7 +157,7 @@ export default function PendingOrdersPage() {
 
             <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
                 <PendingOrdersTable
-                    orders={filteredOrders}
+                    orders={orders}
                     isLoading={isLoading}
                     sortBy={sortBy}
                     sortOrder={sortOrder}
@@ -213,7 +169,7 @@ export default function PendingOrdersPage() {
                 />
                 
                 <PendingOrdersMobileList
-                    orders={filteredOrders}
+                    orders={orders}
                     isLoading={isLoading}
                     onResume={handleResume}
                     onViewDetail={handleViewDetail}
@@ -225,15 +181,27 @@ export default function PendingOrdersPage() {
                 <div className="px-6 py-5 border-t border-border/30 flex items-center justify-between bg-muted/5">
                     <div className="flex flex-col">
                         <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Resumen</span>
-                        <span className="text-[11px] font-bold text-foreground">
-                            <span className="text-primary">{filteredOrders.length}</span> órdenes pendientes
-                        </span>
+                        {pagination && (
+                            <span className="text-[11px] font-bold text-foreground">
+                                <span className="text-primary">{pagination.total}</span> órdenes pendientes
+                                <span className="mx-2 text-muted-foreground/30">|</span>
+                                Página {pagination.page} de {pagination.totalPages}
+                            </span>
+                        )}
                     </div>
                     <div className="flex gap-2">
-                        <button className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none">
+                        <button 
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={!pagination?.hasPrevPage || isLoading}
+                            className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none cursor-pointer"
+                        >
                             <ChevronLeft className="w-4 h-4 text-foreground" />
                         </button>
-                        <button className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none">
+                        <button 
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            disabled={!pagination?.hasNextPage || isLoading}
+                            className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted rounded-xl transition-all disabled:opacity-20 border border-border/40 active:scale-90 shadow-none cursor-pointer"
+                        >
                             <ChevronRight className="w-4 h-4 text-foreground" />
                         </button>
                     </div>
@@ -259,8 +227,8 @@ export default function PendingOrdersPage() {
                 paymentMethod={lastPaymentMethod}
                 total={selectedOrderForPayment ? Number(selectedOrderForPayment.totalAmount) : 0}
                 onClose={closeSuccessModal}
-                onPrintTicket={() => { /* TODO: Implement print */ }}
-                onShareWhatsApp={() => { /* TODO: Implement share */ }}
+                onPrintTicket={() => {}}
+                onShareWhatsApp={() => {}}
             />
 
             {/* Cancel Modal */}
@@ -270,14 +238,14 @@ export default function PendingOrdersPage() {
                 onConfirm={handleConfirmCancel}
                 orderCode={selectedOrderForCancellation?.orderCode || ''}
                 totalAmount={selectedOrderForCancellation ? Number(selectedOrderForCancellation.totalAmount) : 0}
-                isProcessing={isProcessingCancel}
+                isProcessing={updateOrderMutation.isPending}
             />
 
             <POSResumeModal
                 isOpen={isResumeModalOpen}
                 onClose={() => setIsResumeModalOpen(false)}
                 onConfirm={handleConfirmResume}
-                isProcessing={isProcessingResume}
+                isProcessing={updateOrderMutation.isPending}
                 orderCode={selectedOrderForResume?.orderCode}
             />
 
