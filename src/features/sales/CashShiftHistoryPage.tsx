@@ -1,93 +1,46 @@
-import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
-import { cashShiftService } from '@/services/cash-shift.service';
-import type { CashShift, GetAllCashShiftsParams } from '@/services/cash-shift.service';
 import { useBranchStore } from '@/store/branch.store';
 import { AddMovementModal } from './components/AddMovementModal';
 import { CashShiftHistoryHeader } from './components/CashShiftHistoryHeader';
 import { CashShiftHistoryFilterBar } from './components/CashShiftHistoryFilterBar';
 import { CashShiftHistoryTable } from './components/CashShiftHistoryTable';
 import { CashShiftHistoryMobileList } from './components/CashShiftHistoryMobileList';
+import { useCashShiftFilters } from './hooks/useCashShiftFilters';
+import { useCashShiftsQuery } from './hooks/useCashShiftQueries';
+import { useState } from 'react';
 
 export default function CashShiftHistoryPage() {
     const { branches } = useBranchStore();
 
-    // ── Filters ──────────────────────────────────────────────────────────────
-    const [branchFilter, setBranchFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'' | 'OPEN' | 'CLOSED'>('');
-    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
-    const [startDate, endDate] = dateRange;
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    // ── Logic Hooks ────────────────────────────────────────────────────────
+    const {
+        searchTerm,
+        setSearchTerm,
+        branchFilter,
+        setBranchFilter,
+        statusFilter,
+        setStatusFilter,
+        startDate,
+        endDate,
+        setDateRange,
+        resetPage,
+        currentPage,
+        setCurrentPage,
+        pageSize,
+        setPageSize,
+        queryParams
+    } = useCashShiftFilters();
 
-    // ── Pagination ───────────────────────────────────────────────────────────
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalShifts, setTotalShifts] = useState(0);
-    const [hasNextPage, setHasNextPage] = useState(false);
-    const [hasPrevPage, setHasPrevPage] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
+    const { data, isLoading, refetch } = useCashShiftsQuery(queryParams);
 
-    // ── Data ─────────────────────────────────────────────────────────────────
-    const [shifts, setShifts] = useState<CashShift[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    // ── Local UI State ─────────────────────────────────────────────────────
     const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
 
-    // Debounce search
-    useEffect(() => {
-        const t = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-            setCurrentPage(1);
-        }, 400);
-        return () => clearTimeout(t);
-    }, [searchTerm]);
+    // ── Data Processing ────────────────────────────────────────────────────
+    const res = data?.data;
+    const shifts = Array.isArray(res?.data) ? res?.data : Array.isArray(res) ? res : [];
+    const pagination = res?.pagination;
 
-    const fetchShifts = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const params: GetAllCashShiftsParams = {
-                page: currentPage,
-                limit: pageSize,
-                sortBy: 'openedAt',
-                sortOrder: 'desc',
-            };
-            if (branchFilter) params.branchId = branchFilter;
-            if (statusFilter) params.status = statusFilter as any;
-            if (startDate) params.dateFrom = format(startDate, 'yyyy-MM-dd');
-            if (endDate) params.dateTo = format(endDate, 'yyyy-MM-dd');
-
-            const res = await cashShiftService.getAll(params);
-            if (res.success && res.data) {
-                const d = res.data as any;
-                const list: CashShift[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : [];
-                setShifts(list);
-                if (d.pagination) {
-                    setTotalPages(d.pagination.totalPages ?? 1);
-                    setTotalShifts(d.pagination.total ?? list.length);
-                    setHasNextPage(d.pagination.hasNextPage ?? false);
-                    setHasPrevPage(d.pagination.hasPrevPage ?? false);
-                } else {
-                    setTotalPages(1);
-                    setTotalShifts(list.length);
-                    setHasNextPage(false);
-                    setHasPrevPage(false);
-                }
-            }
-        } catch (err) {
-            console.error('[CashShiftHistoryPage] fetch error:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [currentPage, pageSize, branchFilter, statusFilter, startDate, endDate, debouncedSearch]);
-
-    useEffect(() => {
-        fetchShifts();
-    }, [fetchShifts]);
-
-    // Reset page when filters change
-    const resetPage = () => setCurrentPage(1);
-
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Render ─────────────────────────────────────────────────────────────
     return (
         <>
             <div className="space-y-6 max-w-[1400px] mx-auto min-h-screen bg-background">
@@ -95,7 +48,7 @@ export default function CashShiftHistoryPage() {
                 {/* ── Header ──────────────────────────────────────────────────── */}
                 <CashShiftHistoryHeader
                     isLoading={isLoading}
-                    onRefresh={fetchShifts}
+                    onRefresh={() => refetch()}
                     onOpenMovement={() => setIsMovementModalOpen(true)}
                 />
 
@@ -122,10 +75,10 @@ export default function CashShiftHistoryPage() {
                         branches={branches}
                         currentPage={currentPage}
                         pageSize={pageSize}
-                        totalShifts={totalShifts}
-                        totalPages={totalPages}
-                        hasPrevPage={hasPrevPage}
-                        hasNextPage={hasNextPage}
+                        totalShifts={pagination?.total ?? shifts.length}
+                        totalPages={pagination?.totalPages ?? 1}
+                        hasPrevPage={pagination?.hasPrevPage ?? false}
+                        hasNextPage={pagination?.hasNextPage ?? false}
                         setCurrentPage={setCurrentPage}
                         setPageSize={setPageSize}
                     />
@@ -134,10 +87,10 @@ export default function CashShiftHistoryPage() {
                         shifts={shifts}
                         isLoading={isLoading}
                         branches={branches}
-                        hasPrevPage={hasPrevPage}
-                        hasNextPage={hasNextPage}
+                        hasPrevPage={pagination?.hasPrevPage ?? false}
+                        hasNextPage={pagination?.hasNextPage ?? false}
                         setCurrentPage={setCurrentPage}
-                        totalShifts={totalShifts}
+                        totalShifts={pagination?.total ?? shifts.length}
                     />
                 </div>
             </div>
@@ -145,7 +98,7 @@ export default function CashShiftHistoryPage() {
             <AddMovementModal
                 isOpen={isMovementModalOpen}
                 onClose={() => setIsMovementModalOpen(false)}
-                onSuccess={() => fetchShifts()}
+                onSuccess={() => refetch()}
             />
         </>
     );
