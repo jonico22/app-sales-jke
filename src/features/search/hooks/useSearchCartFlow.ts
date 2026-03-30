@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useCartStore, selectTotalItems, selectTotalPrice } from '@/store/cart.store';
 import { useSocietyStore } from '@/store/society.store';
 import { useBranchStore } from '@/store/branch.store';
-import { type ClientSelectOption } from '@/services/client.service';
+
 import { useCreateSearchOrderMutation } from './useSearchMutations';
 import { OrderStatus, type CreateOrderRequest } from '@/services/order.service';
 
@@ -16,7 +16,9 @@ export function useSearchCartFlow() {
         currencyId, 
         setCurrentOrder, 
         clearCurrentOrder, 
-        clearCart
+        clearCart,
+        selectedClient,
+        setSelectedClient
     } = useCartStore();
 
     const totalItems = useCartStore(selectTotalItems);
@@ -28,13 +30,8 @@ export function useSearchCartFlow() {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isSelectClientModalOpen, setIsSelectClientModalOpen] = useState(false);
     const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
-    const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
+    const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('YAPE');
 
-    const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
-        id: 'public',
-        name: 'Público General',
-        documentNumber: '00000000'
-    });
 
     const createOrder = useCreateSearchOrderMutation();
 

@@ -13,6 +13,11 @@ describe('cartStore', () => {
             currentOrderId: null,
             currentOrderCode: null,
             currentOrderTotal: 0,
+            selectedClient: {
+                id: 'public',
+                name: 'Público General',
+                documentNumber: '00000000'
+            },
         });
         localStorage.clear();
     });
@@ -120,5 +125,6 @@ describe('cartStore', () => {
         expect(state.items).toHaveLength(0);
         expect(state.discount).toBe(0);
         expect(state.orderNotes).toBe('');
+        expect(state.selectedClient?.id).toBe('public');
     });
 });

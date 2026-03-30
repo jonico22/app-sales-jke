@@ -14,11 +14,14 @@ import type { Product } from '@/services/product.service';
  */
 export function usePOS() {
   const { selectedBranch } = useBranchStore();
-  const [selectedClient, setSelectedClient] = useState<ClientSelectOption | null>({
-    id: 'public', // Default mock ID
-    name: 'Público General',
-    documentNumber: '00000000'
-  });
+  const { 
+    clearCurrentOrder, 
+    currentOrderCode, 
+    currentOrderTotal,
+    addItem: addItemToCart,
+    selectedClient,
+    setSelectedClient
+  } = useCartStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
@@ -27,14 +30,8 @@ export function usePOS() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [productsRefreshTrigger, setProductsRefreshTrigger] = useState(0);
   
-  const { 
-    clearCurrentOrder, 
-    currentOrderCode, 
-    currentOrderTotal,
-    addItem: addItemToCart 
-  } = useCartStore();
   
-  const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('CASH');
+  const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('YAPE');
   const processingCloneRef = useRef<string | null>(null);
 
   const location = useLocation();

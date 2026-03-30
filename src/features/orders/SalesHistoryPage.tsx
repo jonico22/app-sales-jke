@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { orderService } from '@/services/order.service';
 import type { Order } from '@/services/order.service';
+import { OrderStatus } from '@/services/order.service';
 import { SalesHistoryFilterPanel } from './components/SalesHistoryFilterPanel';
 import { SalesHistoryResultModal } from './components/SalesHistoryResultModal';
 import { exportToExcel } from '@/utils/excel.utils';
@@ -14,8 +15,9 @@ import { SalesHistoryMobileList } from './components/SalesHistoryMobileList';
 import { SalesHistoryPagination } from './components/SalesHistoryPagination';
 import { formatCurrency } from './components/SalesHistoryUtils';
 import { SalesOrderDetailView } from './components/SalesOrderDetailView';
-import { useOrdersQuery } from './hooks/useOrderQueries';
+import { useOrdersQuery, useUpdateOrderMutation } from './hooks/useOrderQueries';
 import { useSalesHistoryFilters } from './hooks/useOrderFilters';
+import { POSCancelModal } from '../pos/components/POSCancelModal';
 
 export default function SalesHistoryPage() {
     const {
@@ -44,6 +46,10 @@ export default function SalesHistoryPage() {
     const [isExporting, setIsExporting] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [selectedOrderForCancellation, setSelectedOrderForCancellation] = useState<Order | null>(null);
+
+    const updateOrderMutation = useUpdateOrderMutation();
 
     const orders = useMemo(() => ordersResponse?.data?.data || [], [ordersResponse]);
     const pagination = ordersResponse?.data?.pagination;
@@ -114,6 +120,29 @@ export default function SalesHistoryPage() {
         }
     };
 
+    const handleCancel = (order: Order) => {
+        setSelectedOrderForCancellation(order);
+        setIsCancelModalOpen(true);
+    };
+
+    const handleConfirmCancel = async (reason: string, notes: string) => {
+        if (!selectedOrderForCancellation) return;
+        try {
+            await updateOrderMutation.mutateAsync({
+                id: selectedOrderForCancellation.id,
+                data: {
+                    status: OrderStatus.CANCELLED,
+                    cancellationReason: reason,
+                    comment: notes
+                }
+            });
+            setIsCancelModalOpen(false);
+            setSelectedOrderForCancellation(null);
+        } catch {
+            // Error handled by mutation
+        }
+    };
+
     const [searchParams, setSearchParams] = useSearchParams();
     const detailId = searchParams.get('id');
 
@@ -165,11 +194,13 @@ export default function SalesHistoryPage() {
                     sortOrder={sortOrder}
                     onSort={handleSort}
                     onViewDetail={(id) => setSearchParams({ id })}
+                    onCancel={handleCancel}
                 />
                 <SalesHistoryMobileList
                     orders={orders}
                     isLoading={isLoading}
                     onViewDetail={(id) => setSearchParams({ id })}
+                    onCancel={handleCancel}
                 />
                 <SalesHistoryPagination
                     ordersLength={orders.length}
@@ -208,6 +239,18 @@ export default function SalesHistoryPage() {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
                 message={reportMessage}
+            />
+
+            <POSCancelModal
+                isOpen={isCancelModalOpen}
+                onClose={() => {
+                    setIsCancelModalOpen(false);
+                    setSelectedOrderForCancellation(null);
+                }}
+                onConfirm={handleConfirmCancel}
+                orderCode={selectedOrderForCancellation?.orderCode || ''}
+                totalAmount={selectedOrderForCancellation ? Number(selectedOrderForCancellation.totalAmount) : 0}
+                isProcessing={updateOrderMutation.isPending}
             />
         </div>
     );

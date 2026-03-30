@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product } from '@/services/product.service';
+import type { ClientSelectOption } from '@/services/client.service';
 
 export interface CartItem {
     product: Product;
@@ -29,6 +30,8 @@ interface CartState {
     setBranchId: (id: string) => void;
     currencyId: string;
     setCurrencyId: (id: string) => void;
+    selectedClient: ClientSelectOption | null;
+    setSelectedClient: (client: ClientSelectOption | null) => void;
 
     // Computed (handled via getters/selectors in component or derived state if needed, 
     // but simple getters here for convenience if we wanted, though Zustand recommends selectors)
@@ -52,6 +55,12 @@ export const useCartStore = create<CartState>()(
             setBranchId: (id: string) => set({ branchId: id }),
             currencyId: '1', // Default
             setCurrencyId: (id: string) => set({ currencyId: id }),
+            selectedClient: {
+                id: 'public',
+                name: 'Público General',
+                documentNumber: '00000000'
+            },
+            setSelectedClient: (client: ClientSelectOption | null) => set({ selectedClient: client }),
 
 
             addItem: (product: Product, quantity = 1) => {
@@ -144,7 +153,16 @@ export const useCartStore = create<CartState>()(
                 });
             },
 
-            clearCart: () => set({ items: [], discount: 0, orderNotes: '' }),
+            clearCart: () => set({ 
+                items: [], 
+                discount: 0, 
+                orderNotes: '',
+                selectedClient: {
+                    id: 'public',
+                    name: 'Público General',
+                    documentNumber: '00000000'
+                }
+            }),
         }),
         {
             name: 'pos-cart-storage', // unique name

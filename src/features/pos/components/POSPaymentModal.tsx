@@ -19,20 +19,20 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
     const { currentOrderId, currentOrderCode, currentOrderTotal, currencyId } = useCartStore();
     const society = useSocietyStore(state => state.society);
     const total = currentOrderTotal;
-    const [method, setMethod] = useState<PaymentMethodUI>('CASH');
+    const [method, setMethod] = useState<PaymentMethodUI>('YAPE');
 
     const [cardNetwork, setCardNetwork] = useState<CardNetwork>(null);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<OrderPaymentMethod>(OrderPaymentMethod.CASH);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<OrderPaymentMethod>(OrderPaymentMethod.YAPE);
     const [operationNumber, setOperationNumber] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Reset state when opening
     useEffect(() => {
         if (isOpen) {
-            setMethod('CASH');
+            setMethod('YAPE');
             setCardNetwork(null);
-            setSelectedPaymentMethod(OrderPaymentMethod.CASH);
-            setOperationNumber('');
+            setSelectedPaymentMethod(OrderPaymentMethod.YAPE);
+            setOperationNumber(generateRandomCode('Y'));
             setIsProcessing(false);
         }
     }, [isOpen]);

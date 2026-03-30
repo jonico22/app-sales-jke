@@ -1,4 +1,4 @@
-import { RefreshCw, Clock, FileText, MoreVertical } from 'lucide-react';
+import { RefreshCw, Clock, FileText, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Order } from '@/services/order.service';
@@ -8,12 +8,14 @@ interface SalesHistoryMobileListProps {
   orders: Order[];
   isLoading: boolean;
   onViewDetail: (id: string) => void;
+  onCancel?: (order: Order) => void;
 }
 
 export function SalesHistoryMobileList({
   orders,
   isLoading,
-  onViewDetail
+  onViewDetail,
+  onCancel
 }: SalesHistoryMobileListProps) {
   return (
     <div className="md:hidden p-4 space-y-4 bg-muted/5 min-h-screen">
@@ -99,12 +101,18 @@ export function SalesHistoryMobileList({
                   <FileText size={14} className="opacity-50" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Ver Detalle</span>
                 </button>
-                <button
-                  className="w-10 h-10 flex items-center justify-center bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 rounded-xl transition-all active:scale-95 shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical size={16} />
-                </button>
+                {onCancel && order.status === 'COMPLETED' && (
+                  <button
+                    className="w-10 h-10 flex items-center justify-center bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 rounded-xl transition-all active:scale-95 shrink-0"
+                    title="Anular Venta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCancel(order);
+                    }}
+                  >
+                    <XCircle size={16} />
+                  </button>
+                )}
               </div>
             </div>
           );

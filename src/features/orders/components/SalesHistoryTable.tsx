@@ -1,4 +1,4 @@
-import { RefreshCw, FileText, MoreVertical } from 'lucide-react';
+import { RefreshCw, FileText, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
@@ -12,6 +12,7 @@ interface SalesHistoryTableProps {
   sortOrder: 'asc' | 'desc';
   onSort: (field: string) => void;
   onViewDetail: (id: string) => void;
+  onCancel?: (order: Order) => void;
 }
 
 export function SalesHistoryTable({
@@ -20,7 +21,8 @@ export function SalesHistoryTable({
   sortBy,
   sortOrder,
   onSort,
-  onViewDetail
+  onViewDetail,
+  onCancel
 }: SalesHistoryTableProps) {
   return (
     <div className="hidden md:block overflow-x-auto">
@@ -130,9 +132,15 @@ export function SalesHistoryTable({
                       >
                         <FileText size={18} />
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all active:scale-95">
-                        <MoreVertical size={18} />
-                      </button>
+                      {onCancel && order.status === 'COMPLETED' && (
+                        <button
+                          onClick={() => onCancel(order)}
+                          className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-all active:scale-95"
+                          title="Anular Venta"
+                        >
+                          <XCircle size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
