@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 
@@ -8,19 +8,18 @@ interface AuthTurnstileProps {
 
 export function AuthTurnstile({ onTokenChange }: AuthTurnstileProps) {
   const [searchParams] = useSearchParams();
-  const [isTestMode, setIsTestMode] = useState(false);
+  
+  const isTestMode = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
 
   useEffect(() => {
-    const isTest = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
-    setIsTestMode(isTest);
-    if (isTest) {
+    if (isTestMode) {
       onTokenChange('test-token-bypass');
     }
-  }, [searchParams, onTokenChange]);
+  }, [isTestMode, onTokenChange]);
 
   if (isTestMode) return null;
   
-  const currentTheme = (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? 'dark' : 'light';
+  const currentTheme: 'light' | 'dark' = (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) ? 'dark' : 'light';
 
   return (
     <div className="flex justify-center py-2 min-h-[65px] w-full border-none outline-none">
@@ -30,7 +29,7 @@ export function AuthTurnstile({ onTokenChange }: AuthTurnstileProps) {
         onExpire={() => onTokenChange('')}
         onError={() => onTokenChange('')}
         options={{
-          theme: currentTheme as any,
+          theme: currentTheme,
         }}
 
         scriptOptions={{

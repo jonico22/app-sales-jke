@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RotateCw } from 'lucide-react';
@@ -50,7 +50,7 @@ export function CategoryEditModal({
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<EditCategoryFormValues>({
     resolver: zodResolver(editCategorySchema),
@@ -62,7 +62,7 @@ export function CategoryEditModal({
     },
   });
 
-  const isActive = watch('active');
+  const isActive = useWatch({ control, name: 'active' });
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   // Populate form when category changes

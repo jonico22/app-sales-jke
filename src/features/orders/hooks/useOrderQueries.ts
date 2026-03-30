@@ -3,12 +3,16 @@ import {
   orderService, 
   type OrdersResponse, 
   type OrderResponse,
+  type CreateOrderRequest,
   type UpdateOrderRequest,
   type DeleteOrderResponse,
   type UpdatedByUsersResponse,
   type OrderStatus
 } from '@/services/order.service';
 import { orderItemService, type OrderItemsResponse } from '@/services/order-item.service';
+import { orderPaymentService, type CreateOrderPaymentRequest, type OrderPaymentResponse } from '@/services/order-payment.service';
+import { searchKeys } from '@/features/search/hooks/useSearchQueries';
+import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
 import { toast } from 'sonner';
 
 export const orderKeys = {
@@ -66,6 +70,24 @@ export function useOrderCreatedByUsersQuery() {
   });
 }
 
+export function useCreateOrderMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<OrderResponse, Error, CreateOrderRequest>({
+    mutationFn: (data) => orderService.create(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: searchKeys.all });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      toast.success(response.message || 'Pedido creado exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Error al crear el pedido';
+      toast.error(errorMessage);
+    },
+  });
+}
+
 export function useUpdateOrderMutation() {
   const queryClient = useQueryClient();
 
@@ -73,6 +95,9 @@ export function useUpdateOrderMutation() {
     mutationFn: ({ id, data }) => orderService.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      // Also invalidate search/products if the order status changed (likely affects stock)
+      queryClient.invalidateQueries({ queryKey: searchKeys.all });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
       toast.success(response.message || 'Pedido actualizado exitosamente');
     },
     onError: (error: any) => {
@@ -89,10 +114,30 @@ export function useDeleteOrderMutation() {
     mutationFn: (id) => orderService.delete(id),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: searchKeys.all });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
       toast.success(response.message || 'Pedido eliminado exitosamente');
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Error al eliminar el pedido';
+      toast.error(errorMessage);
+    },
+  });
+}
+
+export function useCreatePaymentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<OrderPaymentResponse, Error, CreateOrderPaymentRequest>({
+    mutationFn: (data) => orderPaymentService.create(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: searchKeys.all });
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      toast.success(response.message || 'Pago registrado exitosamente');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Error al registrar el pago';
       toast.error(errorMessage);
     },
   });

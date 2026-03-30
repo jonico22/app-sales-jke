@@ -1,9 +1,17 @@
 import { Star } from 'lucide-react';
 import { ChartContainer } from '@/components/shared/charts/ChartContainer';
 import { BaseBarChart } from '@/components/shared/charts/BaseBarChart';
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+
+interface ProductData {
+  name: string;
+  soldUnits: number;
+  stockRemaining: number;
+  [key: string]: string | number;
+}
 
 interface TopProductsChartProps {
-  data: any[];
+  data: ProductData[];
   isLoading: boolean;
 }
 
@@ -21,7 +29,7 @@ export function TopProductsChart({ data, isLoading }: TopProductsChartProps) {
         data={data}
         layout="vertical"
         showLegend
-        tooltipFormatter={(value: any, name: any) => [value, name === 'soldUnits' ? 'Vendidos' : 'Stock']}
+        tooltipFormatter={(value: ValueType | undefined, name: NameType | undefined) => [value || 0, name === 'soldUnits' ? 'Vendidos' : 'Stock']}
         bars={[
           {
             dataKey: 'soldUnits',

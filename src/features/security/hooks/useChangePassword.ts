@@ -36,7 +36,7 @@ export function useChangePassword() {
 
             toast.success('Contraseña actualizada correctamente');
         },
-        onError: (error: any) => {
+        onError: (error) => {
             console.error(error);
             const errorMessage = parseBackendError(error) || 'Error al cambiar la contraseña. Verifica tu contraseña actual.';
             toast.error(errorMessage);

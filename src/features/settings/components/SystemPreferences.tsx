@@ -2,20 +2,20 @@ import { Coins, Percent, Clock, HardDrive } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { UseFormRegister } from 'react-hook-form';
+import type { UseFormRegister, FieldValues, Path } from 'react-hook-form';
 import { type CurrencySelectOption } from '@/services/currency.service';
 
-interface SystemPreferencesProps {
-  register: UseFormRegister<any>;
+interface SystemPreferencesProps<T extends FieldValues> {
+  register: UseFormRegister<T>;
   currencies: CurrencySelectOption[];
   storageLimit?: string;
 }
 
-export function SystemPreferences({
+export function SystemPreferences<T extends FieldValues>({
   register,
   currencies,
   storageLimit
-}: SystemPreferencesProps) {
+}: SystemPreferencesProps<T>) {
   return (
     <Card className="p-6 border-border">
       <h2 className="text-sm font-bold text-foreground mb-6 uppercase tracking-tight">Preferencias del Sistema</h2>
@@ -27,7 +27,7 @@ export function SystemPreferences({
             Moneda Principal
           </Label>
           <select
-            {...register('mainCurrencyId')}
+            {...register('mainCurrencyId' as Path<T>)}
             className="w-full h-10 px-3 py-2 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
           >
             <option value="">Seleccionar moneda</option>
@@ -46,7 +46,7 @@ export function SystemPreferences({
           <div className="relative">
             <Input
               type="number"
-              {...register('taxValue', { valueAsNumber: true })}
+              {...register('taxValue' as Path<T>, { valueAsNumber: true })}
               className="pr-10"
             />
             <div className="absolute right-0 top-0 h-full w-10 flex items-center justify-center bg-muted/50 border-l border-border rounded-r-lg text-muted-foreground text-sm">
@@ -67,7 +67,7 @@ export function SystemPreferences({
                 <Clock className="h-3 w-3" /> Frecuencia de Alerta
               </Label>
               <select
-                {...register('stockNotificationFrequency')}
+                {...register('stockNotificationFrequency' as Path<T>)}
                 className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
               >
                 <option value="DAILY">Diario</option>
@@ -89,7 +89,7 @@ export function SystemPreferences({
                 <Clock className="h-3 w-3" /> Frecuencia de Alerta
               </Label>
               <select
-                {...register('salesNotificationFrequency')}
+                {...register('salesNotificationFrequency' as Path<T>)}
                 className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
               >
                 <option value="DAILY">Diario</option>

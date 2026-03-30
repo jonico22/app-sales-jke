@@ -2,14 +2,13 @@ import { memo, useState, useEffect } from 'react';
 import { X, Trash2, ShoppingBag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore, selectTotalPrice } from '@/store/cart.store';
-import { orderService, type CreateOrderRequest, OrderStatus } from '@/services/order.service';
+import { OrderStatus } from '@/services/order.service';
+import { useCreateOrderMutation } from '@/features/orders/hooks/useOrderQueries';
 import { useSocietyStore } from '@/store/society.store';
 import { useBranchStore } from '@/store/branch.store';
 import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
-import { useQueryClient } from '@tanstack/react-query';
-import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
 
 
 interface POSCartPanelProps {
@@ -20,8 +19,6 @@ interface POSCartPanelProps {
 }
 
 export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, selectedClient, onSaleSuccess }: POSCartPanelProps) {
-    const queryClient = useQueryClient();
-    
     // Using granular selectors instead of destructuring the state (Rule rerender-defer-reads)
     const items = useCartStore(state => state.items);
     const removeItem = useCartStore(state => state.removeItem);
@@ -47,73 +44,75 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showNotes, setShowNotes] = useState(false);
 
-    const handleProcessOrder = async (targetStatus: OrderStatus = OrderStatus.PENDING_PAYMENT) => {
+    const { mutate: createOrder } = useCreateOrderMutation();
+
+    const handleProcessOrder = (targetStatus: OrderStatus = OrderStatus.PENDING_PAYMENT) => {
         if (items.length === 0) return;
 
         setProcessingStatus(targetStatus);
-        try {
-            // Construct Order Request with correct IDs from stores
-            const orderData: CreateOrderRequest = {
-                societyId: society?.id || '',
-                branchId: selectedBranch?.id || '',
-                currencyId: society?.mainCurrency?.id || currencyId || '',
-                partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2', // Fallback for public client if needed by API
 
-                exchangeRate: 1.0,
-                status: targetStatus, // Use the target status (PENDING or PENDING_PAYMENT)
-                subtotal: subtotal,
-                taxAmount: igv,
-                total: total,
-                discount: discount || 0,
-                notes: orderNotes,
-                orderItems: items.map(item => {
-                    const price = Number(item.product.price);
-                    return {
-                        productId: item.product.id,
-                        quantity: item.quantity,
-                        unitPrice: price,
-                        total: price * item.quantity
-                    };
-                })
-            };
+        // Construct Order Request with correct IDs from stores
+        const orderData = {
+            societyId: society?.id || '',
+            branchId: selectedBranch?.id || '',
+            currencyId: society?.mainCurrency?.id || currencyId || '',
+            partnerId: selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '2', // Fallback for public client if needed by API
 
-            // Validation: Ensure we have required IDs
-            if (!orderData.societyId || !orderData.branchId) {
-                setErrorMessage('Información de sucursal o sociedad no disponible.');
-                return;
-            }
+            exchangeRate: 1.0,
+            status: targetStatus, // Use the target status (PENDING or PENDING_PAYMENT)
+            subtotal: subtotal,
+            taxAmount: igv,
+            total: total,
+            discount: discount || 0,
+            notes: orderNotes,
+            orderItems: items.map(item => {
+                const price = Number(item.product.price);
+                return {
+                    productId: item.product.id,
+                    quantity: item.quantity,
+                    unitPrice: price,
+                    total: price * item.quantity
+                };
+            })
+        };
 
-            const response = await orderService.create(orderData);
-
-            if (response.success && response.data) {
-                // Invalidate products cache to refresh stock in selection
-                queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
-
-                // If it's PENDING_PAYMENT, we prepare for payment modal
-                if (targetStatus === OrderStatus.PENDING_PAYMENT) {
-                    // Save order details to store for payment modal
-                    setCurrentOrder(response.data.id, response.data.orderCode, total);
-
-                    // Clear cart and close panel
-                    clearCart();
-                    onClose();
-
-                    // Trigger payment modal in parent
-                    onSaleSuccess();
-                } else {
-                    // Just a pending order (e.g. "Realizar otro pedido")
-                    // Clear cart and close panel without triggering payment modal
-                    clearCart();
-                    onClose();
-                }
-            }
-        } catch (error) {
-            console.error('Failed to create order', error);
-            const message = parseBackendError(error);
-            setErrorMessage(message);
-        } finally {
+        // Validation: Ensure we have required IDs
+        if (!orderData.societyId || !orderData.branchId) {
+            setErrorMessage('Información de sucursal o sociedad no disponible.');
             setProcessingStatus(null);
+            return;
         }
+
+        createOrder(orderData, {
+            onSuccess: (response) => {
+                if (response.data) {
+                    // If it's PENDING_PAYMENT, we prepare for payment modal
+                    if (targetStatus === OrderStatus.PENDING_PAYMENT) {
+                        // Save order details to store for payment modal
+                        setCurrentOrder(response.data.id, response.data.orderCode, total);
+
+                        // Clear cart and close panel
+                        clearCart();
+                        onClose();
+
+                        // Trigger payment modal in parent
+                        onSaleSuccess();
+                    } else {
+                        // Just a pending order (e.g. "Realizar otro pedido")
+                        // Clear cart and close panel without triggering payment modal
+                        clearCart();
+                        onClose();
+                    }
+                }
+                setProcessingStatus(null);
+            },
+            onError: (error: any) => {
+                console.error('Failed to create order', error);
+                const message = parseBackendError(error);
+                setErrorMessage(message);
+                setProcessingStatus(null);
+            }
+        });
     };
 
     const handlePaymentSuccess = () => {

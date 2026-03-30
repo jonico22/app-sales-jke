@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { authService } from '@/services/auth.service';
+import { isAxiosError } from 'axios';
 import { AuthHeader } from './components/AuthHeader';
 import { AuthTurnstile } from './components/AuthTurnstile';
 import { SuccessModal } from './components/SuccessModal';
@@ -46,8 +47,14 @@ export default function ForgotPasswordPage() {
       await authService.forgotPassword({ email, turnstileToken });
       setSubmittedEmail(email);
       setShowSuccessModal(true);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud.';
+    } catch (error: unknown) {
+      console.error('Error in forgot password:', error);
+      let errorMessage = 'Error al procesar la solicitud.';
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { branchOfficeProductService } from '@/services/branch-office-product.service';
@@ -32,31 +32,7 @@ export default function CreateInventoryMovementPage() {
         fetchBranches();
     }, []);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchTerm.length >= 2 && originBranchId) {
-                searchProducts();
-            } else {
-                setSearchResults([]);
-            }
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm, originBranchId]);
-
-    const fetchBranches = async () => {
-        try {
-            const response = await branchOfficeService.getAll({ limit: 100, isActive: true });
-            if (response.success) {
-                setBranches(response.data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            toast.error('Error al cargar sucursales');
-        }
-    };
-
-    const searchProducts = async () => {
+    const searchProducts = useCallback(async () => {
         if (!originBranchId) return;
         try {
             setIsSearching(true);
@@ -73,7 +49,32 @@ export default function CreateInventoryMovementPage() {
         } finally {
             setIsSearching(false);
         }
+    }, [originBranchId, searchTerm]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchTerm.length >= 2 && originBranchId) {
+                searchProducts();
+            } else {
+                setSearchResults([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm, originBranchId, searchProducts]);
+
+    const fetchBranches = async () => {
+        try {
+            const response = await branchOfficeService.getAll({ limit: 100, isActive: true });
+            if (response.success) {
+                setBranches(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+            toast.error('Error al cargar sucursales');
+        }
     };
+
 
     const handleSelectProduct = (product: Product) => {
         setSelectedProduct(product);
@@ -150,8 +151,8 @@ export default function CreateInventoryMovementPage() {
         }
     };
 
-    const getBranchName = (id: string) => branches.find(b => b.id === id)?.name || 'Seleccionar sucursal';
-    const getBranchAddress = (id: string) => branches.find(b => b.id === id)?.address || 'Dirección no disponible';
+    const getBranchName = (id: string) => branches.find((b: BranchOffice) => b.id === id)?.name || 'Seleccionar sucursal';
+    const getBranchAddress = (id: string) => branches.find((b: BranchOffice) => b.id === id)?.address || 'Dirección no disponible';
 
     const isStep1Valid = originBranchId && destinationBranchId && selectedProduct && quantity > 0 && originBranchId !== destinationBranchId;
 

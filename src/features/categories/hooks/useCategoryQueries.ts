@@ -10,14 +10,16 @@ import {
   type UpdatedByUsersResponse
 } from '@/services/category.service';
 import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
 
 export const categoryKeys = {
   all: ['categories'] as const,
   lists: () => [...categoryKeys.all, 'list'] as const,
-  list: (filters: any) => [...categoryKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...categoryKeys.lists(), filters] as const,
   details: () => [...categoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...categoryKeys.details(), id] as const,
   users: () => [...categoryKeys.all, 'users'] as const,
+  select: () => [...categoryKeys.all, 'select'] as const,
 };
 
 export function useCategoriesQuery(params: {
@@ -34,7 +36,7 @@ export function useCategoriesQuery(params: {
   updatedAtTo?: string | null;
 }) {
   return useQuery<CategoriesResponse>({
-    queryKey: categoryKeys.list(params),
+    queryKey: categoryKeys.list(params as unknown as Record<string, unknown>),
     queryFn: () => categoryService.getAll(params),
   });
 }
@@ -43,6 +45,14 @@ export function useCreatedByUsersQuery() {
   return useQuery<UpdatedByUsersResponse>({
     queryKey: categoryKeys.users(),
     queryFn: () => categoryService.getCreatedByUsers(),
+  });
+}
+
+export function useCategoriesSelectQuery() {
+  return useQuery({
+    queryKey: categoryKeys.select(),
+    queryFn: () => categoryService.getForSelect().then(res => res.data || []),
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 }
 
@@ -55,8 +65,11 @@ export function useCreateCategoryMutation() {
       queryClient.invalidateQueries({ queryKey: categoryKeys.lists() });
       toast.success(response.message || 'Categoría creada exitosamente');
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Error al crear la categoría';
+    onError: (error: unknown) => {
+      let errorMessage = 'Error al crear la categoría';
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast.error(errorMessage);
     },
   });
@@ -71,8 +84,11 @@ export function useUpdateCategoryMutation() {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
       toast.success(response.message || 'Categoría actualizada exitosamente');
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Error al actualizar la categoría';
+    onError: (error: unknown) => {
+      let errorMessage = 'Error al actualizar la categoría';
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast.error(errorMessage);
     },
   });
@@ -87,8 +103,11 @@ export function useDeleteCategoryMutation() {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
       toast.success(response.message || 'Categoría eliminada exitosamente');
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.message || 'Error al eliminar la categoría';
+    onError: (error: unknown) => {
+      let errorMessage = 'Error al eliminar la categoría';
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
       toast.error(errorMessage);
     },
   });

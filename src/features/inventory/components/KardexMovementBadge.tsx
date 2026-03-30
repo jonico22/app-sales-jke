@@ -5,7 +5,8 @@ import {
     MinusCircle,
     ArrowUpCircle,
     ArrowDownCircle,
-    FileText
+    FileText,
+    type LucideIcon
 } from 'lucide-react';
 import type { KardexMovementType } from '@/services/kardex.service';
 
@@ -14,7 +15,7 @@ interface KardexMovementBadgeProps {
 }
 
 export function KardexMovementBadge({ type }: KardexMovementBadgeProps) {
-    const configs: Record<KardexMovementType, { label: string; bg: string; text: string; icon: any }> = {
+    const configs: Record<KardexMovementType, { label: string; bg: string; text: string; icon: LucideIcon }> = {
         'SALE_EXIT': { label: 'Venta', bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: ShoppingCart },
         'TRANSFER_OUT': { label: 'Salida Traslado', bg: 'bg-orange-500/10', text: 'text-orange-500', icon: Truck },
         'TRANSFER_IN': { label: 'Entrada Traslado', bg: 'bg-sky-500/10', text: 'text-sky-500', icon: Truck },

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { userService, type BusinessUser } from '@/services/user.service';
 import { toast } from 'sonner';
@@ -28,7 +28,7 @@ export default function UsersAndAccessPage() {
     const [sortBy, setSortBy] = useState<string>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             const response = await userService.getBusinessUsers({
@@ -44,11 +44,11 @@ export default function UsersAndAccessPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [sortBy, sortOrder]);
 
     useEffect(() => {
         fetchUsers();
-    }, [sortBy, sortOrder]);
+    }, [fetchUsers]);
 
     const filteredUsers = useMemo(() => {
         if (!searchTerm) return users;

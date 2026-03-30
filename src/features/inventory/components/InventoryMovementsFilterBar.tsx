@@ -1,12 +1,9 @@
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { type BranchOfficeSelectOption } from '@/services/branch-office.service';
 
 interface InventoryMovementsFilterBarProps {
-    searchTerm: string;
-    onSearchTermChange: (term: string) => void;
     originBranchId: string;
     onOriginBranchChange: (id: string) => void;
     destinationBranchId: string;
@@ -17,8 +14,6 @@ interface InventoryMovementsFilterBarProps {
 }
 
 export function InventoryMovementsFilterBar({
-    searchTerm,
-    onSearchTermChange,
     originBranchId,
     onOriginBranchChange,
     destinationBranchId,
@@ -44,15 +39,6 @@ export function InventoryMovementsFilterBar({
 
     return (
         <div className="bg-card p-3 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row gap-2 md:gap-4 items-center">
-            <div className="relative w-full md:min-w-[300px] md:max-w-md flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                <Input
-                    placeholder="Buscar por ID o responsable..."
-                    className="pl-9 bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors rounded-xl font-medium w-full"
-                    value={searchTerm}
-                    onChange={(e) => onSearchTermChange(e.target.value)}
-                />
-            </div>
 
             <div className="flex flex-wrap w-full md:w-auto gap-2 items-center">
                 <DropdownMenu>

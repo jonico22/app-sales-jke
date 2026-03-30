@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { authService } from '@/services/auth.service';
+import { isAxiosError } from 'axios';
 import { AuthHeader } from './components/AuthHeader';
 import { PasswordInput } from './components/PasswordInput';
 import { AuthTurnstile } from './components/AuthTurnstile';
@@ -58,8 +59,14 @@ export default function ResetPasswordPage() {
       await authService.resetPassword({ token, newPassword: result.data.password, turnstileToken });
       toast.success('¡Contraseña actualizada correctamente!');
       navigate('/auth/login');
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al restablecer la contraseña.';
+    } catch (error: unknown) {
+      console.error('Error in reset password:', error);
+      let errorMessage = 'Error al restablecer la contraseña.';
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

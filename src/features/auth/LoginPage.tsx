@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -104,8 +105,14 @@ export default function LoginPage() {
           navigate('/');
         }
       }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
+    } catch (error: unknown) {
+      console.error('Error in login:', error);
+      let errorMessage = 'Ocurrió un error inesperado. Por favor, intenta de nuevo.';
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PenLine, Wand2, Save } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
   const createMutation = useCreateCategoryMutation();
   const updateMutation = useUpdateCategoryMutation();
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<CategoryFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, control, reset } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       code: category?.code || '',
@@ -40,7 +40,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
     },
   });
 
-  const isActive = watch('isActive');
+  const isActive = useWatch({ control, name: 'isActive' });
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const generateCode = () => {

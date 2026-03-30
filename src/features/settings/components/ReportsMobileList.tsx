@@ -1,4 +1,4 @@
-import { FileText, ChevronLeft, ChevronRight, Trash2, Download, Clock, AlertCircle } from 'lucide-react';
+import { type LucideIcon, FileText, ChevronLeft, ChevronRight, Trash2, Download, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +7,17 @@ import { cn } from '@/lib/utils';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+interface StatusInfo {
+  label: string;
+  className: string;
+  icon: LucideIcon;
+}
+
 interface ReportsMobileListProps {
   reports: FileMetadata[];
   total: number;
   onDelete: (id: string) => void;
-  getStatusInfo: (status: string | undefined, expiresAt?: string) => any;
+  getStatusInfo: (status: string | undefined, expiresAt?: string) => StatusInfo;
   getFileIcon: (mimeType: string, fileName: string) => React.ReactNode;
   safeParseDate: (dateStr: string | undefined | null) => Date;
 }

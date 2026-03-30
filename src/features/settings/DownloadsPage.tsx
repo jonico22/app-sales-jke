@@ -59,7 +59,7 @@ export default function DownloadsPage() {
                 setReports(prev => prev.filter(r => r.id !== id));
                 toast.success('Reporte eliminado correctamente');
             }
-        } catch (error) {
+        } catch {
             toast.error('Error al eliminar el reporte');
         }
     };

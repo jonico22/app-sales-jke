@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { useQueryClient } from '@tanstack/react-query';
-import { BRANCHES_QUERY_KEY } from '@/hooks/useBranches';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -20,9 +18,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { SlidePanel } from '@/components/shared/SlidePanel';
-import { branchOfficeService, type BranchOffice } from '@/services/branch-office.service';
 import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
+import { 
+    useBranchOffice, 
+    useCreateBranchOffice, 
+    useUpdateBranchOffice 
+} from '../hooks/useBranchOfficeQueries';
 
 const branchOfficeSchema = z.object({
     name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -49,12 +51,14 @@ export function BranchOfficeEditPanel({
     branchOfficeId,
     onSuccess,
 }: BranchOfficeEditPanelProps) {
-    const queryClient = useQueryClient();
     const society = useSocietyStore(state => state.society);
-    const [isLoadingBranchOffice, setIsLoadingBranchOffice] = useState(false);
     const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
-    const { register, handleSubmit, control, reset, setValue, formState: { errors, isSubmitting } } = useForm<BranchOfficeFormValues>({
+    const branchOfficeQuery = useBranchOffice(branchOfficeId);
+    const createMutation = useCreateBranchOffice();
+    const updateMutation = useUpdateBranchOffice();
+
+    const { register, handleSubmit, control, reset, setValue, formState: { errors } } = useForm<BranchOfficeFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(branchOfficeSchema) as any,
         defaultValues: {
@@ -68,7 +72,7 @@ export function BranchOfficeEditPanel({
         }
     });
 
-    // Fetch branch office data when panel opens with a branchOfficeId
+    // Reset form when panel opens or data changes
     useEffect(() => {
         if (!open) {
             reset({
@@ -83,32 +87,19 @@ export function BranchOfficeEditPanel({
             return;
         }
 
-        if (branchOfficeId) {
-            const fetchBranchOffice = async () => {
-                setIsLoadingBranchOffice(true);
-                try {
-                    const response = await branchOfficeService.getById(branchOfficeId);
-                    const branch: BranchOffice = response.data;
-                    reset({
-                        name: branch.name,
-                        code: branch.code,
-                        description: branch.description || '',
-                        address: branch.address || '',
-                        phone: branch.phone || '',
-                        email: branch.email || '',
-                        isActive: branch.isActive,
-                    });
-                } catch (error) {
-                    console.error('Error fetching branch office:', error);
-                    toast.error('Error al cargar la sucursal');
-                    onOpenChange(false);
-                } finally {
-                    setIsLoadingBranchOffice(false);
-                }
-            };
-            fetchBranchOffice();
+        if (branchOfficeId && branchOfficeQuery.data) {
+            const branch = branchOfficeQuery.data;
+            reset({
+                name: branch.name,
+                code: branch.code,
+                description: branch.description || '',
+                address: branch.address || '',
+                phone: branch.phone || '',
+                email: branch.email || '',
+                isActive: branch.isActive,
+            });
         }
-    }, [open, branchOfficeId, reset, onOpenChange]);
+    }, [open, branchOfficeId, branchOfficeQuery.data, reset]);
 
     const generateCode = () => {
         setIsGeneratingCode(true);
@@ -122,44 +113,45 @@ export function BranchOfficeEditPanel({
     const onSubmit = async (data: BranchOfficeFormValues) => {
         try {
             if (branchOfficeId) {
-                await branchOfficeService.update(branchOfficeId, {
-                    name: data.name,
-                    description: data.description || undefined,
-                    address: data.address || undefined,
-                    phone: data.phone || undefined,
-                    email: data.email || undefined,
-                    isActive: data.isActive,
+                await updateMutation.mutateAsync({
+                    id: branchOfficeId,
+                    data: {
+                        name: data.name,
+                        description: data.description || undefined,
+                        address: data.address || undefined,
+                        phone: data.phone || undefined,
+                        email: data.email || undefined,
+                        isActive: data.isActive,
+                    }
                 });
-                toast.success('Sucursal actualizada exitosamente');
             } else {
                 if (!society?.id) {
                     toast.error('No se pudo identificar la sociedad');
                     return;
                 }
-                await branchOfficeService.create({
+                await createMutation.mutateAsync({
                     ...data,
                     societyId: society.id,
                 });
-                toast.success('Sucursal creada exitosamente');
             }
- 
-            // Invalidate branches select cache to ensure all selectors are updated
-            queryClient.invalidateQueries({ queryKey: BRANCHES_QUERY_KEY });
- 
+
             onOpenChange(false);
             onSuccess?.();
-        } catch (error: any) {
+        } catch (error) {
+            // Error handling is managed by mutations
             console.error('Error saving branch office:', error);
-            toast.error(error.response?.data?.message || 'Error al guardar la sucursal');
         }
     };
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
+    const isLoading = branchOfficeQuery.isLoading && !!branchOfficeId;
 
     const footer = (
         <>
             <Button
                 type="submit"
                 form="branch-office-form"
-                disabled={isSubmitting || isLoadingBranchOffice}
+                disabled={isSubmitting || isLoading}
                 className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 uppercase tracking-wider"
             >
                 <Save className="mr-2 h-4 w-4" /> {isSubmitting ? 'Guardando...' : branchOfficeId ? 'Guardar Cambios' : 'Crear Sucursal'}
@@ -181,7 +173,7 @@ export function BranchOfficeEditPanel({
             title={branchOfficeId ? "Editar Sucursal" : "Nueva Sucursal"}
             footer={footer}
         >
-            {isLoadingBranchOffice ? (
+            {isLoading ? (
                 <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
@@ -308,7 +300,7 @@ export function BranchOfficeEditPanel({
                                     <Switch
                                         id="branch-isActive"
                                         checked={value}
-                                        onChange={(e) => onChange(e.target.checked)}
+                                        onCheckedChange={onChange}
                                         {...field}
                                     />
                                 )}

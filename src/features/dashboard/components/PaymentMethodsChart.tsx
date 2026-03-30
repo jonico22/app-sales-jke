@@ -14,8 +14,14 @@ const formatCurrency = (value: number, symbol: string = 'S/') => {
   return `${symbol}${formatted}`;
 };
 
+interface PaymentMethodData {
+  method: string;
+  value: number;
+  [key: string]: string | number;
+}
+
 interface PaymentMethodsChartProps {
-  data: any[];
+  data: PaymentMethodData[];
   isLoading: boolean;
   currencySymbol: string;
 }

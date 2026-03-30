@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { DialogContent } from '@/components/ui/dialog';
 import { DialogHeader } from '@/components/ui/dialog';
@@ -28,12 +28,14 @@ export function UpdateMovementStatusModal({
     const [selectedStatus, setSelectedStatus] = useState<MovementStatus | null>(null);
     const [reason, setReason] = useState('');
 
-    useEffect(() => {
-        if (isOpen) {
+    // Reset state when modal closes/opens via onOpenChange or parent
+    const handleClose = () => {
+        if (!isLoading) {
             setSelectedStatus(null);
             setReason('');
+            onClose();
         }
-    }, [isOpen]);
+    };
 
     const handleConfirm = () => {
         if (selectedStatus) {
@@ -44,7 +46,7 @@ export function UpdateMovementStatusModal({
     if (!movement) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && !isLoading && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl rounded-[1.5rem] bg-card">
                 <DialogHeader className="p-6 bg-muted/20 border-b border-border/40">
                     <DialogTitle className="text-lg font-black text-foreground uppercase tracking-tight flex items-center gap-2">
@@ -125,7 +127,7 @@ export function UpdateMovementStatusModal({
                 <div className="p-6 bg-muted/10 border-t border-border/40 flex items-center gap-3">
                     <Button
                         variant="ghost"
-                        onClick={onClose}
+                        onClick={handleClose}
                         disabled={isLoading}
                         className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest text-muted-foreground rounded-xl"
                     >

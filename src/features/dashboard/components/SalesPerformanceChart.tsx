@@ -2,8 +2,14 @@ import { TrendingUp } from 'lucide-react';
 import { ChartContainer } from '@/components/shared/charts/ChartContainer';
 import { BaseBarChart } from '@/components/shared/charts/BaseBarChart';
 
+interface SalesData {
+  name: string;
+  total: number;
+  [key: string]: string | number;
+}
+
 interface SalesPerformanceChartProps {
-  data: any[];
+  data: SalesData[];
   isLoading: boolean;
   currencySymbol: string;
 }

@@ -191,7 +191,7 @@ export default function AdvancedSearchPage() {
                         filters={filters}
                         categories={categories}
                         brands={brands}
-                        onFilterChange={handleFilterChange as any}
+                        onFilterChange={handleFilterChange}
                         onClearFilters={clearFilters}
                     />
                 </aside>
@@ -199,13 +199,16 @@ export default function AdvancedSearchPage() {
                 <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                     <SheetContent side="bottom" className="h-[90vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
                         <AdvancedFilterModal
+                            key={isFilterSheetOpen ? 'open' : 'closed'}
                             isOpen={isFilterSheetOpen}
                             onClose={() => setIsFilterSheetOpen(false)}
                             filters={filters}
                             categories={categories}
                             brands={brands}
-                            onApply={(newFilters: Partial<SearchFilters>) => {
-                                Object.entries(newFilters).forEach(([k, v]) => (handleFilterChange as any)(k, v));
+                            onApply={(newFilters: SearchFilters) => {
+                                Object.entries(newFilters).forEach(([k, v]) => {
+                                    handleFilterChange(k as keyof SearchFilters, v);
+                                });
                                 setIsFilterSheetOpen(false);
                             }}
                             onReset={clearFilters}

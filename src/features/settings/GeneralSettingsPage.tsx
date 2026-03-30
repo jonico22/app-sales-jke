@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { societyService } from '@/services/society.service';
+import { societyService, type UpdateSocietyRequest } from '@/services/society.service';
 import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
 import { useSocietyStore } from '@/store/society.store';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -106,7 +106,7 @@ export default function GeneralSettingsPage() {
 
         try {
             setIsSaving(true);
-            const payload: any = {};
+            const payload: UpdateSocietyRequest = {};
 
             if (dirtyFields.name) payload.name = data.name;
             if (dirtyFields.mainCurrencyId) payload.mainCurrencyId = data.mainCurrencyId;
@@ -124,13 +124,17 @@ export default function GeneralSettingsPage() {
                 payload.logoId = logoId;
             }
 
-            if (dirtyFields.legalEntity) {
-                payload.legalEntity = {};
-                if ((dirtyFields.legalEntity as any).businessName) payload.legalEntity.businessName = data.legalEntity.businessName;
-                if ((dirtyFields.legalEntity as any).documentNumber) payload.legalEntity.documentNumber = data.legalEntity.documentNumber;
-                if ((dirtyFields.legalEntity as any).fiscalAddress) payload.legalEntity.fiscalAddress = data.legalEntity.fiscalAddress;
-                if ((dirtyFields.legalEntity as any).phoneNumber) payload.legalEntity.phoneNumber = data.legalEntity.phoneNumber;
-                if ((dirtyFields.legalEntity as any).email) payload.legalEntity.email = data.legalEntity.email;
+            if (dirtyFields.legalEntity && data.legalEntity) {
+                const legalEntityPayload: NonNullable<UpdateSocietyRequest['legalEntity']> = {};
+                const dirtyLegalEntity = dirtyFields.legalEntity;
+                
+                if (dirtyLegalEntity.businessName) legalEntityPayload.businessName = data.legalEntity.businessName;
+                if (dirtyLegalEntity.documentNumber) legalEntityPayload.documentNumber = data.legalEntity.documentNumber;
+                if (dirtyLegalEntity.fiscalAddress) legalEntityPayload.fiscalAddress = data.legalEntity.fiscalAddress;
+                if (dirtyLegalEntity.phoneNumber) legalEntityPayload.phoneNumber = data.legalEntity.phoneNumber;
+                if (dirtyLegalEntity.email) legalEntityPayload.email = data.legalEntity.email;
+                
+                payload.legalEntity = legalEntityPayload;
             }
 
             if (Object.keys(payload).length === 0) {
@@ -152,10 +156,10 @@ export default function GeneralSettingsPage() {
         }
     };
 
-    const handleLogoUploadSuccess = (data: any) => {
+    const handleLogoUploadSuccess = (data: { id?: string; path?: string; downloadUrl?: string } | null) => {
         if (data) {
             if (data.id) setLogoId(data.id);
-            if (data.path || data.downloadUrl) setLogoPreview(data.downloadUrl || data.path);
+            if (data.path || data.downloadUrl) setLogoPreview(data.downloadUrl || data.path || null);
         }
     };
 
@@ -171,8 +175,8 @@ export default function GeneralSettingsPage() {
             if (response.success) {
                 try {
                     await fileService.delete(logoId);
-                } catch (fileError) {
-                    console.error('Error deleting file, but society was updated:', fileError);
+                } catch {
+                    console.error('Error deleting file, but society was updated');
                 }
 
                 setSociety(response.data);
@@ -180,8 +184,7 @@ export default function GeneralSettingsPage() {
                 setLogoId(null);
                 toast.success('Logo eliminado correctamente');
             }
-        } catch (error) {
-            console.error('Error deleting logo:', error);
+        } catch {
             toast.error('Error al eliminar el logo');
         } finally {
             setIsDeletingLogo(false);

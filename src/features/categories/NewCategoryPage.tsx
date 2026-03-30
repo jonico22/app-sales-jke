@@ -11,6 +11,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBulkUploadMutation } from './hooks/useCategoryQueries';
+import { isAxiosError } from 'axios';
+
+interface CategoryExcelRow {
+  CodigoCategoria?: string;
+  NombreCategoria?: string;
+  [key: string]: unknown;
+}
 
 export default function NewCategoryPage() {
   const navigate = useNavigate();
@@ -37,9 +44,9 @@ export default function NewCategoryPage() {
           const workbook = XLSX.read(data, { type: 'array' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          const jsonData = XLSX.utils.sheet_to_json<CategoryExcelRow>(worksheet);
 
-          const rows: AnalyzedRow[] = jsonData.map((row: any, index: number) => {
+          const rows: AnalyzedRow[] = jsonData.map((row, index: number) => {
             const errors: string[] = [];
 
             if (!row.CodigoCategoria) errors.push('Código obligatorio');
@@ -100,10 +107,10 @@ export default function NewCategoryPage() {
           toast.error(response.message || 'Error al procesar el archivo');
         }
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         let errorMessage = 'Error al subir el archivo. Por favor, intenta de nuevo.';
-        if (error.response?.data) {
-          const errorData = error.response.data;
+        if (isAxiosError(error) && error.response?.data) {
+          const errorData = error.response.data as { errors?: string | Record<string, unknown>; message?: string };
           if (errorData.errors && typeof errorData.errors === 'string') {
             errorMessage = errorData.errors;
           } else if (errorData.message) {

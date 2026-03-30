@@ -82,7 +82,7 @@ export default function BillingPage() {
             await subscriptionService.updateAutoRenew(society.subscriptionId, newStatus);
             // Re-fetch to update cache and UI
             await refetchSub();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error al actualizar la renovación automática:', err);
         } finally {
             setUpdatingRenew(false);
@@ -106,7 +106,7 @@ export default function BillingPage() {
                 setRenewReferenceCode('');
                 await refetchSub();
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error al renovar la suscripción:', err);
         } finally {
             setIsRenewing(false);
@@ -119,7 +119,7 @@ export default function BillingPage() {
             setIsReactivating(true);
             await subscriptionService.reactivateSubscription(society.subscriptionId);
             await refetchSub();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error al reactivar la suscripción:', err);
         } finally {
             setIsReactivating(false);
@@ -134,7 +134,7 @@ export default function BillingPage() {
             setIsCancelModalOpen(false);
             setCancelReason('');
             await refetchSub();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error al cancelar la suscripción:', err);
         } finally {
             setIsCancelling(false);
@@ -152,7 +152,7 @@ export default function BillingPage() {
         const planStorageBytes = (subscription?.plan.storage || 1) * 1024 * 1024 * 1024;
         const storagePercent = Math.min(100, Math.max(0, (Number(currentStorageBytes) / planStorageBytes) * 100)) || 0;
         
-        const formatSize = (bytes: any) => {
+        const formatSize = (bytes: number | string) => {
             const numBytes = Number(bytes);
             if (isNaN(numBytes) || numBytes <= 0) return '0 MB';
             return parseFloat((numBytes / (1024 * 1024)).toFixed(2)) + ' MB';

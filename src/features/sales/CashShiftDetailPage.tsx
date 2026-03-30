@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { AddMovementModal } from './components/AddMovementModal';
 import { ShiftDetailHeader } from './components/ShiftDetailHeader';
 import { ShiftDetailInfoCards } from './components/ShiftDetailInfoCards';
@@ -12,8 +12,6 @@ import { Banknote, CreditCard, QrCode, Landmark } from 'lucide-react';
 
 export default function CashShiftDetailPage() {
     const { shiftId } = useParams<{ shiftId: string }>();
-    const navigate = useNavigate();
-
     // ── Logic Hooks ────────────────────────────────────────────────────────
     const { data: detailRes, isLoading, refetch } = useCashShiftDetailQuery(shiftId || null);
     const shift = detailRes?.data;
@@ -47,8 +45,8 @@ export default function CashShiftDetailPage() {
     const categoriesWithIcons = stats.categories.map(c => ({
         ...c,
         icon: c.method === 'CASH' ? <Banknote size={14} /> :
-              c.method === 'CARD' ? <CreditCard size={14} /> :
-              c.method === 'TRANSFER' ? <Landmark size={14} /> : <QrCode size={14} />
+            c.method === 'CARD' ? <CreditCard size={14} /> :
+                c.method === 'TRANSFER' ? <Landmark size={14} /> : <QrCode size={14} />
     }));
 
     return (

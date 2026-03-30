@@ -12,7 +12,7 @@ interface LogoSettingsProps {
   onOpenModal: () => void;
   onCloseModal: () => void;
   onDeleteLogo: () => void;
-  onUploadSuccess: (data: any) => void;
+  onUploadSuccess: (data: { id?: string; path?: string; downloadUrl?: string } | null) => void;
 }
 
 export function LogoSettings({

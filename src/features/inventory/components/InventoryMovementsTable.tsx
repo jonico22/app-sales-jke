@@ -36,7 +36,7 @@ export function InventoryMovementsTable({
             }
             if (isNaN(date.getTime())) return '-';
             return format(date, formatStr, { locale: es });
-        } catch (e) {
+        } catch {
             return '-';
         }
     };

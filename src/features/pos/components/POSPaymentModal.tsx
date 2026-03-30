@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Banknote, CreditCard, QrCode, Check } from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
-import { orderService, OrderStatus } from '@/services/order.service';
-import { orderPaymentService, OrderPaymentMethod, OrderPaymentStatus } from '@/services/order-payment.service';
+import { OrderStatus } from '@/services/order.service';
+import { OrderPaymentMethod, OrderPaymentStatus } from '@/services/order-payment.service';
+import { useUpdateOrderMutation, useCreatePaymentMutation } from '@/features/orders/hooks/useOrderQueries';
 import { useSocietyStore } from '@/store/society.store';
 
 interface POSPaymentModalProps {
@@ -36,6 +37,9 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
         }
     }, [isOpen]);
 
+    const { mutateAsync: createPayment } = useCreatePaymentMutation();
+    const { mutateAsync: updateOrder } = useUpdateOrderMutation();
+
     if (!isOpen) return null;
 
     const isValidAmount = method === 'CASH'
@@ -46,9 +50,8 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                 ? operationNumber.trim().length > 0
                 : true;
 
+
     const handleConfirmPayment = async () => {
-
-
         if (!currentOrderId) {
             console.error('No currentOrderId found!');
             return;
@@ -56,9 +59,8 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
 
         setIsProcessing(true);
         try {
-
             // Create payment record
-            await orderPaymentService.create({
+            await createPayment({
                 orderId: currentOrderId,
                 societyId: society?.id || '',
                 amount: total,
@@ -69,15 +71,17 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                 status: OrderPaymentStatus.CONFIRMED
             });
 
-
             // Update order status to COMPLETED
-            await orderService.update(currentOrderId, { status: OrderStatus.COMPLETED });
+            await updateOrder({
+                id: currentOrderId,
+                data: { status: OrderStatus.COMPLETED }
+            });
 
             onPaymentSuccess(selectedPaymentMethod);
             onClose();
         } catch (error) {
             console.error('Payment failed', error);
-            // Show error toast
+            // Error toast is already handled by mutation hook now
         } finally {
             setIsProcessing(false);
         }
@@ -113,7 +117,7 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
             <div className="bg-card rounded-3xl w-11/12 max-w-[400px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-[#4096d8] font-bold">
+                    <div className="flex items-center gap-2 text-primary font-bold">
                         <CreditCard className="w-5 h-5" />
                         <span>Procesar Pago - #{currentOrderCode || '...'}</span>
                     </div>
@@ -138,28 +142,28 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleMethodChange('CASH')}
-                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'CASH' ? 'border-[#4096d8] bg-[#4096d8]/5 text-[#4096d8]' : 'border-input hover:border-border text-muted-foreground'}`}
+                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'CASH' ? 'border-primary bg-primary/5 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <Banknote className="w-6 h-6" />
                                 <span className="text-xs font-bold">Efectivo</span>
                             </button>
                             <button
                                 onClick={() => handleMethodChange('CARD')}
-                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'CARD' ? 'border-[#4096d8] bg-[#4096d8]/5 text-[#4096d8]' : 'border-input hover:border-border text-muted-foreground'}`}
+                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'CARD' ? 'border-primary bg-primary/5 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <CreditCard className="w-6 h-6" />
                                 <span className="text-xs font-bold">Tarjeta</span>
                             </button>
                             <button
                                 onClick={() => handleMethodChange('YAPE')}
-                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'YAPE' ? 'border-[#4096d8] bg-[#4096d8]/5 text-[#4096d8]' : 'border-input hover:border-border text-muted-foreground'}`}
+                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'YAPE' ? 'border-primary bg-primary/5 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <QrCode className="w-6 h-6" />
                                 <span className="text-xs font-bold">Yape</span>
                             </button>
                             <button
                                 onClick={() => handleMethodChange('PLIN')}
-                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'PLIN' ? 'border-[#4096d8] bg-[#4096d8]/5 text-[#4096d8]' : 'border-input hover:border-border text-muted-foreground'}`}
+                                className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border-2 transition-all ${method === 'PLIN' ? 'border-primary bg-primary/5 text-primary' : 'border-input hover:border-border text-muted-foreground'}`}
                             >
                                 <QrCode className="w-6 h-6" />
                                 <span className="text-xs font-bold">Plin</span>
@@ -232,7 +236,7 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                                             type="text"
                                             value={operationNumber}
                                             onChange={(e) => setOperationNumber(e.target.value)}
-                                            className="w-full pl-8 pr-4 py-2.5 text-base font-medium text-foreground bg-background border border-input rounded-lg focus:ring-2 focus:ring-[#4096d8]/20 focus:border-[#4096d8] outline-none transition-all placeholder:text-muted-foreground"
+                                            className="w-full pl-8 pr-4 py-2.5 text-base font-medium text-foreground bg-background border border-input rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-muted-foreground"
                                             placeholder="Ingresa los últimos dígitos"
                                             autoFocus
                                         />
@@ -255,7 +259,7 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
                     <button
                         onClick={handleConfirmPayment}
                         disabled={!isValidAmount || isProcessing}
-                        className="flex-[2] py-2.5 text-sm font-bold text-white bg-[#4096d8] hover:bg-[#0099CC] rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="flex-[2] py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

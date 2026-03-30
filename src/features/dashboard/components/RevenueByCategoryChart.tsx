@@ -14,8 +14,14 @@ const formatCurrency = (value: number, symbol: string = 'S/') => {
   return `${symbol}${formatted}`;
 };
 
+interface CategoryRevenueData {
+  category: string;
+  revenue: number;
+  percentage: number;
+}
+
 interface RevenueByCategoryChartProps {
-  data: any[];
+  data: CategoryRevenueData[];
   isLoading: boolean;
   currencySymbol: string;
 }

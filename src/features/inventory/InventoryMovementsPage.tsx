@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import {
-    ChevronLeft,
-    ChevronRight,
-} from 'lucide-react';
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-import { branchMovementService, type BranchMovement, MovementStatus } from '@/services/branch-movement.service';
-import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
+import { type BranchMovement, MovementStatus } from '@/services/branch-movement.service';
 import { toast } from 'sonner';
+import { useMovementsQuery, useUpdateMovementStatus, useDeleteMovement } from './hooks/useMovementQueries';
+import { useMovementFilters } from './hooks/useMovementFilters';
+import { useBranchOfficesSelect } from './hooks/useBranchOfficeQueries';
 
 import { alerts } from '@/utils/alerts';
 
@@ -19,100 +17,46 @@ import { InventoryMovementsTable } from './components/InventoryMovementsTable';
 import { InventoryMovementsMobileList } from './components/InventoryMovementsMobileList';
 
 export default function InventoryMovementsPage() {
-    const [movements, setMovements] = useState<BranchMovement[]>([]);
-    const [branches, setBranches] = useState<BranchOfficeSelectOption[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const {
+        originBranchId,
+        setOriginBranchId,
+        destinationBranchId,
+        setDestinationBranchId,
+        statusFilter,
+        setStatusFilter,
+        currentPage,
+        setCurrentPage,
+        pageSize,
+        sortBy,
+        sortOrder,
+        handleSort,
+        getQueryParams
+    } = useMovementFilters();
 
-    // Filters
-    const [originBranchId, setOriginBranchId] = useState<string>('all');
-    const [destinationBranchId, setDestinationBranchId] = useState<string>('all');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
+    // Queries and Mutations
+    const { data: branches = [] } = useBranchOfficesSelect();
+    const { data: movementsData, isLoading } = useMovementsQuery(getQueryParams());
+    const updateMutation = useUpdateMovementStatus();
+    const deleteMutation = useDeleteMovement();
 
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [pageSize] = useState(10);
+    const movements = movementsData?.data || [];
+    const totalItems = movementsData?.pagination.total || 0;
+    const totalPages = movementsData?.pagination.totalPages || 1;
 
-    // Sorting state
-    const [sortBy, setSortBy] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-
-
-    useEffect(() => {
-        fetchBranches();
-    }, []);
-
-    useEffect(() => {
-        fetchMovements();
-    }, [currentPage, originBranchId, destinationBranchId, statusFilter, searchTerm, sortBy, sortOrder]);
-
-    const fetchBranches = async () => {
-        try {
-            const response = await branchOfficeService.getForSelect();
-            if (response.success) {
-                setBranches(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-        }
-    };
-
-    // Modals
+    // Modals state
     const [selectedMovement, setSelectedMovement] = useState<BranchMovement | null>(null);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-
-    const fetchMovements = async () => {
-        try {
-            setIsLoading(true);
-            const params = {
-                page: currentPage,
-                limit: pageSize,
-                originBranchId: originBranchId === 'all' ? undefined : originBranchId,
-                destinationBranchId: destinationBranchId === 'all' ? undefined : destinationBranchId,
-                status: statusFilter === 'all' ? undefined : (statusFilter as MovementStatus),
-                sortBy,
-                sortOrder,
-            };
-
-            const response = await branchMovementService.getAll(params);
-            if (response.success) {
-                setMovements(response.data.data);
-                setTotalPages(response.data.pagination.totalPages);
-                setTotalItems(response.data.pagination.total);
-            }
-        } catch (error) {
-            toast.error('Error al cargar los movimientos');
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const handleUpdateStatus = async (status: MovementStatus, cancellationReason?: string) => {
         if (!selectedMovement) return;
 
-        try {
-            setIsUpdating(true);
-            const response = await branchMovementService.updateStatus(selectedMovement.id, {
-                status,
-                cancellationReason
-            });
+        await updateMutation.mutateAsync({
+            id: selectedMovement.id,
+            data: { status, cancellationReason }
+        });
 
-            if (response.success) {
-                toast.success(`Movimiento ${status === 'COMPLETED' ? 'completado' : 'cancelado'} exitosamente`);
-                setIsUpdateModalOpen(false);
-                fetchMovements();
-            }
-        } catch (error) {
-            console.error('Error updating status:', error);
-            toast.error('Error al actualizar el estado del movimiento');
-        } finally {
-            setIsUpdating(false);
-        }
+        toast.success(`Movimiento ${status === 'COMPLETED' ? 'completado' : 'cancelado'} exitosamente`);
+        setIsUpdateModalOpen(false);
     };
 
     const handleDeleteMovement = async (id: string, reference: string) => {
@@ -125,25 +69,7 @@ export default function InventoryMovementsPage() {
 
         if (!isConfirmed) return;
 
-        try {
-            const response = await branchMovementService.delete(id);
-            if (response.success) {
-                toast.success('Movimiento eliminado exitosamente');
-                fetchMovements();
-            }
-        } catch (error) {
-            console.error('Error deleting movement:', error);
-            toast.error('Error al intentar eliminar el movimiento');
-        }
-    };
-
-    const handleSort = (field: string) => {
-        if (sortBy === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortBy(field);
-            setSortOrder('asc');
-        }
+        await deleteMutation.mutateAsync(id);
     };
 
 
@@ -153,8 +79,6 @@ export default function InventoryMovementsPage() {
             <InventoryMovementsHeader />
 
             <InventoryMovementsFilterBar
-                searchTerm={searchTerm}
-                onSearchTermChange={setSearchTerm}
                 originBranchId={originBranchId}
                 onOriginBranchChange={setOriginBranchId}
                 destinationBranchId={destinationBranchId}
@@ -199,7 +123,7 @@ export default function InventoryMovementsPage() {
                             size="sm"
                             className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
                             disabled={currentPage === 1 || isLoading}
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -211,7 +135,7 @@ export default function InventoryMovementsPage() {
                             size="sm"
                             className="h-8 w-8 p-0 disabled:opacity-30 text-muted-foreground border-border bg-card hover:bg-muted rounded-lg transition-all active:scale-95"
                             disabled={currentPage === totalPages || isLoading}
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -224,7 +148,7 @@ export default function InventoryMovementsPage() {
                 onClose={() => setIsUpdateModalOpen(false)}
                 onConfirm={handleUpdateStatus}
                 movement={selectedMovement}
-                isLoading={isUpdating}
+                isLoading={updateMutation.isPending}
             />
         </div>
     );

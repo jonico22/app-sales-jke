@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { fmtDate } from './components/SalesUtils';
 import { CashClosingHeader } from './components/CashClosingHeader';
 import { CashClosingSummaryStats } from './components/CashClosingSummaryStats';
@@ -16,7 +15,7 @@ export default function CashClosingPage() {
     // ── Logic Hooks ────────────────────────────────────────────────────────
     const { data: detailRes, isLoading } = useCashShiftDetailQuery(shiftId || null);
     const { mutate: closeShift, isPending: isSubmitting } = useCloseCashShiftMutation();
-    
+
     const shift = detailRes?.data;
     const stats = useCashShiftCalculations(shift);
 
@@ -56,7 +55,7 @@ export default function CashClosingPage() {
     const tableSystemCard = stats.sysCard;
     const tableSystemYape = stats.sysYape;
     const tableSystemPlin = stats.sysPlin;
-    
+
     const liveDiffCash = physCash - tableSystemCash;
     const liveDiffCard = physCard - tableSystemCard;
     const liveDiffYape = physYape - tableSystemYape;

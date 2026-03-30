@@ -8,6 +8,20 @@ export interface FilterValues {
   updatedAtTo: Date | null;
 }
 
+interface CategoryQueryParams {
+  page: number;
+  limit: number;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  search?: string;
+  isActive?: boolean;
+  createdBy?: string;
+  createdAtFrom?: string | null;
+  createdAtTo?: string | null;
+  updatedAtFrom?: string | null;
+  updatedAtTo?: string | null;
+}
+
 export function useCategoriesFilters() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -23,19 +37,26 @@ export function useCategoriesFilters() {
     updatedAtTo: null,
   });
 
-  // Debounce search term
+  // Debounce search term and reset page
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      if (searchTerm) setCurrentPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset page when search or status changes
-  useEffect(() => {
+  // Wrapper setters to reset page
+  const handleStatusChange = (status: 'all' | 'active' | 'inactive') => {
+    setStatusFilter(status);
     setCurrentPage(1);
-  }, [debouncedSearchTerm, statusFilter, advancedFilters]);
+  };
+
+  const handleAdvancedFiltersChange = (filters: FilterValues) => {
+    setAdvancedFilters(filters);
+    setCurrentPage(1);
+  };
 
   const formatDate = (date: Date | null) => {
     if (!date) return null;
@@ -43,7 +64,7 @@ export function useCategoriesFilters() {
   };
 
   const queryParams = useMemo(() => {
-    const params: any = {
+    const params: CategoryQueryParams = {
       page: currentPage,
       limit: 10,
       sortBy,
@@ -82,14 +103,14 @@ export function useCategoriesFilters() {
     searchTerm,
     setSearchTerm,
     statusFilter,
-    setStatusFilter,
+    setStatusFilter: handleStatusChange,
     currentPage,
     setCurrentPage,
     sortBy,
     sortOrder,
     handleSort,
     advancedFilters,
-    setAdvancedFilters,
+    setAdvancedFilters: handleAdvancedFiltersChange,
     queryParams,
   };
 }

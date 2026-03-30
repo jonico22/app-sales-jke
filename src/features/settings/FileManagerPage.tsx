@@ -76,7 +76,7 @@ export default function FileManagerPage() {
                 toast.success('Archivo eliminado');
                 await fetchFiles();
             }
-        } catch (error) {
+        } catch {
             toast.error('Error al eliminar');
         }
     };
