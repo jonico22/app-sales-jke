@@ -58,7 +58,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50 lg:col-span-2" />}>
           <SalesPerformanceChart
-            data={salesPerformance}
+            data={salesPerformance as any}
             isLoading={isLoadingSales}
             currencySymbol={currencySymbol}
           />
@@ -76,13 +76,13 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50" />}>
           <TopProductsChart
-            data={topProducts}
+            data={topProducts as any}
             isLoading={isLoadingProducts}
           />
         </Suspense>
         <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50" />}>
           <PaymentMethodsChart
-            data={paymentMethods}
+            data={paymentMethods as any}
             isLoading={isLoadingPayments}
             currencySymbol={currencySymbol}
           />

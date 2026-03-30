@@ -1,5 +1,5 @@
 import { useCartStore, selectTotalItems, selectTotalPrice } from './cart.store';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('cartStore', () => {
     const mockProduct1 = { id: 'p1', name: 'Product 1', price: '10.00' } as any;
@@ -39,7 +39,7 @@ describe('cartStore', () => {
 
     it('should remove an item from the cart', () => {
         useCartStore.setState({
-            items: [{ product: mockProduct1, quantity: 1, subtotal: 10 }]
+            items: [{ product: mockProduct1, quantity: 1, subtotal: 10, originalPrice: 10 }]
         });
 
         useCartStore.getState().removeItem('p1');
@@ -50,7 +50,7 @@ describe('cartStore', () => {
 
     it('should update quantity and subtotal correctly', () => {
         useCartStore.setState({
-            items: [{ product: mockProduct1, quantity: 1, subtotal: 10 }]
+            items: [{ product: mockProduct1, quantity: 1, subtotal: 10, originalPrice: 10 }]
         });
 
         useCartStore.getState().updateQuantity('p1', 5);
@@ -62,7 +62,7 @@ describe('cartStore', () => {
 
     it('should remove item if quantity is set to 0 or less', () => {
         useCartStore.setState({
-            items: [{ product: mockProduct1, quantity: 1, subtotal: 10 }]
+            items: [{ product: mockProduct1, quantity: 1, subtotal: 10, originalPrice: 10 }]
         });
 
         useCartStore.getState().updateQuantity('p1', 0);
@@ -73,7 +73,7 @@ describe('cartStore', () => {
 
     it('should update price and subtotal correctly', () => {
         useCartStore.setState({
-            items: [{ product: mockProduct1, quantity: 2, subtotal: 20 }]
+            items: [{ product: mockProduct1, quantity: 2, subtotal: 20, originalPrice: 10 }]
         });
 
         useCartStore.getState().updatePrice('p1', 15);
@@ -86,8 +86,8 @@ describe('cartStore', () => {
     it('should calculate total items using selector', () => {
         useCartStore.setState({
             items: [
-                { product: mockProduct1, quantity: 2, subtotal: 20 },
-                { product: mockProduct2, quantity: 3, subtotal: 60 }
+                { product: mockProduct1, quantity: 2, subtotal: 20, originalPrice: 10 },
+                { product: mockProduct2, quantity: 3, subtotal: 60, originalPrice: 20 }
             ]
         });
 
@@ -98,8 +98,8 @@ describe('cartStore', () => {
     it('should calculate total price using selector', () => {
         useCartStore.setState({
             items: [
-                { product: mockProduct1, quantity: 2, subtotal: 20 },
-                { product: mockProduct2, quantity: 3, subtotal: 60 }
+                { product: mockProduct1, quantity: 2, subtotal: 20, originalPrice: 10 },
+                { product: mockProduct2, quantity: 3, subtotal: 60, originalPrice: 20 }
             ]
         });
 
@@ -109,7 +109,7 @@ describe('cartStore', () => {
 
     it('should clear cart data', () => {
         useCartStore.setState({
-            items: [{ product: mockProduct1, quantity: 1, subtotal: 10 }],
+            items: [{ product: mockProduct1, quantity: 1, subtotal: 10, originalPrice: 10 }],
             discount: 10,
             orderNotes: 'Notes'
         });

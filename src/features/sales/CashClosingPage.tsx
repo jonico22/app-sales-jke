@@ -48,7 +48,7 @@ export default function CashClosingPage() {
         return null;
     }
 
-    const diffCash = physCash - stats.sysCash - stats.initialAmt; // Note: initialAmt is usually added to Cash
+    // Note: initialAmt is usually added to Cash
     // Wait, let's re-verify the logic from previous version
     // tableSystemCash = openingBalance + incomeCash - expenseCash;
     const tableSystemCash = stats.initialAmt + stats.sysCash - stats.totalExpense;

@@ -28,7 +28,7 @@ vi.mock('@/components/ui/Modal', () => ({
 }));
 
 vi.mock('@/components/ui/tabs', () => ({
-    Tabs: ({ children, value, onValueChange }: any) => (
+    Tabs: ({ children, value }: any) => (
         <div data-testid="mock-tabs" data-current={value}>
             {/* Pass onValueChange to triggers via some prop or just mock it */}
             {children}
