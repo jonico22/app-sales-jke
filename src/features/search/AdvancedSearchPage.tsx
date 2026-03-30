@@ -24,6 +24,8 @@ import { useSearchFilters, type QuickFilter, type SearchFilters } from './hooks/
 import { useSearchCartFlow } from './hooks/useSearchCartFlow';
 import { useSearchProductsInfiniteQuery, useSearchFavoritesQuery, useSearchMetadataQuery, useBestSellersQuery } from './hooks/useSearchQueries';
 import { useToggleFavoriteMutation } from './hooks/useSearchMutations';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
 import { parseBackendError } from '@/utils/error.utils';
 
 export default function AdvancedSearchPage() {
@@ -150,7 +152,12 @@ export default function AdvancedSearchPage() {
         setIsAddClientModalOpen(false);
     };
 
+    const queryClient = useQueryClient();
     const handleRefresh = () => {
+        // Invalidate all related caches to ensure stock and info are fresh globally
+        invalidateProductRelatedCaches(queryClient);
+        
+        // Explicitly refetch current page data if needed (though invalidation should trigger it)
         productQuery.refetch();
         favoritesQuery.refetch();
         setRefreshTrigger(prev => prev + 1);

@@ -6,6 +6,7 @@ export interface CartItem {
     product: Product;
     quantity: number;
     subtotal: number;
+    originalPrice: number;
 }
 
 interface CartState {
@@ -79,7 +80,8 @@ export const useCartStore = create<CartState>()(
                             {
                                 product,
                                 quantity,
-                                subtotal: Number(product.price) * quantity
+                                subtotal: Number(product.price) * quantity,
+                                originalPrice: Number(product.price)
                             }
                         ]
                     };

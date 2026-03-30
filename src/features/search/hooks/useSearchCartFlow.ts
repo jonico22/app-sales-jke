@@ -59,10 +59,12 @@ export function useSearchCartFlow() {
             notes: orderNotes || '',
             orderItems: items.map(item => {
                 const price = Number(item.product.price);
+                const itemDiscount = (item.originalPrice - price) * item.quantity;
                 return {
                     productId: item.product.id,
                     quantity: item.quantity,
                     unitPrice: price,
+                    discount: itemDiscount > 0 ? itemDiscount : 0,
                     total: price * item.quantity
                 };
             })

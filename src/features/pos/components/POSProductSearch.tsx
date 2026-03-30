@@ -19,6 +19,7 @@ export const POSProductSearch = memo(function POSProductSearch({
     onAdvancedSearch,
     selectedProduct,
     onSelectProduct,
+    refreshTrigger,
 }: POSProductSearchProps) {
     const { data: products = [] } = useProductsSelect();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -35,8 +36,11 @@ export const POSProductSearch = memo(function POSProductSearch({
                 (product.code && product.code.toLowerCase().includes(query))
             );
         }
-        return filtered.slice(0, 5); // Limit to 5 results for dropdown
-    }, [searchQuery, products]);
+        
+        // Force calculation on refreshTrigger change to ensure cache updates are visible
+        const _trigger = refreshTrigger;
+        return (_trigger !== undefined ? filtered : filtered).slice(0, 5);
+    }, [searchQuery, products, refreshTrigger]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -55,7 +59,7 @@ export const POSProductSearch = memo(function POSProductSearch({
         if (onSelectProduct) {
             onSelectProduct(product);
         }
-        setSearchQuery(''); // Clear search after selection or keep it? usually clear.
+        setSearchQuery(''); 
         setShowDropdown(false);
     };
 

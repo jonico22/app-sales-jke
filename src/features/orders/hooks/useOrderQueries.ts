@@ -11,14 +11,14 @@ import {
 } from '@/services/order.service';
 import { orderItemService, type OrderItemsResponse } from '@/services/order-item.service';
 import { orderPaymentService, type CreateOrderPaymentRequest, type OrderPaymentResponse } from '@/services/order-payment.service';
-import { searchKeys } from '@/features/search/hooks/useSearchQueries';
-import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
+import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
 import { toast } from 'sonner';
+import type { AxiosError } from 'axios';
 
 export const orderKeys = {
   all: ['orders'] as const,
   lists: () => [...orderKeys.all, 'list'] as const,
-  list: (filters: any) => [...orderKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...orderKeys.lists(), filters] as const,
   details: () => [...orderKeys.all, 'detail'] as const,
   detail: (id: string) => [...orderKeys.details(), id] as const,
   items: (id: string) => [...orderKeys.detail(id), 'items'] as const,
@@ -73,15 +73,14 @@ export function useOrderCreatedByUsersQuery() {
 export function useCreateOrderMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<OrderResponse, Error, CreateOrderRequest>({
+  return useMutation<OrderResponse, AxiosError<{ message?: string }>, CreateOrderRequest>({
     mutationFn: (data) => orderService.create(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      queryClient.invalidateQueries({ queryKey: searchKeys.all });
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      invalidateProductRelatedCaches(queryClient);
       toast.success(response.message || 'Pedido creado exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al crear el pedido';
       toast.error(errorMessage);
     },
@@ -91,16 +90,14 @@ export function useCreateOrderMutation() {
 export function useUpdateOrderMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<OrderResponse, Error, { id: string; data: UpdateOrderRequest }>({
+  return useMutation<OrderResponse, AxiosError<{ message?: string }>, { id: string; data: UpdateOrderRequest }>({
     mutationFn: ({ id, data }) => orderService.update(id, data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      // Also invalidate search/products if the order status changed (likely affects stock)
-      queryClient.invalidateQueries({ queryKey: searchKeys.all });
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      invalidateProductRelatedCaches(queryClient);
       toast.success(response.message || 'Pedido actualizado exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al actualizar el pedido';
       toast.error(errorMessage);
     },
@@ -110,15 +107,14 @@ export function useUpdateOrderMutation() {
 export function useDeleteOrderMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<DeleteOrderResponse, Error, string>({
+  return useMutation<DeleteOrderResponse, AxiosError<{ message?: string }>, string>({
     mutationFn: (id) => orderService.delete(id),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      queryClient.invalidateQueries({ queryKey: searchKeys.all });
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      invalidateProductRelatedCaches(queryClient);
       toast.success(response.message || 'Pedido eliminado exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al eliminar el pedido';
       toast.error(errorMessage);
     },
@@ -128,15 +124,14 @@ export function useDeleteOrderMutation() {
 export function useCreatePaymentMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<OrderPaymentResponse, Error, CreateOrderPaymentRequest>({
+  return useMutation<OrderPaymentResponse, AxiosError<{ message?: string }>, CreateOrderPaymentRequest>({
     mutationFn: (data) => orderPaymentService.create(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      queryClient.invalidateQueries({ queryKey: searchKeys.all });
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      invalidateProductRelatedCaches(queryClient);
       toast.success(response.message || 'Pago registrado exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al registrar el pago';
       toast.error(errorMessage);
     },

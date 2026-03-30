@@ -7,6 +7,7 @@ export interface OrderItem {
     productId: string;
     quantity: number;
     unitPrice: number;
+    discount?: number | string;
     total: number;
     createdAt: string;
     updatedAt: string;

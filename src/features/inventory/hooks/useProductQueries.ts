@@ -91,7 +91,7 @@ export function useBulkUploadProduct() {
 /**
  * Utility to invalidate all caches that depend on product data
  */
-function invalidateProductRelatedCaches(queryClient: QueryClient) {
+export function invalidateProductRelatedCaches(queryClient: QueryClient) {
   // Invalidate product inventory lists
   queryClient.invalidateQueries({ queryKey: productKeys.lists() });
   

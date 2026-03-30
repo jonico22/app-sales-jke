@@ -127,6 +127,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                             <th className="px-6 py-3 text-left">Descripción</th>
                                             <th className="px-4 py-3 text-center">Cant.</th>
                                             <th className="px-4 py-3 text-right">P. Unit</th>
+                                            <th className="px-4 py-3 text-right">Desc.</th>
                                             <th className="px-6 py-3 text-right">Total</th>
                                         </tr>
                                     </thead>
@@ -140,6 +141,9 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                                 <td className="px-4 py-3 text-center text-foreground font-black text-xs">{item.quantity}</td>
                                                 <td className="px-4 py-3 text-right text-muted-foreground font-bold text-[11px]">
                                                     {currencySymbol} {formatCurrency(Number(item.unitPrice))}
+                                                </td>
+                                                <td className="px-4 py-3 text-right text-emerald-600 font-bold text-[11px]">
+                                                    {Number(item.discount) > 0 ? `- ${currencySymbol} ${formatCurrency(Number(item.discount))}` : '-'}
                                                 </td>
                                                 <td className="px-6 py-3 text-right font-black text-foreground text-xs">
                                                     {currencySymbol} {formatCurrency(Number(item.total))}
@@ -164,12 +168,18 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-end pt-3 border-t border-border/40">
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className="text-[8px] font-black text-muted-foreground uppercase opacity-60">Precio Unitario</p>
                                                 <p className="text-[11px] font-bold text-foreground">{currencySymbol} {formatCurrency(Number(item.unitPrice))}</p>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-[8px] font-black text-primary uppercase">Subtotal Item</p>
+                                            {Number(item.discount) > 0 && (
+                                                <div className="flex-1 text-center">
+                                                    <p className="text-[8px] font-black text-emerald-600 uppercase">Descuento</p>
+                                                    <p className="text-[11px] font-bold text-emerald-600">-{currencySymbol} {formatCurrency(Number(item.discount))}</p>
+                                                </div>
+                                            )}
+                                            <div className="text-right flex-1">
+                                                <p className="text-[8px] font-black text-primary uppercase">Subtotal</p>
                                                 <p className="text-xs font-black text-foreground">{currencySymbol} {formatCurrency(Number(item.total))}</p>
                                             </div>
                                         </div>

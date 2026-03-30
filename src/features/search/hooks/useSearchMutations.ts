@@ -3,7 +3,7 @@ import { favoritesService, type ToggleFavoriteResponse, type FavoritesResponse, 
 import { orderService, type CreateOrderRequest, type OrderResponse } from '@/services/order.service';
 import { searchKeys } from './useSearchQueries';
 import { orderKeys } from '@/features/orders/hooks/useOrderQueries';
-import { PRODUCTS_SELECT_QUERY_KEY } from '@/hooks/useProductsSelect';
+import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
 import { toast } from 'sonner';
 import type { AxiosError } from 'axios';
 
@@ -57,8 +57,7 @@ export function useCreateSearchOrderMutation() {
     mutationFn: (data) => orderService.create(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      queryClient.invalidateQueries({ queryKey: searchKeys.all });
-      queryClient.invalidateQueries({ queryKey: PRODUCTS_SELECT_QUERY_KEY });
+      invalidateProductRelatedCaches(queryClient);
       toast.success(response.message || 'Pedido creado exitosamente');
     },
     onError: (error) => {

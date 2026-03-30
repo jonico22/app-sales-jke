@@ -7,6 +7,7 @@ export interface OrderItem {
     productId: string;
     quantity: number;
     unitPrice: number;
+    discount?: number | string;
     total?: number; // Added for display
     product?: {
         name: string;
@@ -83,6 +84,7 @@ export interface CreateOrderItemRequest {
     productId: string;
     quantity: number;
     unitPrice: number; // Changed from unitPrice
+    discount?: number;
     total: number; // Added
 }
 

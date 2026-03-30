@@ -9,6 +9,7 @@ import { useBranchStore } from '@/store/branch.store';
 import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
+import type { AxiosError } from 'axios';
 
 
 interface POSCartPanelProps {
@@ -67,10 +68,12 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
             notes: orderNotes,
             orderItems: items.map(item => {
                 const price = Number(item.product.price);
+                const itemDiscount = (item.originalPrice - price) * item.quantity;
                 return {
                     productId: item.product.id,
                     quantity: item.quantity,
                     unitPrice: price,
+                    discount: itemDiscount > 0 ? itemDiscount : 0,
                     total: price * item.quantity
                 };
             })
@@ -106,7 +109,7 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
                 }
                 setProcessingStatus(null);
             },
-            onError: (error: any) => {
+            onError: (error: AxiosError<{ message?: string }>) => {
                 console.error('Failed to create order', error);
                 const message = parseBackendError(error);
                 setErrorMessage(message);
