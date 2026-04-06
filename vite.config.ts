@@ -9,8 +9,18 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   // Si existe VITE_ASSET_URL, usamos esa base (ideal para Cloudflare Pages + R2)
+  // Si además existe R2_FOLDER, lo incluimos en la base para que coincida con
+  // la ruta donde upload-r2.mjs sube los archivos (ej: prod/assets/...)
   // De lo contrario, usamos '/' para desarrollo local o builds estándar
-  const basePath = env.VITE_ASSET_URL || '/';
+  const assetUrl = env.VITE_ASSET_URL;
+  const r2Folder = env.R2_FOLDER;
+  let basePath = '/';
+  if (assetUrl) {
+    // Asegurar que assetUrl termina con '/'
+    const base = assetUrl.endsWith('/') ? assetUrl : `${assetUrl}/`;
+    // Añadir el subfolder de R2 si existe (ej: 'prod')
+    basePath = r2Folder ? `${base}${r2Folder}/` : base;
+  }
 
   return {
     base: basePath,

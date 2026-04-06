@@ -1,4 +1,8 @@
-# React + TypeScript + Vite
+# 🚀 Sales App - JKE Solutions
+
+[![Guía de Entornos](https://img.shields.io/badge/Documentaci%C3%B3n-Gu%C3%ADa%20de%20Entornos-blue?style=for-the-badge)](./GUIA_ENTORNOS.md)
+
+Este proyecto es la plataforma de ventas de JKE Solutions, construida con React, TypeScript y Vite.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -71,3 +75,9 @@ export default defineConfig([
   },
 ])
 ```
+
+---
+
+## 📖 Documentación Adicional
+
+Para entender cómo funcionan los diferentes modos de la aplicación y el proceso de despliegue, consulta la **[Guía de Entornos](./GUIA_ENTORNOS.md)**.
