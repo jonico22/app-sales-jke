@@ -27,3 +27,15 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Performance Reports
+.lighthouseci/
+stats.html
+imagemin-testing/

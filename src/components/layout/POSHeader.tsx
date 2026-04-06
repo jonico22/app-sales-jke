@@ -24,7 +24,7 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
   useEffect(() => {
     if (branchesData.length > 0 && (branches.length === 0 || branches.length !== branchesData.length)) {
       setBranches(branchesData);
-      
+
       // Also set default branch if none selected
       if (!selectedBranch) {
         selectBranch(branchesData[0]);

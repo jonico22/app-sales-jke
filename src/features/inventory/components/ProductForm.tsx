@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -14,15 +14,20 @@ import {
   Palette,
   ChevronDown
 } from 'lucide-react';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { generateSku } from '@/lib/utils';
-import { productService } from '@/services/product.service';
-import { categoryService, type CategorySelectOption } from '@/services/category.service';
 import { useSocietyStore } from '@/store/society.store';
 import { toast } from 'sonner';
 import { UploadFileModal } from '@/components/shared/UploadFileModal';
 import { FileCategory } from '@/services/file.service';
+import { useCreateProduct } from '../hooks/useProductQueries';
+import { useCategoriesSelectQuery } from '@/features/categories/hooks/useCategoryQueries';
+import { CategoryEditModal } from '../../categories/components/CategoryEditModal';
 
 const productSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -34,50 +39,31 @@ const productSchema = z.object({
   price: z.coerce.number().min(0, { message: "Debe ser mayor o igual a 0" }),
   description: z.string().optional(),
   isActive: z.boolean().default(true),
-  // New Fields
   barcode: z.string().optional(),
   brand: z.string().optional(),
   color: z.string().optional(),
   colorCode: z.string().optional(),
 });
 
-// Separate component for the edit modal integration
-import { CategoryEditModal } from '../../categories/components/CategoryEditModal';
-
 type ProductFormValues = z.output<typeof productSchema>;
 
+interface BaseFileResponse {
+  id?: string;
+  path?: string;
+  downloadUrl?: string;
+}
+
 export default function ProductForm() {
-  const society = useSocietyStore(state => state.society); // Add hook
+  const society = useSocietyStore(state => state.society);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageId, setImageId] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [categories, setCategories] = useState<CategorySelectOption[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  // Fetch categories on mount
-  const fetchCategories = async () => {
-    try {
-      setIsLoadingCategories(true);
-      const response = await categoryService.getForSelect();
-      setCategories(response.data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Error al cargar las categorías');
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
+  const { data: categories = [], isLoading: isLoadingCategories, refetch: refetchCategories } = useCategoriesSelectQuery();
+  const createMutation = useCreateProduct();
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const handleCategorySaved = async () => {
-    await fetchCategories();
-  };
-
-  const { register, handleSubmit, control, setValue, reset, watch, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
+  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm<ProductFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
@@ -97,11 +83,20 @@ export default function ProductForm() {
     }
   });
 
-  const colorCode = watch('colorCode');
+  const colorCode = useWatch({ control, name: 'colorCode' });
+
+  const handleCategorySaved = async () => {
+    await refetchCategories();
+  };
 
   const onSubmit = async (data: ProductFormValues) => {
+    if (!society?.id) {
+        toast.error('No se pudo identificar la sociedad');
+        return;
+    }
+
     try {
-      await productService.create({
+      await createMutation.mutateAsync({
         name: data.name,
         description: data.description || undefined,
         price: data.price,
@@ -112,20 +107,18 @@ export default function ProductForm() {
         isActive: data.isActive,
         code: data.sku,
         imageId: imageId || undefined,
-        // New fields mapping
         barcode: data.barcode || undefined,
         brand: data.brand || undefined,
         color: data.color || undefined,
-        colorCode: data.colorCode || undefined
+        colorCode: data.colorCode || undefined,
       });
-      toast.success('Producto guardado exitosamente');
+      
       reset();
       setPreviewImage(null);
       setImageId(null);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
+      // Error is handled by mutation
       console.error('Error saving product:', error);
-      toast.error(error.response?.data?.message || 'Error al guardar el producto');
     }
   };
 
@@ -134,12 +127,14 @@ export default function ProductForm() {
     setValue('sku', sku, { shouldValidate: true });
   };
 
-  const handleImageUploadSuccess = (data: any) => {
+  const handleImageUploadSuccess = (data: BaseFileResponse) => {
     if (data) {
       if (data.id) setImageId(data.id);
-      if (data.path || data.downloadUrl) setPreviewImage(data.downloadUrl || data.path);
+      if (data.path || data.downloadUrl) setPreviewImage(data.downloadUrl || data.path || null);
     }
   };
+
+  const isSubmitting = createMutation.isPending;
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
@@ -320,7 +315,7 @@ export default function ProductForm() {
                   <Switch
                     id="isActive"
                     checked={value}
-                    onChange={(e) => onChange(e.target.checked)}
+                    onCheckedChange={onChange}
                     {...field}
                   />
                 )}

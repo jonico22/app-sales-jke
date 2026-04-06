@@ -1,11 +1,28 @@
 import path from "path"
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  // Si existe VITE_ASSET_URL, usamos esa base (ideal para Cloudflare Pages + R2)
+  // De lo contrario, usamos '/' para desarrollo local o builds estándar
+  const basePath = env.VITE_ASSET_URL || '/';
+
+  return {
+    base: basePath,
+    plugins: [
+    react(), 
+    tailwindcss(),
+    visualizer({
+      filename: 'stats.html',
+      gzipSize: true,
+      brotliSize: true,
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -31,13 +48,16 @@ export default defineConfig({
           'dates': ['date-fns'],
           // Real-time
           'socket': ['socket.io-client'],
+          // UI Helpers
+          'ui-utils': ['clsx', 'tailwind-merge'],
         },
       },
     },
   },
-  server: {
-    port: 5173,
-    strictPort: false,
-    host: true,
-  },
+    server: {
+      port: 5173,
+      strictPort: false,
+      host: true,
+    },
+  };
 })

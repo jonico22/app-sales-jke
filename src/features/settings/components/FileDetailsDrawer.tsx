@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Download, Trash2, Copy, FileText, FileCode, FileSpreadsheet, Image as ImageIcon, Check } from 'lucide-react';
 import { type FileMetadata } from '@/services/file.service';
 import { useState, useEffect } from 'react';

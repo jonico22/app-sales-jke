@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -13,16 +13,19 @@ import {
   Palette,
   ChevronDown
 } from 'lucide-react';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { SlidePanel } from '@/components/shared/SlidePanel';
 import { generateSku } from '@/lib/utils';
-import { productService, type Product } from '@/services/product.service';
-import { categoryService, type CategorySelectOption } from '@/services/category.service';
 import { useSocietyStore } from '@/store/society.store';
-import { toast } from 'sonner';
 import { UploadFileModal } from '@/components/shared/UploadFileModal';
 import { FileCategory } from '@/services/file.service';
+import { useProduct, useUpdateProduct } from '../hooks/useProductQueries';
+import { useCategoriesSelectQuery } from '@/features/categories/hooks/useCategoryQueries';
 
 const productSchema = z.object({
   name: z.string().min(1, { message: "El nombre es obligatorio" }),
@@ -42,6 +45,12 @@ const productSchema = z.object({
 
 type ProductFormValues = z.output<typeof productSchema>;
 
+interface BaseFileResponse {
+  id?: string;
+  path?: string;
+  downloadUrl?: string;
+}
+
 interface ProductEditPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -55,15 +64,16 @@ export function ProductEditPanel({
   productId,
   onSuccess,
 }: ProductEditPanelProps) {
-  const society = useSocietyStore(state => state.society); // Add hook
+  const society = useSocietyStore(state => state.society);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageId, setImageId] = useState<string | null>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [categories, setCategories] = useState<CategorySelectOption[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false);
 
-  const { register, handleSubmit, control, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
+  const productQuery = useProduct(productId);
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategoriesSelectQuery();
+  const updateMutation = useUpdateProduct();
+
+  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm<ProductFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(productSchema) as any,
     defaultValues: {
@@ -83,94 +93,71 @@ export function ProductEditPanel({
     }
   });
 
-  const colorCode = watch('colorCode');
+  const colorCode = useWatch({ control, name: 'colorCode' });
 
-  // Fetch categories on mount
+  // Reset form when panel opens or data changes
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getForSelect();
-        setCategories(response.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast.error('Error al cargar las categorías');
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch product data when panel opens with a productId
-  useEffect(() => {
-    if (!open || !productId) {
+    if (!open) {
       reset();
-      setPreviewImage(null);
-      setImageId(null);
+      // Use setTimeout to avoid synchronous cascading renders that trigger lint errors
+      setTimeout(() => {
+        setPreviewImage(null);
+        setImageId(null);
+      }, 0);
       return;
     }
 
-    const fetchProduct = async () => {
-      setIsLoadingProduct(true);
-      try {
-        const response = await productService.getById(productId);
-        const product: Product = response.data;
-        reset({
-          name: product.name,
-          categoryId: product.category?.code || '',
-          sku: product.code || '',
-          description: product.description || '',
-          isActive: product.isActive,
-          stock: product.stock,
-          minStock: product.minStock,
-          priceCost: parseFloat(product.priceCost),
-          price: parseFloat(product.price),
-          barcode: product.barcode || '',
-          brand: product.brand || '',
-          color: product.color || '',
-          colorCode: product.colorCode || ''
-        });
+    if (productId && productQuery.data) {
+      const product = productQuery.data;
+      reset({
+        name: product.name,
+        categoryId: product.category?.code || '',
+        sku: product.code || '',
+        description: product.description || '',
+        isActive: product.isActive,
+        stock: product.stock,
+        minStock: product.minStock,
+        priceCost: parseFloat(product.priceCost),
+        price: parseFloat(product.price),
+        barcode: product.barcode || '',
+        brand: product.brand || '',
+        color: product.color || '',
+        colorCode: product.colorCode || ''
+      });
 
-        if (product.image) {
-          setPreviewImage(product.image);
-        }
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        toast.error('Error al cargar el producto');
-        onOpenChange(false);
-      } finally {
-        setIsLoadingProduct(false);
+      if (product.image) {
+        setTimeout(() => setPreviewImage(product.image), 0);
       }
-    };
-
-    fetchProduct();
-  }, [open, productId, reset, onOpenChange]);
+    }
+  }, [open, productId, productQuery.data, reset]);
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!productId) return;
     try {
-      await productService.update(productId, {
-        name: data.name,
-        description: data.description || undefined,
-        price: data.price,
-        priceCost: data.priceCost,
-        stock: data.stock,
-        minStock: data.minStock,
-        categoryId: data.categoryId,
-        isActive: data.isActive,
-        imageId: imageId || undefined,
-        barcode: data.barcode || undefined,
-        brand: data.brand || undefined,
-        color: data.color || undefined,
-        colorCode: data.colorCode || undefined
+      await updateMutation.mutateAsync({
+        id: productId,
+        data: {
+          name: data.name,
+          description: data.description || undefined,
+          price: data.price,
+          priceCost: data.priceCost,
+          stock: data.stock,
+          minStock: data.minStock,
+          categoryId: data.categoryId,
+          isActive: data.isActive,
+          imageId: imageId || undefined,
+          barcode: data.barcode || undefined,
+          brand: data.brand || undefined,
+          color: data.color || undefined,
+          colorCode: data.colorCode || undefined
+        }
       });
-      toast.success('Producto actualizado exitosamente');
+      
       onOpenChange(false);
       onSuccess?.();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
+      // Error is handled by mutation
       console.error('Error updating product:', error);
-      toast.error(error.response?.data?.message || 'Error al actualizar el producto');
     }
   };
 
@@ -179,19 +166,22 @@ export function ProductEditPanel({
     setValue('sku', sku, { shouldValidate: true });
   };
 
-  const handleImageUploadSuccess = (data: any) => {
+  const handleImageUploadSuccess = (data: BaseFileResponse) => {
     if (data) {
       if (data.id) setImageId(data.id);
-      if (data.path || data.downloadUrl) setPreviewImage(data.downloadUrl || data.path);
+      if (data.path || data.downloadUrl) setPreviewImage(data.downloadUrl || data.path || null);
     }
   };
+
+  const isSubmitting = updateMutation.isPending;
+  const isLoading = productQuery.isLoading && !!productId;
 
   const footer = (
     <>
       <Button
         type="submit"
         form="product-edit-form"
-        disabled={isSubmitting || isLoadingProduct}
+        disabled={isSubmitting || isLoading}
         className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 uppercase tracking-wider"
       >
         <Save className="mr-2 h-4 w-4" /> {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
@@ -213,7 +203,7 @@ export function ProductEditPanel({
       title="Editar Producto"
       footer={footer}
     >
-      {isLoadingProduct ? (
+      {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -370,7 +360,7 @@ export function ProductEditPanel({
                     <Switch
                       id="edit-isActive"
                       checked={value}
-                      onChange={(e) => onChange(e.target.checked)}
+                      onCheckedChange={onChange}
                       {...field}
                     />
                   )}

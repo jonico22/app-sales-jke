@@ -6,7 +6,7 @@ export interface CheckboxProps
     extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
-const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+const Checkbox = React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(
     ({ className, ...props }, ref) => {
         return (
             <div className="relative flex items-center">
@@ -19,11 +19,11 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                     ref={ref}
                     {...props}
                 />
-                <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-3 w-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
             </div>
         )
     }
-)
+))
 Checkbox.displayName = "Checkbox"
 
 export { Checkbox }

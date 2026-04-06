@@ -1,48 +1,73 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
-import { Button, Input, Label, Card, Checkbox } from '@/components/ui';
+import { isAxiosError } from 'axios';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { authService } from '@/services/auth.service';
 import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useQueryClient } from '@tanstack/react-query';
 import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
 
+import { AuthHeader } from './components/AuthHeader';
+import { PasswordInput } from './components/PasswordInput';
+import { AuthTurnstile } from './components/AuthTurnstile';
+import { parseZodErrors } from './auth.utils';
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
-
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
-  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
-  });
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [defaultEmail, setDefaultEmail] = useState('');
 
   // Load saved email on mount
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
-      setValue('email', savedEmail);
+      setDefaultEmail(savedEmail);
       setRememberMe(true);
     }
-  }, [setValue]);
+  }, []);
 
   const queryClient = useQueryClient();
 
-  const onSubmit = async (data: LoginSchema) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    
+    // Validate with Zod
+    const result = loginSchema.safeParse(data);
+    
+    if (!result.success) {
+      setErrors(parseZodErrors(result));
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const response = await authService.login({ email: data.email, password: data.password });
+      const loginData = result.data;
+      const response = await authService.login({ 
+        email: loginData.email, 
+        password: loginData.password,
+        turnstileToken 
+      });
       
       // Remove existing permissions to ensure a clean state and show skeleton loader
       queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
@@ -50,7 +75,6 @@ export default function LoginPage() {
       login(response.data); // Update global store
 
       // Only load society data if password change is not mandatory
-      // The backend likely blocks normal endpoints until the password is changed
       if (!response.data.user.mustChangePassword) {
         try {
           await societyService.getCurrent();
@@ -61,7 +85,7 @@ export default function LoginPage() {
 
       // Handle Remember Me
       if (rememberMe) {
-        localStorage.setItem('rememberedEmail', data.email);
+        localStorage.setItem('rememberedEmail', loginData.email);
       } else {
         localStorage.removeItem('rememberedEmail');
       }
@@ -81,93 +105,84 @@ export default function LoginPage() {
           navigate('/');
         }
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Por favor verifica tus credenciales.';
+    } catch (error: unknown) {
+      console.error('Error in login:', error);
+      let errorMessage = 'Ocurrió un error inesperado. Por favor, intenta de nuevo.';
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="p-8 shadow-xl dark:shadow-none">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold font-headings text-foreground">Iniciar Sesión</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          Ingresa tus credenciales para acceder a tu cuenta
-        </p>
-      </div>
+    <Card className="p-8 shadow-2xl dark:shadow-none border-none">
+      <AuthHeader 
+        title="Iniciar Sesión" 
+        description="Ingresa tus credenciales para acceder a tu cuenta" 
+      />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={onSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">Correo Electrónico</Label>
+          <Label htmlFor="email" className="font-medium">Correo Electrónico</Label>
           <Input
             id="email"
+            name="email"
             type="email"
+            defaultValue={defaultEmail}
             placeholder="usuario@jkesolutions.com"
-            {...register('email')}
-            className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+            className={`h-12 text-base transition-all ${errors.email ? "border-destructive focus-visible:ring-destructive" : "focus:border-primary focus:ring-4 focus:ring-primary/10"}`}
           />
           {errors.email && (
-            <span className="text-xs text-destructive font-medium">{errors.email.message}</span>
+            <span className="text-xs text-destructive font-semibold animate-in fade-in slide-in-from-top-1 duration-200">{errors.email}</span>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              {...register('password')}
-              className={errors.password ? "border-destructive focus-visible:ring-destructive pr-10" : "pr-10"}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <span className="text-xs text-destructive font-medium">{errors.password.message}</span>
-          )}
-        </div>
+        <PasswordInput
+          id="password"
+          name="password"
+          label="Contraseña"
+          className="h-12 text-base"
+          error={errors.password ? { message: errors.password } : undefined}
+        />
 
-
-
-
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 py-1">
           <Checkbox
             id="remember"
+            name="remember"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
           />
-          <label
+          <Label
             htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-muted-foreground select-none"
           >
             Recordar correo
-          </label>
+          </Label>
         </div>
 
-        <Button type="submit" variant="primary" className="w-full text-white font-bold" disabled={isSubmitting}>
+        <AuthTurnstile onTokenChange={(token) => setTurnstileToken(token)} />
+
+        <Button 
+          type="submit" 
+          variant="primary" 
+          className="w-full text-white font-bold h-12 text-base shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all active:scale-[0.99]" 
+          disabled={isSubmitting || !turnstileToken}
+        >
           {isSubmitting ? 'Ingresando...' : 'Ingresar'}
         </Button>
 
         <div className="text-center pt-2">
-          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-medium">
+          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-bold transition-colors">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
       </form>
-    </Card >
+    </Card>
   );
 }
+

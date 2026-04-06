@@ -1,5 +1,5 @@
 import { useRouteError } from 'react-router-dom';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export function GlobalErrorBoundary() {

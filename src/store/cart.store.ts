@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product } from '@/services/product.service';
+import type { ClientSelectOption } from '@/services/client.service';
 
 export interface CartItem {
     product: Product;
     quantity: number;
     subtotal: number;
+    originalPrice: number;
 }
 
 interface CartState {
@@ -28,6 +30,8 @@ interface CartState {
     setBranchId: (id: string) => void;
     currencyId: string;
     setCurrencyId: (id: string) => void;
+    selectedClient: ClientSelectOption | null;
+    setSelectedClient: (client: ClientSelectOption | null) => void;
 
     // Computed (handled via getters/selectors in component or derived state if needed, 
     // but simple getters here for convenience if we wanted, though Zustand recommends selectors)
@@ -51,46 +55,52 @@ export const useCartStore = create<CartState>()(
             setBranchId: (id: string) => set({ branchId: id }),
             currencyId: '1', // Default
             setCurrencyId: (id: string) => set({ currencyId: id }),
+            selectedClient: {
+                id: 'public',
+                name: 'Público General',
+                documentNumber: '00000000'
+            },
+            setSelectedClient: (client: ClientSelectOption | null) => set({ selectedClient: client }),
 
 
             addItem: (product: Product, quantity = 1) => {
-                const currentItems = get().items;
-                const existingItemIndex = currentItems.findIndex(
-                    (item) => item.product.id === product.id
-                );
+                set((state) => {
+                    const existingItemIndex = state.items.findIndex(
+                        (item) => item.product.id === product.id
+                    );
 
-                if (existingItemIndex > -1) {
-                    // Update existing
-                    const newItems = [...currentItems];
-                    const existingItem = newItems[existingItemIndex];
-                    const newQuantity = existingItem.quantity + quantity;
+                    if (existingItemIndex > -1) {
+                        const newItems = [...state.items];
+                        const existingItem = newItems[existingItemIndex];
+                        const newQuantity = existingItem.quantity + quantity;
 
-                    newItems[existingItemIndex] = {
-                        ...existingItem,
-                        quantity: newQuantity,
-                        subtotal: Number(product.price) * newQuantity
-                    };
+                        newItems[existingItemIndex] = {
+                            ...existingItem,
+                            quantity: newQuantity,
+                            subtotal: Number(product.price) * newQuantity
+                        };
 
-                    set({ items: newItems });
-                } else {
-                    // Add new
-                    set({
+                        return { items: newItems };
+                    }
+
+                    return {
                         items: [
-                            ...currentItems,
+                            ...state.items,
                             {
                                 product,
                                 quantity,
-                                subtotal: Number(product.price) * quantity
+                                subtotal: Number(product.price) * quantity,
+                                originalPrice: Number(product.price)
                             }
                         ]
-                    });
-                }
+                    };
+                });
             },
 
             removeItem: (productId: string) => {
-                set({
-                    items: get().items.filter((item) => item.product.id !== productId)
-                });
+                set((state) => ({
+                    items: state.items.filter((item) => item.product.id !== productId)
+                }));
             },
 
             updateQuantity: (productId: string, quantity: number) => {
@@ -99,56 +109,60 @@ export const useCartStore = create<CartState>()(
                     return;
                 }
 
-                const currentItems = get().items;
-                const itemIndex = currentItems.findIndex(
-                    (item) => item.product.id === productId
-                );
+                set((state) => {
+                    const itemIndex = state.items.findIndex(
+                        (item) => item.product.id === productId
+                    );
 
-                if (itemIndex > -1) {
-                    const newItems = [...currentItems];
-                    const item = newItems[itemIndex];
+                    if (itemIndex > -1) {
+                        const newItems = [...state.items];
+                        const item = newItems[itemIndex];
 
-                    newItems[itemIndex] = {
-                        ...item,
-                        quantity,
-                        subtotal: Number(item.product.price) * quantity
-                    };
+                        newItems[itemIndex] = {
+                            ...item,
+                            quantity,
+                            subtotal: Number(item.product.price) * quantity
+                        };
 
-                    set({ items: newItems });
-                }
+                        return { items: newItems };
+                    }
+                    return state;
+                });
             },
 
             updatePrice: (productId: string, price: number) => {
-                const currentItems = get().items;
-                const itemIndex = currentItems.findIndex(
-                    (item) => item.product.id === productId
-                );
+                set((state) => {
+                    const itemIndex = state.items.findIndex(
+                        (item) => item.product.id === productId
+                    );
 
-                if (itemIndex > -1) {
-                    const newItems = [...currentItems];
-                    const item = newItems[itemIndex];
+                    if (itemIndex > -1) {
+                        const newItems = [...state.items];
+                        const item = newItems[itemIndex];
+                        const updatedProduct = { ...item.product, price: String(price) };
 
-                    // Update the product price in the cart item context (not the global product definition, effectively override)
-                    // We need to be careful if we are mutating the product object directly or if we should store an 'overridePrice'
-                    // For simplicity in this cart structure, we'll assume we can update the product price within the cart item or add a price field to CartItem.
-                    // However, CartItem has `product: Product`. 
-                    // Let's shallow copy the product to avoid affecting the global reference if shared (though strictly it shouldn't be mutable globally).
-                    // Or better, strictly speaking, CartItem should probably have `price` separate from `product.price` if overrides are allowed.
-                    // But to minimize refactor, I will update the product object copy in the item.
+                        newItems[itemIndex] = {
+                            ...item,
+                            product: updatedProduct,
+                            subtotal: price * item.quantity
+                        };
 
-                    const updatedProduct = { ...item.product, price: String(price) };
-
-                    newItems[itemIndex] = {
-                        ...item,
-                        product: updatedProduct,
-                        subtotal: price * item.quantity
-                    };
-
-                    set({ items: newItems });
-                }
+                        return { items: newItems };
+                    }
+                    return state;
+                });
             },
 
-            clearCart: () => set({ items: [], discount: 0, orderNotes: '' }),
+            clearCart: () => set({ 
+                items: [], 
+                discount: 0, 
+                orderNotes: '',
+                selectedClient: {
+                    id: 'public',
+                    name: 'Público General',
+                    documentNumber: '00000000'
+                }
+            }),
         }),
         {
             name: 'pos-cart-storage', // unique name

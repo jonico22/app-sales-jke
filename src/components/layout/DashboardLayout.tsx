@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardHeader from './DashboardHeader';
@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
 import { useAuthStore } from '@/store/auth.store';
 
-export default function DashboardLayout() {
+export const DashboardLayout = memo(() => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isSessionExpired, handleRedirect } = useSessionValidator();
@@ -20,7 +20,10 @@ export default function DashboardLayout() {
   const isTablet = useMediaQuery('(min-width: 768px) and (max-width: 1024px)');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+  const toggleCollapse = useCallback(() => setIsCollapsed(prev => !prev), []);
+  const openSidebar = useCallback(() => setIsSidebarOpen(true), []);
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
 
   // Auto-collapse on tablet screens
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function DashboardLayout() {
       {!mustChangePassword && (
         <DashboardSidebar
           isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
+          onClose={closeSidebar}
           isCollapsed={isCollapsed}
           toggleCollapse={toggleCollapse}
         />
@@ -66,7 +69,7 @@ export default function DashboardLayout() {
 
         {/* Header - Passing toggler and hideMenu */}
         <DashboardHeader
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onMenuClick={toggleSidebar}
           hideMenu={mustChangePassword}
         />
 
@@ -81,8 +84,11 @@ export default function DashboardLayout() {
 
       {/* Mobile Navigation Footer - Hidden if password change required */}
       {!mustChangePassword && (
-        <MobileNavFooter onMenuClick={() => setIsSidebarOpen(true)} />
+        <MobileNavFooter onMenuClick={openSidebar} />
       )}
     </div>
   );
-}
+});
+
+DashboardLayout.displayName = 'DashboardLayout';
+export default DashboardLayout;

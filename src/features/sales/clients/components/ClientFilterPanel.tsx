@@ -5,17 +5,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button, Label } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { DatePickerInput } from '@/components/shared/DatePickerInput';
-import { TagInput, type TagOption } from '@/components/shared/TagInput';
-import { clientService } from '@/services/client.service';
-import { toast } from 'sonner';
-
-interface ClientFilterPanelProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onApplyFilters: (filters: FilterValues) => void;
-}
+import { TagInput } from '@/components/shared/TagInput';
+import { useClientCreatedByUsersQuery } from '../hooks/useClientQueries';
 
 export interface FilterValues {
   createdBy?: string;
@@ -25,10 +19,18 @@ export interface FilterValues {
   updatedAtTo: Date | null;
 }
 
+interface ClientFilterPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onApplyFilters: (filters: FilterValues) => void;
+  currentFilters?: FilterValues;
+}
+
 export function ClientFilterPanel({
   open,
   onOpenChange,
   onApplyFilters,
+  currentFilters
 }: ClientFilterPanelProps) {
   const [filters, setFilters] = useState<FilterValues>({
     createdBy: undefined,
@@ -37,28 +39,20 @@ export function ClientFilterPanel({
     updatedAtFrom: null,
     updatedAtTo: null,
   });
-  const [availableUsers, setAvailableUsers] = useState<TagOption[]>([]);
 
+  const { data: usersData } = useClientCreatedByUsersQuery();
+
+  const availableUsers = (usersData?.data || []).map(user => ({
+    id: user.id,
+    name: user.name
+  }));
+
+  // Sync with current filters when opened
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await clientService.getCreatedByUsers();
-        if (response.success && response.data) {
-          setAvailableUsers(response.data.map(user => ({
-            id: user.id,
-            name: user.name
-          })));
-        }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        toast.error('Error al cargar lista de usuarios');
-      }
-    };
-
-    if (open) {
-      fetchUsers();
+    if (open && currentFilters) {
+      setFilters(currentFilters);
     }
-  }, [open]);
+  }, [open, currentFilters]);
 
   const handleClear = () => {
     const emptyFilters = {
@@ -70,6 +64,11 @@ export function ClientFilterPanel({
     };
     setFilters(emptyFilters);
     onApplyFilters(emptyFilters);
+    onOpenChange(false);
+  };
+
+  const handleApply = () => {
+    onApplyFilters(filters);
     onOpenChange(false);
   };
 
@@ -141,18 +140,15 @@ export function ClientFilterPanel({
         {/* Footer Actions */}
         <div className="p-5 border-t border-border bg-muted/20 space-y-3">
           <Button
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 transition-all active:scale-95"
-            onClick={() => {
-              onApplyFilters(filters);
-              onOpenChange(false);
-            }}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 transition-all active:scale-95"
+            onClick={handleApply}
           >
             ✓ Aplicar Filtros
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-muted-foreground hover:text-foreground hover:bg-muted font-bold text-[10px] uppercase tracking-wider h-9"
+            className="w-full text-muted-foreground hover:text-foreground hover:bg-muted font-bold text-[10px] uppercase tracking-wider h-9 rounded-xl"
             onClick={handleClear}
           >
             Limpiar Filtros

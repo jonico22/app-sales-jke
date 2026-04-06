@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PenLine, Wand2, Save } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
-import { categoryService } from '@/services/category.service';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import type { Category } from '@/services/category.service';
+import { useCreateCategoryMutation, useUpdateCategoryMutation } from '../hooks/useCategoryQueries';
 
 const categorySchema = z.object({
   code: z.string().min(1, { message: "El código es requerido" }),
@@ -24,8 +27,10 @@ interface CategoryFormProps {
 
 export default function CategoryForm({ category, onSuccess }: CategoryFormProps) {
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const createMutation = useCreateCategoryMutation();
+  const updateMutation = useUpdateCategoryMutation();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch, reset } = useForm<CategoryFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, control, reset } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       code: category?.code || '',
@@ -35,11 +40,11 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
     },
   });
 
-  const isActive = watch('isActive');
+  const isActive = useWatch({ control, name: 'isActive' });
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const generateCode = () => {
     setIsGeneratingCode(true);
-    // Generate a random code (you can customize this logic)
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 5).toUpperCase();
     const generatedCode = `CAT-${timestamp}-${random}`;
@@ -48,32 +53,24 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
   };
 
   const onSubmit = async (data: CategoryFormData) => {
-    try {
-      if (category) {
-        // Update existing category
-        await categoryService.update(category.id, {
-          code: data.code,
-          name: data.name,
-          description: data.description || undefined,
-          isActive: data.isActive,
-        });
-        toast.success('Categoría actualizada exitosamente');
-      } else {
-        // Create new category
-        await categoryService.create({
-          code: data.code,
-          name: data.name,
-          description: data.description || undefined,
-          isActive: data.isActive,
-        });
-        toast.success('Categoría creada exitosamente');
-        reset();
-      }
-      onSuccess?.();
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.message || 'Error al guardar la categoría';
-      toast.error(errorMessage);
+    const payload = {
+      code: data.code,
+      name: data.name,
+      description: data.description || undefined,
+      isActive: data.isActive,
+    };
+
+    if (category) {
+      updateMutation.mutate({ id: category.id, data: payload }, {
+        onSuccess: () => onSuccess?.(),
+      });
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          reset();
+          onSuccess?.();
+        },
+      });
     }
   };
 
@@ -153,7 +150,7 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
           <div className="flex items-center gap-3">
             <Switch
               checked={isActive}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('isActive', e.target.checked)}
+              onCheckedChange={(checked) => setValue('isActive', checked)}
             />
             <span className="text-xs font-semibold text-foreground">Activo</span>
           </div>
@@ -180,4 +177,3 @@ export default function CategoryForm({ category, onSuccess }: CategoryFormProps)
     </div>
   );
 }
-

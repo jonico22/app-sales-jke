@@ -1,9 +1,10 @@
-import { Modal } from '@/components/ui';
-import { Button } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { userService } from '@/services/user.service';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 
 interface DeleteUserModalProps {
     isOpen: boolean;
@@ -23,9 +24,12 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
             await userService.deleteBusinessUser(userId);
             toast.success('Usuario eliminado correctamente');
             onSuccess();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error deleting user:', error);
-            const message = error.response?.data?.message || 'Error al eliminar el usuario';
+            let message = 'Error al eliminar el usuario';
+            if (isAxiosError(error) && error.response?.data?.message) {
+                message = error.response.data.message;
+            }
             toast.error(message);
         } finally {
             setIsDeleting(false);

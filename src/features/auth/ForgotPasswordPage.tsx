@@ -1,72 +1,96 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { ArrowLeft, MailCheck } from 'lucide-react';
-import { Button, Input, Label, Card } from '@/components/ui';
-import { Modal } from '@/components/ui/Modal';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { authService } from '@/services/auth.service';
+import { isAxiosError } from 'axios';
+import { AuthHeader } from './components/AuthHeader';
+import { AuthTurnstile } from './components/AuthTurnstile';
+import { SuccessModal } from './components/SuccessModal';
+import { parseZodErrors } from './auth.utils';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo válido" }),
 });
 
-type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
-
 export default function ForgotPasswordPage() {
-  const navigate = useNavigate();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotPasswordSchema>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
 
-  const onSubmit = async (data: ForgotPasswordSchema) => {
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    
+    // Validate with Zod
+    const result = forgotPasswordSchema.safeParse(data);
+    
+    if (!result.success) {
+      setErrors(parseZodErrors(result));
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await authService.forgotPassword({ email: data.email });
-      setSubmittedEmail(data.email);
+      const email = result.data.email;
+      await authService.forgotPassword({ email, turnstileToken });
+      setSubmittedEmail(email);
       setShowSuccessModal(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud.';
+    } catch (error: unknown) {
+      console.error('Error in forgot password:', error);
+      let errorMessage = 'Error al procesar la solicitud.';
+      
+      if (isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <>
-      <Card className="p-10 shadow-xl dark:shadow-none text-center">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold font-headings text-foreground mb-3">Recuperar Contraseña</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed px-4">
-            Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.
-          </p>
-        </div>
+      <Card className="p-10 shadow-2xl dark:shadow-none border-none text-center">
+        <AuthHeader 
+          title="Recuperar Contraseña" 
+          description="Ingresa tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña."
+        />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
+        <form onSubmit={onSubmit} className="space-y-6 text-left">
           <div className="space-y-2">
-            <Label htmlFor="email" className="font-medium text-foreground">Correo Electrónico</Label>
+            <Label htmlFor="email" className="font-semibold text-foreground">Correo Electrónico</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="nombre@empresa.com"
-              {...register('email')}
-              className={errors.email ? "border-destructive focus-visible:ring-destructive h-12" : "h-12"}
+              className={`h-12 text-base transition-all ${errors.email ? "border-destructive focus-visible:ring-destructive" : "focus:border-primary focus:ring-4 focus:ring-primary/10"}`}
             />
             {errors.email && (
-              <span className="text-xs text-destructive font-medium">{errors.email.message}</span>
+              <span className="text-xs text-destructive font-semibold animate-in fade-in slide-in-from-top-1 duration-200">{errors.email}</span>
             )}
           </div>
+
+          <AuthTurnstile onTokenChange={(token) => setTurnstileToken(token)} />
 
           <Button
             type="submit"
             variant="primary"
-            className="w-full text-white font-bold h-12 text-base shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-            disabled={isSubmitting}
+            className="w-full text-white font-bold h-12 text-base shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all active:scale-[0.99]"
+            disabled={isSubmitting || !turnstileToken}
           >
             {isSubmitting ? 'Enviando...' : 'Enviar Instrucciones'}
           </Button>
@@ -74,7 +98,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center pt-4">
             <Link
               to="/auth/login"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium gap-2"
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-bold gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Volver al inicio de sesión
@@ -83,35 +107,12 @@ export default function ForgotPasswordPage() {
         </form>
       </Card>
 
-      {/* Success Modal */}
-      <Modal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        title="Correo Enviado"
-        size="sm"
-      >
-        <div className="flex flex-col items-center text-center space-y-5">
-          <div className="p-4 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500">
-            <MailCheck className="w-10 h-10" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold text-foreground">¡Revisa tu bandeja de entrada!</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Hemos enviado las instrucciones para restablecer tu contraseña a{' '}
-              <span className="font-semibold text-foreground">{submittedEmail}</span>.
-              Si no lo encuentras, revisa tu carpeta de spam.
-            </p>
-          </div>
-          <Button
-            variant="primary"
-            className="w-full text-white font-bold h-11 text-sm shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-            onClick={() => navigate('/auth/login')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio de sesión
-          </Button>
-        </div>
-      </Modal>
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        email={submittedEmail} 
+      />
     </>
   );
 }
+

@@ -13,10 +13,14 @@ export const useSocietyStore = create<SocietyState>()(
     persist(
         (set) => ({
             society: null,
+            // Only update the store data — do NOT wipe the entire query cache.
+            // Clearing the cache here causes the permissions query to reset,
+            // which makes the sidebar flash skeleton loaders on every page that
+            // calls societyService.getCurrent().
             setSociety: (society) => {
-                queryClient.clear();
                 set({ society });
             },
+            // On logout we DO want to nuke the whole cache.
             clearSociety: () => {
                 queryClient.clear();
                 set({ society: null });

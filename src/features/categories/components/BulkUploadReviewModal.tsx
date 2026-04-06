@@ -1,9 +1,14 @@
 import { X, FileText, CheckCircle2, AlertCircle, CloudUpload, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 
 export interface AnalyzedRow {
     row: number;
-    data: any;
+    data: {
+        NombreCategoria?: string;
+        CodigoCategoria?: string;
+        Descripcion?: string;
+        [key: string]: unknown;
+    };
     isValid: boolean;
     errors: string[];
 }
@@ -114,7 +119,7 @@ export function BulkUploadReviewModal({
                                         <td className={`px-3 py-2 font-medium ${!row.data.NombreCategoria ? 'text-destructive italic' : 'text-foreground'}`}>
                                             {row.data.NombreCategoria || '[Vacío]'}
                                         </td>
-                                        <td className="px-3 py-2 text-muted-foreground/80 truncate max-w-xs" title={row.data.Descripcion}>
+                                        <td className="px-3 py-2 text-muted-foreground/80 truncate max-w-xs" title={(row.data.Descripcion || '').toString()}>
                                             {row.data.Descripcion || '—'}
                                         </td>
                                         <td className="px-3 py-2">

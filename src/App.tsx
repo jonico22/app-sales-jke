@@ -2,24 +2,24 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { lazy, Suspense, useState } from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 
-// Layout & route guards (eagerly loaded — always needed)
-import DashboardLayout from './components/layout/DashboardLayout';
-import POSLayout from './components/layout/POSLayout';
-import AuthLayout from './features/auth/AuthLayout';
+// Layout & route guards (eAGERLY loaded — needed immediately for routing)
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import PublicRoute from './components/layout/PublicRoute';
-import { Toaster } from '@/components/ui';
-import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
-import { useAuthStore } from '@/store/auth.store';
-import { useSocketConnection } from '@/hooks/useSocketConnection';
-import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
-import { DatePickerStyles } from './components/shared/DatePickerInput';
-import { ThemeProvider } from '@/components/ThemeProvider';
 
-// Auth pages — small, keep eager so login is instant
+// App layouts — move to lazy because they contain sidebar, nav logic and icons
+const DashboardLayout = lazy(() => lazyRetry(() => import('./components/layout/DashboardLayout')));
+const POSLayout = lazy(() => lazyRetry(() => import('./components/layout/POSLayout')));
+
+// Auth Layout & Pages — small, keep eager so login is instant
+import AuthLayout from './features/auth/AuthLayout';
 import LoginPage from './features/auth/LoginPage';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage';
 import ResetPasswordPage from './features/auth/ResetPasswordPage';
+import { Toaster } from '@/components/ui/sonner';
+import { SessionExpiredModal } from '@/components/shared/SessionExpiredModal';
+import { useAuthStore } from '@/store/auth.store';
+
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 // App pages — lazy loaded (only downloaded when the user visits them)
 // Wrapped with lazyRetry to handle stale chunk errors after production deploys
@@ -96,7 +96,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <DashboardLayout />,
+        element: <Suspense fallback={<PageLoader />}><DashboardLayout /></Suspense>,
         children: [
           {
             path: '/',
@@ -194,7 +194,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'pos',
-        element: <POSLayout />,
+        element: <Suspense fallback={<PageLoader />}><POSLayout /></Suspense>,
         children: [
           {
             path: '',
@@ -228,11 +228,9 @@ function App() {
   const { isAuthenticated, logout } = useAuthStore();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
 
-  // Initialize socket connection manager
-  useSocketConnection();
+  // Note: Socket and Realtime hooks have been moved to ProtectedRoute 
+  // to avoid bloating the initial bundle for public users.
 
-  // Handle real-time updates
-  useRealtimeUpdates();
 
 
 
@@ -258,7 +256,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      <DatePickerStyles />
       <RouterProvider router={router} />
       <Toaster />
       <SessionExpiredModal

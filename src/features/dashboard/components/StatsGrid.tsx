@@ -3,7 +3,6 @@ import {
   Monitor,
   AlertTriangle,
   Sparkles,
-  Loader2,
   ArrowUp,
   ArrowDown,
   ShoppingCart,
@@ -55,7 +54,7 @@ function StatCard({
           <div className="relative w-full">
             {loading ? (
               <div className="h-10 flex items-center">
-                <Loader2 className={`h-6 w-6 animate-spin ${isPrimary ? 'text-white/50' : 'text-muted-foreground/30'}`} />
+                <div className={`h-8 w-32 animate-pulse rounded-lg ${isPrimary ? 'bg-blue-400/50' : 'bg-muted'}`} />
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -86,18 +85,24 @@ function StatCard({
 
         {/* Icon */}
         <div className={`shrink-0 rounded-full flex items-center justify-center h-[40px] w-[40px] shadow-sm ${defaultIconBg}`}>
-          {icon}
+          {loading ? (
+            <div className={`h-full w-full rounded-full animate-pulse ${isPrimary ? 'bg-blue-400/50' : 'bg-muted'}`} />
+          ) : (
+            icon
+          )}
         </div>
       </div>
 
       {/* Subtitle at the bottom */}
-      {subtitle && (
-        <div className="mt-auto pt-4 relative z-10">
+      <div className="mt-auto pt-4 relative z-10 h-6">
+        {loading ? (
+          <div className={`h-3 w-24 animate-pulse rounded ${isPrimary ? 'bg-blue-400/50' : 'bg-muted'}`} />
+        ) : subtitle ? (
           <p className={`text-[12px] font-medium ${isPrimary ? 'text-blue-200' : 'text-muted-foreground'}`}>
-            {loading ? 'Cargando...' : subtitle}
+            {subtitle}
           </p>
-        </div>
-      )}
+        ) : null}
+      </div>
     </div>
   );
 }

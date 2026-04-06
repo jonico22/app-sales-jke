@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Wallet, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 import { CashOpeningModal } from './CashOpeningModal';
 
 interface CashOpeningBannerProps {

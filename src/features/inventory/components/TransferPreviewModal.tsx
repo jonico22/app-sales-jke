@@ -1,12 +1,10 @@
 import { Truck, Info, Trash2, ArrowRight } from 'lucide-react';
-import { 
-    Button, 
-    Badge, 
-    Input,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog } from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
 import { type Product } from '@/services/product.service';
 
 interface SelectedItem {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Calendar, User, ShoppingBag, FileText, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,15 +17,7 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
     const [items, setItems] = useState<OrderItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (isOpen && order) {
-            fetchItems();
-        } else {
-            setItems([]);
-        }
-    }, [isOpen, order]);
-
-    const fetchItems = async () => {
+    const fetchItems = useCallback(async () => {
         if (!order) return;
         setLoading(true);
         try {
@@ -40,7 +32,15 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
         } finally {
             setLoading(false);
         }
-    };
+    }, [order]);
+
+    useEffect(() => {
+        if (isOpen && order) {
+            fetchItems();
+        } else {
+            setItems([]);
+        }
+    }, [isOpen, order, fetchItems]);
 
     if (!isOpen || !order) return null;
 
@@ -109,6 +109,7 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
                                     <th className="px-5 py-4 text-left font-black text-xs text-muted-foreground uppercase tracking-widest">Producto</th>
                                     <th className="px-5 py-4 text-center font-black text-xs text-muted-foreground uppercase tracking-widest">Cant.</th>
                                     <th className="px-5 py-4 text-right font-black text-xs text-muted-foreground uppercase tracking-widest">P. Unit</th>
+                                    <th className="px-5 py-4 text-right font-black text-xs text-muted-foreground uppercase tracking-widest">Desc.</th>
                                     <th className="px-5 py-4 text-right font-black text-xs text-muted-foreground uppercase tracking-widest">Total</th>
                                 </tr>
                             </thead>
@@ -132,6 +133,9 @@ export function SalesHistoryResultModal({ isOpen, onClose, order }: SalesHistory
                                             <td className="px-5 py-4 text-center text-foreground font-medium">{item.quantity}</td>
                                             <td className="px-5 py-4 text-right text-muted-foreground">
                                                 {currencySymbol} {Number(item.unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className="px-5 py-4 text-right text-emerald-600 font-bold">
+                                                {Number(item.discount) > 0 ? `- ${currencySymbol} ${Number(item.discount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}
                                             </td>
                                             <td className="px-5 py-4 text-right font-black text-foreground">
                                                 {currencySymbol} {Number(item.total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

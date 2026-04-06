@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RotateCw } from 'lucide-react';
@@ -10,11 +10,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import type { Category } from '@/services/category.service';
-import { categoryService } from '@/services/category.service';
-import { toast } from 'sonner';
 import { generateSku } from '@/lib/utils';
+import { useCreateCategoryMutation, useUpdateCategoryMutation } from '../hooks/useCategoryQueries';
 
 // Schema Definition
 const editCategorySchema = z.object({
@@ -30,7 +33,7 @@ interface CategoryEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category: Category | null;
-  onSave: (data: EditCategoryFormValues) => void;
+  onSave: () => void;
 }
 
 export function CategoryEditModal({
@@ -39,13 +42,16 @@ export function CategoryEditModal({
   category,
   onSave,
 }: CategoryEditModalProps) {
+  const createMutation = useCreateCategoryMutation();
+  const updateMutation = useUpdateCategoryMutation();
+
   const {
     register,
     handleSubmit,
     reset,
     setValue,
-    watch,
-    formState: { errors, isSubmitting },
+    control,
+    formState: { errors },
   } = useForm<EditCategoryFormValues>({
     resolver: zodResolver(editCategorySchema),
     defaultValues: {
@@ -56,7 +62,8 @@ export function CategoryEditModal({
     },
   });
 
-  const isActive = watch('active');
+  const isActive = useWatch({ control, name: 'active' });
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   // Populate form when category changes
   useEffect(() => {
@@ -67,44 +74,44 @@ export function CategoryEditModal({
         description: category.description || '',
         active: category.isActive,
       });
+    } else {
+      reset({
+        code: '',
+        name: '',
+        description: '',
+        active: true,
+      });
     }
   }, [category, reset]);
 
-
   const handleGenerateCode = () => {
-    // Generate a simple code like CAT-123456
     const code = `CAT-${generateSku().split('-')[2] || Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     setValue('code', code, { shouldValidate: true });
   };
 
   const onSubmit = async (data: EditCategoryFormValues) => {
-    try {
-      if (category) {
-        // Edit mode
-        await categoryService.update(category.id, {
-          code: data.code,
-          name: data.name,
-          description: data.description || undefined,
-          isActive: data.active,
-        });
-        toast.success('Categoría actualizada exitosamente');
-      } else {
-        // Create mode
-        await categoryService.create({
-          code: data.code,
-          name: data.name,
-          description: data.description || undefined,
-          isActive: data.active,
-        });
-        toast.success('Categoría creada exitosamente');
-      }
+    const payload = {
+      code: data.code,
+      name: data.name,
+      description: data.description || undefined,
+      isActive: data.active,
+    };
 
-      onSave(data);
-      onOpenChange(false);
-      reset(); // Reset form after successful submission
-    } catch (error: any) {
-      console.error('Error saving category:', error);
-      toast.error(error.response?.data?.message || 'Error al guardar la categoría');
+    if (category) {
+      updateMutation.mutate({ id: category.id, data: payload }, {
+        onSuccess: () => {
+          onSave();
+          onOpenChange(false);
+        },
+      });
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          onSave();
+          onOpenChange(false);
+          reset();
+        },
+      });
     }
   };
 
@@ -189,7 +196,7 @@ export function CategoryEditModal({
               <div className="flex items-center gap-3">
                 <Switch
                   checked={isActive}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('active', e.target.checked)}
+                  onCheckedChange={(checked) => setValue('active', checked)}
                 />
                 <span className="text-xs font-semibold text-foreground">
                   {isActive ? 'Activo' : 'Inactivo'}

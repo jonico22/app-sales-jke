@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
 import {
     Sheet,
     SheetContent,
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
-import { Button, Label, Input, Switch } from '@/components/ui';
-import { categoryService, type CategorySelectOption } from '@/services/category.service';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { ChevronDown } from 'lucide-react';
+import { useCategoriesSelectQuery } from '@/features/categories/hooks/useCategoryQueries';
+import { useState } from 'react';
 
 interface ProductFilterPanelProps {
     open: boolean;
@@ -28,8 +30,6 @@ export interface FilterValues {
     stockStatus?: 'out';
 }
 
-
-
 export function ProductFilterPanel({
     open,
     onOpenChange,
@@ -46,30 +46,11 @@ export function ProductFilterPanel({
         lowStock: false,
         stockStatus: undefined,
     });
-    const [categories, setCategories] = useState<CategorySelectOption[]>([]);
-    const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                setIsLoadingCategories(true);
-                const response = await categoryService.getForSelect();
-                if (response.success && response.data) {
-                    setCategories(response.data);
-                }
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-                toast.error('Error al cargar lista de categorías');
-            } finally {
-                setIsLoadingCategories(false);
-            }
-        };
+    const { data: categories = [], isLoading: isLoadingCategories } = useCategoriesSelectQuery();
 
-        if (open) {
-            fetchCategories();
-        }
-    }, [open]);
-
+    // Reset local state if needed (though usually we want to keep it while the panel session is active)
+    
     const handleClear = () => {
         const emptyFilters: FilterValues = {
             categoryCode: undefined,
@@ -171,8 +152,8 @@ export function ProductFilterPanel({
                             <Switch
                                 id="lowStock"
                                 checked={filters.lowStock}
-                                onChange={(checked) => {
-                                    setFilters({ ...filters, lowStock: checked.target.checked });
+                                onCheckedChange={(checked) => {
+                                    setFilters({ ...filters, lowStock: checked });
                                 }}
                             />
                         </div>
@@ -182,8 +163,8 @@ export function ProductFilterPanel({
                             <Switch
                                 id="stockStatus"
                                 checked={filters.stockStatus === 'out'}
-                                onChange={(checked) => {
-                                    setFilters({ ...filters, stockStatus: checked.target.checked ? 'out' : undefined });
+                                onCheckedChange={(checked) => {
+                                    setFilters({ ...filters, stockStatus: checked ? 'out' : undefined });
                                 }}
                             />
                         </div>

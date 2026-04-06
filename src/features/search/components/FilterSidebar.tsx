@@ -2,18 +2,13 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 import type { CategorySelectOption } from '@/services/category.service';
 import type { Brand } from '@/services/product.service';
+import type { SearchFilters } from '../hooks/useSearchFilters';
 
 interface FilterSidebarProps {
-    filters: {
-        categoryId: string;
-        brand: string;
-        priceFrom: number;
-        priceTo: number;
-        stockStatus: 'all' | 'available' | 'low' | 'out';
-    };
+    filters: SearchFilters;
     categories: CategorySelectOption[];
     brands: Brand[];
-    onFilterChange: (key: string, value: any) => void;
+    onFilterChange: (key: keyof SearchFilters, value: unknown) => void;
     onClearFilters: () => void;
 }
 

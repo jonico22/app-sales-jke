@@ -1,8 +1,17 @@
+import React from 'react';
 import { Heart, Package, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/services/product.service';
 import { useSocietyStore } from '@/store/society.store';
 import { useCartStore } from '@/store/cart.store';
+
+// Rule js-cache-function-results (Priority 2)
+const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+const formatPrice = (price: string) => CURRENCY_FORMATTER.format(parseFloat(price));
 
 interface ProductCardProps {
     product: Product;
@@ -11,12 +20,18 @@ interface ProductCardProps {
     onAddToCart: (product: Product) => void;
 }
 
-export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<ProductCardProps, 'onAddToCart'>) {
+export const ProductCard = React.memo(({ product, isFavorite, onToggleFavorite }: Omit<ProductCardProps, 'onAddToCart'>) => {
     const society = useSocietyStore(state => state.society);
-    const { items, addItem, updateQuantity, removeItem } = useCartStore();
-
-    const cartItem = items.find(item => item.product.id === product.id);
-    const quantity = cartItem?.quantity || 0;
+    
+    // Rule rerender-defer-reads (Priority 1)
+    // Use granular selector to avoid re-rendering one product card when another changes
+    const quantity = useCartStore(state => 
+        state.items.find(item => item.product.id === product.id)?.quantity || 0
+    );
+    
+    const addItem = useCartStore(state => state.addItem);
+    const updateQuantity = useCartStore(state => state.updateQuantity);
+    const removeItem = useCartStore(state => state.removeItem);
 
     const handleIncrement = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -104,7 +119,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
                 <div className="flex flex-col items-end shrink-0 mr-4">
                     <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">PRECIO</div>
                     <div className="text-xl font-bold text-[#4096d8]">
-                        {society?.mainCurrency?.symbol || 'S/'} {parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {society?.mainCurrency?.symbol || 'S/'} {formatPrice(product.price)}
                     </div>
                 </div>
 
@@ -173,7 +188,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
 
                         <div className="flex flex-col gap-1.5">
                             <span className="text-[17px] font-black text-[#4096d8] leading-none">
-                                {society?.mainCurrency?.symbol || 'S/'} {parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {society?.mainCurrency?.symbol || 'S/'} {formatPrice(product.price)}
                             </span>
                             <div>
                                 <span className={cn(
@@ -247,4 +262,4 @@ export function ProductCard({ product, isFavorite, onToggleFavorite }: Omit<Prod
             </div>
         </>
     );
-}
+});

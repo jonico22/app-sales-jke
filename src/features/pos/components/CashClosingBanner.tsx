@@ -1,5 +1,5 @@
 import { LogOut, Info } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/button';
 
 interface CashClosingBannerProps {
     branchName?: string;

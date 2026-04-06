@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, User, Settings, Moon, Sun, Monitor, Megaphone, HelpCircle, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
@@ -10,7 +10,7 @@ interface DashboardHeaderProps {
   hideMenu?: boolean;
 }
 
-export default function DashboardHeader({ onMenuClick, hideMenu = false }: DashboardHeaderProps) {
+export const DashboardHeader = memo(({ onMenuClick, hideMenu = false }: DashboardHeaderProps) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
@@ -32,9 +32,13 @@ export default function DashboardHeader({ onMenuClick, hideMenu = false }: Dashb
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
-  };
+  }, [logout]);
+
+  const toggleDropdown = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   // Fallback values if user isn't loaded yet or missing properties
   const userName = user?.name || user?.email?.split('@')[0] || 'Usuario';
@@ -106,7 +110,7 @@ export default function DashboardHeader({ onMenuClick, hideMenu = false }: Dashb
         <div className="relative" ref={dropdownRef}>
           <div
             className="flex items-center gap-3 cursor-pointer group p-1.5 rounded-lg hover:bg-muted transition-colors"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={toggleDropdown}
           >
             <div className="text-right hidden md:block">
               <p className="text-sm font-semibold text-foreground leading-none">{userName}</p>
@@ -208,4 +212,7 @@ export default function DashboardHeader({ onMenuClick, hideMenu = false }: Dashb
       </div>
     </header>
   );
-}
+});
+
+DashboardHeader.displayName = 'DashboardHeader';
+export default DashboardHeader;

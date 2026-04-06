@@ -1,24 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { CategorySelectOption } from '@/services/category.service';
 import type { Brand } from '@/services/product.service';
+import type { SearchFilters } from '../hooks/useSearchFilters';
 
 interface AdvancedFilterModalProps {
     isOpen: boolean;
     onClose: () => void;
-    filters: {
-        categoryId: string;
-        brand: string;
-        priceFrom: number;
-        priceTo: number;
-        stockStatus: 'all' | 'available' | 'low' | 'out';
-    };
+    filters: SearchFilters;
     categories: CategorySelectOption[];
     brands: Brand[];
-    onApply: (filters: any) => void;
+    onApply: (filters: SearchFilters) => void;
     onReset: () => void;
 }
 
@@ -31,18 +26,11 @@ export function AdvancedFilterModal({
     onApply,
     onReset
 }: AdvancedFilterModalProps) {
-    const [localFilters, setLocalFilters] = useState(initialFilters);
+    const [localFilters, setLocalFilters] = useState<SearchFilters>(initialFilters);
     const [categorySearch, setCategorySearch] = useState('');
 
-    // Sync with initial filters when opened
-    useEffect(() => {
-        if (isOpen) {
-            setLocalFilters(initialFilters);
-        }
-    }, [isOpen, initialFilters]);
-
-    const handleFilterChange = (key: string, value: any) => {
-        setLocalFilters((prev: any) => ({ ...prev, [key]: value }));
+    const handleFilterChange = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+        setLocalFilters(prev => ({ ...prev, [key]: value }));
     };
 
     const handleApply = () => {
@@ -51,9 +39,10 @@ export function AdvancedFilterModal({
     };
 
     const handleReset = () => {
-        const resetFilters = {
+        const resetFilters: SearchFilters = {
             categoryId: '',
             brand: '',
+            color: '',
             priceFrom: 0,
             priceTo: 5000,
             stockStatus: 'all' as const
@@ -165,7 +154,7 @@ export function AdvancedFilterModal({
                         ].map(status => (
                             <button
                                 key={status.id}
-                                onClick={() => handleFilterChange('stockStatus', status.id)}
+                                onClick={() => handleFilterChange('stockStatus', status.id as SearchFilters['stockStatus'])}
                                 className={cn(
                                     "flex-1 py-2 text-[12px] font-bold rounded-lg transition-all",
                                     localFilters.stockStatus === status.id 

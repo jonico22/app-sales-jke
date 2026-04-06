@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Wallet, Calendar, Clock, Rocket } from 'lucide-react';
-import { Modal, Button, Label } from '@/components/ui';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useBranchStore } from '@/store/branch.store';
 import { useAuthStore } from '@/store/auth.store';
 import { useSocietyStore } from '@/store/society.store';
-import { cashShiftService } from '@/services/cash-shift.service';
+import { useOpenCashShiftMutation } from '@/features/sales/hooks/useCashShiftQueries';
 import { toast } from 'sonner';
 
 interface CashOpeningModalProps {
@@ -20,7 +22,8 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
 
     const [branchId, setBranchId] = useState(selectedBranch?.id || '');
     const [initialAmount, setInitialAmount] = useState<string>('0.00');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { mutate: openShift, isPending: isSubmitting } = useOpenCashShiftMutation();
 
     // Sync with selected branch when modal opens
     useEffect(() => {
@@ -29,7 +32,7 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
         }
     }, [isOpen, selectedBranch]);
 
-    const handleOpenShift = async () => {
+    const handleOpenShift = () => {
         if (!user?.id || !society?.id || !branchId) {
             toast.error('Faltan datos para abrir la caja');
             return;
@@ -41,29 +44,17 @@ export function CashOpeningModal({ isOpen, onClose, onSuccess }: CashOpeningModa
             return;
         }
 
-        setIsSubmitting(true);
-        try {
-            const response = await cashShiftService.open({
-                userId: user.id,
-                societyId: society.id,
-                branchId: branchId,
-                initialAmount: amount
-            });
-
-            if (response.success) {
-                toast.success('Caja abierta exitosamente');
+        openShift({
+            userId: user.id,
+            societyId: society.id,
+            branchId: branchId,
+            initialAmount: amount
+        }, {
+            onSuccess: () => {
                 onSuccess?.();
                 onClose();
-            } else {
-                toast.error(response.message || 'Error al abrir la caja');
             }
-        } catch (error: any) {
-            console.error('[CashOpeningModal] Error opening shift:', error);
-            const message = error.response?.data?.message || 'Error al conectar con el servidor';
-            toast.error(message);
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
     const today = new Date();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { 
     PlusCircle, 
     MinusCircle, 
@@ -26,11 +26,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
-import { branchOfficeProductService } from '@/services/branch-office-product.service';
-import { kardexService } from '@/services/kardex.service';
 import type { Product } from '@/services/product.service';
 import { cn } from '@/lib/utils';
+import { useBranchOfficesSelect } from '../hooks/useBranchOfficeQueries';
+import { useBranchOfficeProductSearch, useManualAdjustment } from '../hooks/useKardexQueries';
 
 interface ManualAdjustmentModalProps {
     open: boolean;
@@ -44,82 +43,42 @@ export function ManualAdjustmentModal({
     onSuccess 
 }: ManualAdjustmentModalProps) {
     const isDesktop = useMediaQuery("(min-width: 1024px)");
-    const [branches, setBranches] = useState<BranchOfficeSelectOption[]>([]);
+    
+    // Data fetching
+    const { data: branches = [] } = useBranchOfficesSelect();
     
     // Form state
     const [selectedBranchId, setSelectedBranchId] = useState<string>('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isSearchingProducts, setIsSearchingProducts] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [adjustmentType, setAdjustmentType] = useState<'ADJUSTMENT_ADD' | 'ADJUSTMENT_SUB'>('ADJUSTMENT_ADD');
     const [quantity, setQuantity] = useState<string>('');
     const [unitCost, setUnitCost] = useState<string>('');
     const [notes, setNotes] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Reset form when modal opens/closes
-    useEffect(() => {
-        if (open) {
-            fetchBranches();
-        } else {
-            resetForm();
-        }
-    }, [open]);
+    // Product search query
+    const { data: searchResults = { data: [] }, isLoading: isSearchingProducts } = useBranchOfficeProductSearch(selectedBranchId, searchTerm);
+    const products = searchResults.data;
 
-    // Search products when branch or search term changes
-    useEffect(() => {
-        if (selectedBranchId && searchTerm.length >= 2) {
-            const timer = setTimeout(() => {
-                searchProducts();
-            }, 500);
-            return () => clearTimeout(timer);
-        } else {
-            setProducts([]);
-        }
-    }, [selectedBranchId, searchTerm]);
+    // Mutation
+    const adjustmentMutation = useManualAdjustment();
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setSelectedBranchId('');
         setSearchTerm('');
-        setProducts([]);
         setSelectedProduct(null);
         setAdjustmentType('ADJUSTMENT_ADD');
         setQuantity('');
         setUnitCost('');
         setNotes('');
-    };
+    }, []);
 
-    const fetchBranches = async () => {
-        try {
-            const response = await branchOfficeService.getForSelect();
-            if (response.success) {
-                setBranches(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-            toast.error('Error al cargar sucursales');
-        } finally {
+    const handleOpenChange = useCallback((newOpen: boolean) => {
+        if (!newOpen) {
+            resetForm();
         }
-    };
-
-    const searchProducts = async () => {
-        setIsSearchingProducts(true);
-        try {
-            const response = await branchOfficeProductService.getForSelect({
-                branchOfficeId: selectedBranchId,
-                search: searchTerm,
-                limit: 5
-            });
-            if (response.success) {
-                setProducts(response.data.data);
-            }
-        } catch (error) {
-            console.error('Error searching products:', error);
-        } finally {
-            setIsSearchingProducts(false);
-        }
-    };
+        onOpenChange(newOpen);
+    }, [onOpenChange, resetForm]);
 
     const handleSubmit = async () => {
         if (!selectedProduct || !selectedBranchId || !quantity || !unitCost) {
@@ -127,9 +86,8 @@ export function ManualAdjustmentModal({
             return;
         }
 
-        setIsSubmitting(true);
         try {
-            const response = await kardexService.createAdjustment({
+            await adjustmentMutation.mutateAsync({
                 productId: selectedProduct.id,
                 branchOfficeId: selectedBranchId,
                 type: adjustmentType,
@@ -138,18 +96,15 @@ export function ManualAdjustmentModal({
                 notes: notes || undefined
             });
 
-            if (response.success) {
-                toast.success('Ajuste de stock realizado correctamente');
-                onSuccess();
-                onOpenChange(false);
-            }
+            onSuccess();
+            onOpenChange(false);
         } catch (error) {
+            // Error is handled by mutation
             console.error('Error creating adjustment:', error);
-            toast.error('Error al realizar el ajuste de stock');
-        } finally {
-            setIsSubmitting(false);
         }
     };
+
+    const isSubmitting = adjustmentMutation.isPending;
 
     const renderContent = () => (
         <div className="flex flex-col h-full bg-background">
@@ -219,7 +174,7 @@ export function ManualAdjustmentModal({
                                 <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
                             )}
                             
-                            {products.length > 0 && (
+                            {products && products.length > 0 && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-2xl z-50 p-1.5 space-y-0.5">
                                     {products.map(product => (
                                         <button
@@ -345,7 +300,7 @@ export function ManualAdjustmentModal({
 
     if (isDesktop) {
         return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl bg-background">
                     <DialogHeader className="p-5 pb-3">
                         <div className="flex items-center justify-between">
@@ -364,7 +319,7 @@ export function ManualAdjustmentModal({
     }
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
+        <Sheet open={open} onOpenChange={handleOpenChange}>
             <SheetContent side="bottom" className="h-[92vh] p-0 rounded-t-[32px] overflow-hidden bg-background border-none">
                 {/* Handle Bar */}
                 <div className="flex justify-center pt-3 pb-1">

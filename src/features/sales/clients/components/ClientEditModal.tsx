@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useQueryClient } from '@tanstack/react-query';
-import { CLIENTS_QUERY_KEY } from '@/hooks/useClients';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -11,12 +9,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button, Input, Label, Textarea, Switch } from '@/components/ui';
-import { ChevronDown, Save, User as UserIcon, Building2 } from 'lucide-react';
-import { clientService, type Client } from '@/services/client.service';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { ChevronDown, Save, User as UserIcon, Building2, RefreshCw } from 'lucide-react';
+import { type Client } from '@/services/client.service';
 import { useSocietyStore } from '@/store/society.store';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useCreateClientMutation, useUpdateClientMutation } from '../hooks/useClientQueries';
 
 // Schema Definition
 const clientSchema = z.object({
@@ -95,7 +97,7 @@ interface ClientEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   client: Client | null;
-  onSave: () => void;
+  onSave?: () => void;
   onSuccess?: (client: Client) => void;
 }
 
@@ -106,8 +108,13 @@ export function ClientEditModal({
   onSave,
   onSuccess,
 }: ClientEditModalProps) {
-  const queryClient = useQueryClient();
   const society = useSocietyStore(state => state.society);
+
+  // ── Logic Hooks ────────────────────────────────────────────────────────
+  const createClient = useCreateClientMutation();
+  const updateClient = useUpdateClientMutation();
+
+  const isSubmitting = createClient.isPending || updateClient.isPending;
 
   const {
     register,
@@ -115,7 +122,7 @@ export function ClientEditModal({
     reset,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema) as any,
     defaultValues: {
@@ -138,7 +145,7 @@ export function ClientEditModal({
 
   // Populate form when client changes
   useEffect(() => {
-    if (client) {
+    if (client && open) {
       reset({
         typeBP: (client.typeBP as any) || 'PERSON',
         firstName: client.firstName || '',
@@ -152,7 +159,7 @@ export function ClientEditModal({
         societyId: client.societyId || society?.id || '',
         isActive: client.isActive,
       });
-    } else {
+    } else if (open) {
       reset({
         typeBP: 'PERSON',
         firstName: '',
@@ -167,39 +174,35 @@ export function ClientEditModal({
         isActive: true,
       });
     }
-  }, [client, reset, open]);
+  }, [client, reset, open, society?.id]);
 
-  const onSubmit = async (data: ClientFormValues) => {
-    try {
-      const payload = {
-        ...data,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        address: data.address || undefined,
-        // Validation of conditional fields
-        firstName: data.typeBP === 'PERSON' ? data.firstName : undefined,
-        lastName: data.typeBP === 'PERSON' ? data.lastName : undefined,
-        companyName: data.typeBP === 'LEGAL_ENTITY' ? data.companyName : undefined,
-      };
+  const onSubmit = (data: ClientFormValues) => {
+    const payload = {
+      ...data,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      address: data.address || undefined,
+      firstName: data.typeBP === 'PERSON' ? data.firstName : undefined,
+      lastName: data.typeBP === 'PERSON' ? data.lastName : undefined,
+      companyName: data.typeBP === 'LEGAL_ENTITY' ? data.companyName : undefined,
+    };
 
-      if (client) {
-        const response = await clientService.update(client.id, payload);
-        toast.success('Cliente actualizado exitosamente');
-        onSuccess?.(response.data);
-      } else {
-        const response = await clientService.create(payload as any);
-        toast.success('Cliente creado exitosamente');
-        onSuccess?.(response.data);
-      }
-
-      // Invalidate clients select cache to ensure POS and other selects are updated
-      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
- 
-      onSave();
-      onOpenChange(false);
-    } catch (error: any) {
-      console.error('Error saving client:', error);
-      toast.error(error.response?.data?.message || 'Error al guardar el cliente');
+    if (client) {
+      updateClient.mutate({ id: client.id, data: payload }, {
+        onSuccess: (res) => {
+          onSuccess?.(res.data);
+          onSave?.();
+          onOpenChange(false);
+        }
+      });
+    } else {
+      createClient.mutate(payload as any, {
+        onSuccess: (res) => {
+          onSuccess?.(res.data);
+          onSave?.();
+          onOpenChange(false);
+        }
+      });
     }
   };
 
@@ -217,7 +220,6 @@ export function ClientEditModal({
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="space-y-4">
-              {/* BP Type Selector */}
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cliente</Label>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-xl border border-border">
@@ -245,14 +247,13 @@ export function ClientEditModal({
               </div>
  
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Document Type */}
                 <div className="space-y-2">
                   <Label htmlFor="documentType" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo Documento</Label>
                   <div className="relative">
                     <select
                       id="documentType"
                       {...register('documentType')}
-                      className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all h-10"
+                      className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all"
                     >
                       <option value="DNI">DNI</option>
                       <option value="RUC">RUC</option>
@@ -265,7 +266,6 @@ export function ClientEditModal({
                   </div>
                 </div>
  
-                {/* Document Number */}
                 <div className="space-y-2">
                   <Label htmlFor="documentNumber" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Número Documento</Label>
                   <Input
@@ -277,7 +277,6 @@ export function ClientEditModal({
                   {errors.documentNumber && <span className="text-[10px] font-medium text-destructive">{errors.documentNumber.message}</span>}
                 </div>
  
-                {/* Conditional Name Fields */}
                 {typeBP === 'PERSON' ? (
                   <>
                     <div className="space-y-2">
@@ -311,7 +310,6 @@ export function ClientEditModal({
                   </div>
                 )}
  
-                {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     Correo Electrónico <span className="text-muted-foreground/50 font-normal normal-case">(Opcional)</span>
@@ -326,7 +324,6 @@ export function ClientEditModal({
                   {errors.email && <span className="text-[10px] font-medium text-destructive">{errors.email.message}</span>}
                 </div>
  
-                {/* Phone */}
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Teléfono / Celular</Label>
                   <Input
@@ -337,7 +334,6 @@ export function ClientEditModal({
                   />
                 </div>
  
-                {/* Address */}
                 <div className="md:col-span-2 space-y-2">
                   <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dirección</Label>
                   <Textarea
@@ -349,7 +345,6 @@ export function ClientEditModal({
                 </div>
               </div>
  
-              {/* Status */}
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div>
                   <Label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Estado del Cliente</Label>
@@ -358,7 +353,7 @@ export function ClientEditModal({
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={isActive}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('isActive', e.target.checked)}
+                    onCheckedChange={(checked) => setValue('isActive', checked)}
                   />
                   <span className="text-xs font-semibold text-foreground uppercase tracking-tighter">
                     {isActive ? 'Activo' : 'Inactivo'}
@@ -373,16 +368,16 @@ export function ClientEditModal({
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-muted-foreground hover:text-foreground font-bold text-[10px] uppercase tracking-wider h-10 px-6"
+              className="text-muted-foreground hover:text-foreground font-bold text-[10px] uppercase tracking-wider h-10 px-6 rounded-xl"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-10 px-8 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-10 px-8 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2 rounded-xl"
             >
-              <Save className="h-4 w-4" />
+              {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {isSubmitting ? 'Guardando...' : (client ? 'Guardar Cambios' : 'Crear Cliente')}
             </Button>
           </DialogFooter>
