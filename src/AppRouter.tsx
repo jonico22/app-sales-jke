@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import './styles/app.css';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import { GlobalErrorBoundary } from '@/components/shared/GlobalErrorBoundary';
 import { lazyRetry } from '@/utils/lazyRetry';
