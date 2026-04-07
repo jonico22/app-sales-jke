@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import { Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import 'react-datepicker/dist/react-datepicker.css';
+import './datepicker.css';
 
 export interface DatePickerInputProps {
   /** The selected date value */
