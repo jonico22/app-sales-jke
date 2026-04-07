@@ -1,0 +1,10 @@
+@import "tailwindcss" source(none);
+@import "./theme.css";
+
+@source "../App.tsx";
+@source "../AppRouter.tsx";
+@source "../components";
+@source "../features";
+@source "../hooks";
+@source "../lib";
+@source "../utils";

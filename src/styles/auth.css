@@ -1,0 +1,15 @@
+@import "tailwindcss" source(none);
+@import "./theme.css";
+
+@source "../App.tsx";
+@source "../main.tsx";
+@source "../features/auth";
+@source "../components/ThemeProvider.tsx";
+@source "../components/ui/button.tsx";
+@source "../components/ui/card.tsx";
+@source "../components/ui/checkbox.tsx";
+@source "../components/ui/input.tsx";
+@source "../components/ui/label.tsx";
+@source "../components/ui/Modal.tsx";
+@source "../components/ui/sonner.tsx";
+@source "../components/shared/SessionExpiredModal.tsx";
