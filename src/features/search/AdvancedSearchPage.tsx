@@ -65,6 +65,7 @@ export default function AdvancedSearchPage() {
         totalPrice,
         isCreatingOrder,
         orderError,
+        resetOrderError,
         handleCreateOrder,
         clearCart,
         clearCurrentOrder
@@ -298,7 +299,7 @@ export default function AdvancedSearchPage() {
 
             <POSAlertModal
                 isOpen={!!orderError}
-                onClose={() => clearCurrentOrder()}
+                onClose={resetOrderError}
                 title="Error al Generar Pedido"
                 message={orderError ? parseBackendError(orderError) : ''}
                 type="error"

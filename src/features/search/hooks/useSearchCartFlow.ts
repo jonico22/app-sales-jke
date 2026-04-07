@@ -98,6 +98,7 @@ export function useSearchCartFlow() {
         totalPrice,
         isCreatingOrder: createOrder.isPending,
         orderError: createOrder.error,
+        resetOrderError: createOrder.reset,
 
         // Handlers
         handleCreateOrder,

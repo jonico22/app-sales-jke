@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { MailCheck, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/Modal';
@@ -10,8 +9,6 @@ interface SuccessModalProps {
 }
 
 export function SuccessModal({ isOpen, onClose, email }: SuccessModalProps) {
-  const navigate = useNavigate();
-
   return (
     <Modal
       isOpen={isOpen}
@@ -34,7 +31,7 @@ export function SuccessModal({ isOpen, onClose, email }: SuccessModalProps) {
         <Button
           variant="primary"
           className="w-full text-white font-bold h-11 text-sm shadow-lg shadow-sky-500/20 hover:scale-[1.02] transition-transform"
-          onClick={() => navigate('/auth/login')}
+          onClick={() => window.location.assign('/auth/login')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver al inicio de sesión

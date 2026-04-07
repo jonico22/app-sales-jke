@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,19 +11,28 @@ import { AuthTurnstile } from './components/AuthTurnstile';
 import { PasswordStrengthMeter } from './components/PasswordStrengthMeter';
 import { parseZodErrors } from './auth.utils';
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
-    .regex(/[0-9]/, { message: "Debe incluir al menos un número" })
-    .regex(/[^a-zA-Z0-9]/, { message: "Debe incluir al menos un símbolo especial" }),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
-});
+async function validateResetPassword(data: Record<string, FormDataEntryValue>) {
+  const { z } = await import('zod');
+  const resetPasswordSchema = z.object({
+    password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
+      .regex(/[0-9]/, { message: "Debe incluir al menos un número" })
+      .regex(/[^a-zA-Z0-9]/, { message: "Debe incluir al menos un símbolo especial" }),
+    confirmPassword: z.string()
+  }).refine((values) => values.password === values.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+  const result = resetPasswordSchema.safeParse(data);
+
+  if (!result.success) {
+    return { success: false as const, errors: parseZodErrors(result) };
+  }
+
+  return { success: true as const, data: result.data };
+}
 
 export default function ResetPasswordPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const searchParams = new URLSearchParams(window.location.search);
   const token = searchParams.get('token');
 
   const [turnstileToken, setTurnstileToken] = useState<string>('');
@@ -46,11 +53,10 @@ export default function ResetPasswordPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
     
-    // Validate with Zod
-    const result = resetPasswordSchema.safeParse(data);
+    const result = await validateResetPassword(data);
     
     if (!result.success) {
-      setErrors(parseZodErrors(result));
+      setErrors(result.errors);
       setIsSubmitting(false);
       return;
     }
@@ -58,7 +64,7 @@ export default function ResetPasswordPage() {
     try {
       await authService.resetPassword({ token, newPassword: result.data.password, turnstileToken });
       toast.success('¡Contraseña actualizada correctamente!');
-      navigate('/auth/login');
+      window.location.assign('/auth/login');
     } catch (error: unknown) {
       console.error('Error in reset password:', error);
       let errorMessage = 'Error al restablecer la contraseña.';
@@ -117,17 +123,16 @@ export default function ResetPasswordPage() {
         </Button>
 
         <div className="text-center pt-2">
-          <Link
-            to="/auth/login"
+          <a
+            href="/auth/login"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-bold gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver al inicio de sesión
-          </Link>
+          </a>
         </div>
 
       </form>
     </Card>
   );
 }
-

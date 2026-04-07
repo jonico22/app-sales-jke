@@ -76,11 +76,11 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                 </button>
                 <div className="flex gap-2">
                     <button className="flex items-center justify-center h-10 w-10 sm:w-auto sm:px-4 bg-card border border-border text-foreground rounded-xl hover:bg-muted transition-colors shadow-sm">
-                        <Printer size={18} />
+                        <Printer size={16} />
                         <span className="hidden sm:inline sm:ml-2 font-bold text-xs uppercase tracking-wider">Imprimir</span>
                     </button>
                     <button className="flex items-center justify-center h-10 w-10 sm:w-auto sm:px-4 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-600/20">
-                        <ShoppingBag size={18} />
+                        <ShoppingBag size={16} />
                         <span className="hidden sm:inline sm:ml-2 font-bold text-xs uppercase tracking-wider">WhatsApp</span>
                     </button>
                 </div>
@@ -91,13 +91,13 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                 {/* Order Status Banner */}
                 <div className="bg-muted/30 border-b border-border px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3 sm:gap-4 font-black">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 shrink-0">
-                            <FileText size={24} className="sm:w-7 sm:h-7" />
+                        <div className="h-11 w-11 sm:h-12 sm:w-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 shrink-0">
+                            <FileText size={22} className="sm:w-6 sm:h-6" />
                         </div>
                         <div className="min-w-0">
                             <h1 className="text-lg sm:text-xl font-black text-foreground uppercase tracking-tight truncate">Venta #{order.orderCode}</h1>
                             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
-                                <Clock size={12} className="sm:w-14 sm:h-14 shrink-0" />
+                                <Clock size={12} className="sm:w-4 sm:h-4 shrink-0" />
                                 <span className="truncate">{order.createdAt ? format(new Date(order.createdAt), 'dd MMMM yyyy, hh:mm a', { locale: es }) : '-'}</span>
                             </div>
                         </div>
@@ -115,7 +115,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         {/* Items Section */}
                         <div className="space-y-4">
                             <h3 className="font-black text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                                <Package size={18} className="text-primary/40" />
+                                <Package size={15} className="text-primary/40" />
                                 Detalle de Productos
                             </h3>
 
@@ -192,7 +192,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         {order.OrderPayment && order.OrderPayment.length > 0 && (
                             <div className="space-y-4">
                                 <h3 className="font-black text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                                    <FileText size={18} className="text-primary/40" />
+                                    <FileText size={15} className="text-primary/40" />
                                     Historial de Pagos
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -225,7 +225,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         {/* Client Card */}
                         <div className="bg-muted/10 p-5 sm:p-6 rounded-2xl border border-border">
                             <h3 className="font-black text-foreground mb-4 flex items-center gap-2 text-xs sm:text-[13px] uppercase tracking-widest">
-                                <User size={18} className="text-primary/30" />
+                                <User size={15} className="text-primary/30" />
                                 Ficha del Cliente
                             </h3>
                             <div className="space-y-3">
@@ -241,7 +241,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
 
                                 {order.partner?.email && (
                                     <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-bold px-1 truncate">
-                                        <Mail size={14} className="text-primary/40" />
+                                        <Mail size={13} className="text-primary/40" />
                                         <span className="truncate">{order.partner.email}</span>
                                     </div>
                                 )}

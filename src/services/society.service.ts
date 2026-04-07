@@ -90,8 +90,12 @@ export interface SocietyResponse {
 
 
 export const societyService = {
-    getCurrent: async (): Promise<GetCodeResponse> => {
-        const response = await api.get<GetCodeResponse>(`/sales/societies/current`);
+    getCurrent: async (token?: string): Promise<GetCodeResponse> => {
+        const response = await api.get<GetCodeResponse>(`/sales/societies/current`, token ? {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        } : undefined);
         if (response.data.success) {
             useSocietyStore.getState().setSociety(response.data.data);
         }
