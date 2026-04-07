@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import { Button } from '@/components/ui/button';
@@ -9,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { authService } from '@/services/auth.service';
-import { societyService } from '@/services/society.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useQueryClient } from '@tanstack/react-query';
 import { PERMISSIONS_QUERY_KEY } from '@/hooks/usePermissions';
@@ -19,13 +16,22 @@ import { PasswordInput } from './components/PasswordInput';
 import { AuthTurnstile } from './components/AuthTurnstile';
 import { parseZodErrors } from './auth.utils';
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Por favor ingresa un correo válido" }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
-});
+async function validateLogin(data: Record<string, FormDataEntryValue>) {
+  const { z } = await import('zod');
+  const loginSchema = z.object({
+    email: z.string().email({ message: "Por favor ingresa un correo válido" }),
+    password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+  });
+  const result = loginSchema.safeParse(data);
+
+  if (!result.success) {
+    return { success: false as const, errors: parseZodErrors(result) };
+  }
+
+  return { success: true as const, data: result.data };
+}
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [rememberMe, setRememberMe] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
@@ -52,11 +58,11 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
     
-    // Validate with Zod
-    const result = loginSchema.safeParse(data);
+    // Load Zod only when the user submits, keeping the first render lighter.
+    const result = await validateLogin(data);
     
     if (!result.success) {
-      setErrors(parseZodErrors(result));
+      setErrors(result.errors);
       setIsSubmitting(false);
       return;
     }
@@ -72,16 +78,17 @@ export default function LoginPage() {
       // Remove existing permissions to ensure a clean state and show skeleton loader
       queryClient.removeQueries({ queryKey: PERMISSIONS_QUERY_KEY });
 
-      login(response.data); // Update global store
-
       // Only load society data if password change is not mandatory
       if (!response.data.user.mustChangePassword) {
         try {
-          await societyService.getCurrent();
+          const { societyService } = await import('@/services/society.service');
+          await societyService.getCurrent(response.data.token);
         } catch (err) {
           console.error('Failed to load initial society data', err);
         }
       }
+
+      login(response.data); // Update global store after preloading auth-dependent data
 
       // Handle Remember Me
       if (rememberMe) {
@@ -96,13 +103,13 @@ export default function LoginPage() {
       const savedUrl = localStorage.getItem('redirectUrl');
 
       if (response.data.user.mustChangePassword) {
-        navigate('/security');
+        window.location.assign('/security');
       } else {
         if (savedUrl) {
           localStorage.removeItem('redirectUrl');
-          navigate(savedUrl);
+          window.location.assign(savedUrl);
         } else {
-          navigate('/');
+          window.location.assign('/');
         }
       }
     } catch (error: unknown) {
@@ -177,12 +184,11 @@ export default function LoginPage() {
         </Button>
 
         <div className="text-center pt-2">
-          <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-bold transition-colors">
+          <a href="/auth/forgot-password" className="text-sm text-primary hover:underline hover:text-primary-hover font-bold transition-colors">
             ¿Olvidaste tu contraseña?
-          </Link>
+          </a>
         </div>
       </form>
     </Card>
   );
 }
-

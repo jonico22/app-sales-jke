@@ -45,21 +45,30 @@ export default defineConfig(({ mode }) => {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React runtime — tiny and always needed
-          'react-vendor': ['react', 'react-dom'],
-          // Routing
-          'router': ['react-router-dom'],
-          // Form validation
-          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          // Data fetching / caching
-          'query': ['@tanstack/react-query'],
-          // Date utilities (heavy)
-          'dates': ['date-fns'],
-          // Real-time
-          'socket': ['socket.io-client'],
-          // UI Helpers
-          'ui-utils': ['clsx', 'tailwind-merge'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          // Keep React out of feature chunks so lazy routes do not force router preloads.
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'react-vendor';
+          }
+
+          if (id.includes('node_modules/react-router')) return 'router';
+          if (id.includes('node_modules/@tanstack/react-query')) return 'query';
+          if (id.includes('node_modules/socket.io-client')) return 'socket';
+          if (
+            id.includes('node_modules/react-hook-form') ||
+            id.includes('node_modules/@hookform/resolvers') ||
+            id.includes('node_modules/zod')
+          ) {
+            return 'forms';
+          }
+          if (id.includes('node_modules/date-fns')) return 'dates';
+          if (id.includes('node_modules/clsx') || id.includes('node_modules/tailwind-merge')) return 'ui-utils';
         },
       },
     },

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 interface AuthTurnstileProps {
@@ -7,7 +6,7 @@ interface AuthTurnstileProps {
 }
 
 export function AuthTurnstile({ onTokenChange }: AuthTurnstileProps) {
-  const [searchParams] = useSearchParams();
+  const searchParams = new URLSearchParams(window.location.search);
   
   const isTestMode = searchParams.get('test') === 'true' || import.meta.env.MODE === 'test';
 

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,9 +12,19 @@ import { AuthTurnstile } from './components/AuthTurnstile';
 import { SuccessModal } from './components/SuccessModal';
 import { parseZodErrors } from './auth.utils';
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: "Por favor ingresa un correo válido" }),
-});
+async function validateForgotPassword(data: Record<string, FormDataEntryValue>) {
+  const { z } = await import('zod');
+  const forgotPasswordSchema = z.object({
+    email: z.string().email({ message: "Por favor ingresa un correo válido" }),
+  });
+  const result = forgotPasswordSchema.safeParse(data);
+
+  if (!result.success) {
+    return { success: false as const, errors: parseZodErrors(result) };
+  }
+
+  return { success: true as const, data: result.data };
+}
 
 export default function ForgotPasswordPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -33,11 +41,10 @@ export default function ForgotPasswordPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
     
-    // Validate with Zod
-    const result = forgotPasswordSchema.safeParse(data);
+    const result = await validateForgotPassword(data);
     
     if (!result.success) {
-      setErrors(parseZodErrors(result));
+      setErrors(result.errors);
       setIsSubmitting(false);
       return;
     }
@@ -96,13 +103,13 @@ export default function ForgotPasswordPage() {
           </Button>
 
           <div className="text-center pt-4">
-            <Link
-              to="/auth/login"
+            <a
+              href="/auth/login"
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors font-bold gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Volver al inicio de sesión
-            </Link>
+            </a>
           </div>
         </form>
       </Card>
@@ -115,4 +122,3 @@ export default function ForgotPasswordPage() {
     </>
   );
 }
-

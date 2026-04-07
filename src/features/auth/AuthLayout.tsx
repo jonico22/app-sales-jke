@@ -1,8 +1,7 @@
-import { Outlet } from 'react-router-dom';
 import { useThemeStore } from '@/store/theme.store';
 import logo from '@/assets/logo.webp'; // Optimized WebP version
 
-export default function AuthLayout() {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useThemeStore();
   // Determine if it's currently rendering dark mode
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -24,7 +23,7 @@ export default function AuthLayout() {
       </div>
 
       <main className="relative w-full max-w-md z-10">
-        <Outlet />
+        {children}
       </main>
 
       <footer className="relative mt-8 text-center text-xs text-muted-foreground font-medium z-10">
