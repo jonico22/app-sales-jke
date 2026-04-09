@@ -35,13 +35,13 @@ export function BulkUploadReviewModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-card rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
+            <div className="bg-card rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card shrink-0">
-                    <div>
-                        <h3 className="text-base font-bold text-foreground uppercase tracking-tight">Revisión de Carga Masiva</h3>
+                <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-border flex items-center justify-between gap-3 bg-card shrink-0">
+                    <div className="min-w-0">
+                        <h3 className="text-sm sm:text-base font-semibold text-foreground tracking-tight">Revisión de Carga Masiva</h3>
                         <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Verifique los datos antes de completar la importación al sistema.</p>
                     </div>
                     <button
@@ -54,14 +54,14 @@ export function BulkUploadReviewModal({
                 </div>
 
                 {/* Stats Cards */}
-                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0 bg-muted/30">
+                <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 shrink-0 bg-muted/30">
                     <div className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center gap-4">
                         <div className="bg-muted p-3 rounded-lg">
                             <FileText className="h-6 w-6 text-muted-foreground" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Filas Totales</p>
-                            <p className="text-2xl font-bold text-foreground">{fileAnalysis.totalRows}</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.12em]">Filas Totales</p>
+                            <p className="text-2xl font-semibold text-foreground tabular-nums">{fileAnalysis.totalRows}</p>
                         </div>
                     </div>
 
@@ -70,8 +70,8 @@ export function BulkUploadReviewModal({
                             <CheckCircle2 className="h-6 w-6 text-green-500" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-green-500 uppercase tracking-wider">Registros Válidos</p>
-                            <p className="text-2xl font-bold text-green-600 dark:text-green-500">{fileAnalysis.validRows}</p>
+                            <p className="text-xs font-semibold text-green-500 uppercase tracking-[0.12em]">Registros Válidos</p>
+                            <p className="text-2xl font-semibold text-green-600 dark:text-green-500 tabular-nums">{fileAnalysis.validRows}</p>
                         </div>
                     </div>
 
@@ -80,17 +80,17 @@ export function BulkUploadReviewModal({
                             <AlertCircle className="h-6 w-6 text-destructive" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-destructive uppercase tracking-wider">Con Errores</p>
-                            <p className="text-2xl font-bold text-destructive">{fileAnalysis.errorRows}</p>
+                            <p className="text-xs font-semibold text-destructive uppercase tracking-[0.12em]">Con Errores</p>
+                            <p className="text-2xl font-semibold text-destructive tabular-nums">{fileAnalysis.errorRows}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Table/Content Area */}
-                <div className="flex-1 overflow-auto px-6 pb-6">
+                <div className="flex-1 overflow-auto px-4 sm:px-6 pb-4 sm:pb-6">
                     <div className="border border-border rounded-lg overflow-hidden">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-muted/50 text-muted-foreground font-semibold uppercase text-xs sticky top-0 z-10 shadow-sm">
+                            <thead className="bg-muted/50 text-muted-foreground font-semibold uppercase text-xs tracking-[0.12em] sticky top-0 z-10 shadow-sm">
                                 <tr>
                                     <th className="px-4 py-3 w-16 text-center">Estado</th>
                                     <th className="px-4 py-3 w-32">Código</th>
@@ -111,7 +111,7 @@ export function BulkUploadReviewModal({
                                                 <AlertTriangle className="h-5 w-5 text-destructive mx-auto" />
                                             )}
                                         </td>
-                                        <td className={`px-4 py-3 font-medium ${!row.data.CodigoInterno ? 'text-destructive italic' : 'text-foreground'}`}>
+                                        <td className={`px-4 py-3 font-semibold ${!row.data.CodigoInterno ? 'text-destructive italic' : 'text-foreground'}`}>
                                             {row.data.CodigoInterno || '—'}
                                         </td>
                                         <td className={`px-4 py-3 ${!row.data.NombreProducto ? 'text-destructive italic' : 'text-foreground'}`}>
@@ -120,15 +120,15 @@ export function BulkUploadReviewModal({
                                         <td className={`px-4 py-3 ${!row.data.CodigoCategoria ? 'text-destructive italic' : 'text-muted-foreground'}`}>
                                             {row.data.CodigoCategoria || '—'}
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono text-foreground">
+                                        <td className="px-4 py-3 text-right font-mono font-medium text-foreground">
                                             {row.data.PrecioVenta ? parseFloat(row.data.PrecioVenta).toFixed(2) : '—'}
                                         </td>
-                                        <td className="px-4 py-3 text-center font-mono text-foreground">
+                                        <td className="px-4 py-3 text-center font-mono font-medium text-foreground">
                                             {row.data.StockInicial || '0'}
                                         </td>
                                         <td className="px-4 py-3">
                                             {row.isValid ? (
-                                                <span className="inline-flex items-center px-2 py-1 rounded bg-green-500/10 text-green-600 dark:text-green-500 text-[10px] font-bold uppercase tracking-wide">
+                                                <span className="inline-flex items-center px-2 py-1 rounded bg-green-500/10 text-green-600 dark:text-green-500 text-[10px] font-semibold uppercase tracking-[0.12em]">
                                                     Correcto
                                                 </span>
                                             ) : (
@@ -156,25 +156,25 @@ export function BulkUploadReviewModal({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-border bg-muted/30 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                <div className="px-4 sm:px-6 py-4 border-t border-border bg-muted/30 flex flex-col sm:flex-row items-center justify-between shrink-0 gap-3">
+                    <div className="flex items-center gap-2 text-muted-foreground text-xs order-2 sm:order-1">
                         <AlertCircle className="h-4 w-4" />
                         <p>Se ignorarán los registros con errores durante la importación.</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto order-1 sm:order-2">
                         <Button
                             variant="outline"
                             onClick={onClose}
                             disabled={isUploading}
-                            className="px-6 border-input text-muted-foreground hover:text-foreground hover:bg-muted uppercase text-xs font-bold tracking-wide"
+                            className="w-full sm:w-auto px-6 border-input text-muted-foreground hover:text-foreground hover:bg-muted uppercase text-xs font-semibold tracking-[0.12em]"
                         >
                             Cancelar y Volver
                         </Button>
                         <Button
                             onClick={onConfirm}
                             disabled={fileAnalysis.validRows === 0 || isUploading}
-                            className="px-6 bg-primary hover:bg-primary/90 text-primary-foreground uppercase text-xs font-bold tracking-wide flex items-center gap-2"
+                            className="w-full sm:w-auto px-6 bg-primary hover:bg-primary/90 text-primary-foreground uppercase text-xs font-semibold tracking-[0.12em] flex items-center justify-center gap-2"
                         >
                             {isUploading ? (
                                 <>Importando...</>

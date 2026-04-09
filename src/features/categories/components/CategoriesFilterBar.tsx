@@ -41,19 +41,19 @@ export function CategoriesFilterBar({
       <div className="flex w-full sm:w-auto gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex-1 sm:flex-none justify-between h-10 text-[10px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted min-w-[140px] sm:min-w-[160px] rounded-xl transition-all">
+            <Button variant="outline" className="flex-1 sm:flex-none justify-between h-10 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted min-w-[140px] sm:min-w-[160px] rounded-xl transition-all">
               {getStatusLabel()}
-              <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
+              <ChevronDown className="h-4 w-4 ml-3 shrink-0 opacity-45" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[200px] sm:w-[180px] bg-card border-border shadow-xl rounded-xl p-1 overflow-hidden">
-            <DropdownMenuItem className="text-[11px] font-bold uppercase tracking-tight py-2.5 rounded-lg cursor-pointer" onClick={() => onStatusChange('all')}>
+            <DropdownMenuItem className="text-[11px] font-medium uppercase tracking-[0.04em] py-2.5 rounded-lg cursor-pointer" onClick={() => onStatusChange('all')}>
               Todos los estados
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-[11px] font-bold uppercase tracking-tight py-2.5 rounded-lg cursor-pointer text-emerald-600 dark:text-emerald-400" onClick={() => onStatusChange('active')}>
+            <DropdownMenuItem className="text-[11px] font-medium uppercase tracking-[0.04em] py-2.5 rounded-lg cursor-pointer text-emerald-600 dark:text-emerald-400" onClick={() => onStatusChange('active')}>
               Solo Activos
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-[11px] font-bold uppercase tracking-tight py-2.5 rounded-lg cursor-pointer text-rose-600 dark:text-rose-400" onClick={() => onStatusChange('inactive')}>
+            <DropdownMenuItem className="text-[11px] font-medium uppercase tracking-[0.04em] py-2.5 rounded-lg cursor-pointer text-rose-600 dark:text-rose-400" onClick={() => onStatusChange('inactive')}>
               Solo Inactivos
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -61,7 +61,7 @@ export function CategoriesFilterBar({
 
         <Button
           variant="outline"
-          className="flex-1 sm:flex-none h-10 text-[10px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
+          className="flex-1 sm:flex-none h-10 text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
           onClick={onOpenFilters}
         >
           <SlidersHorizontal className="h-4 w-4" />

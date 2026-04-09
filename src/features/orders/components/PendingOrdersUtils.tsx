@@ -33,7 +33,7 @@ export function StatusBadge({ date }: { date: string }) {
     }
 
     return (
-        <div className={cn("flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium w-fit", colorClass)}>
+        <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] w-fit", colorClass)}>
             <span className={cn("w-1.5 h-1.5 rounded-full", dotClass)}></span>
             {timeAgo}
         </div>

@@ -6,6 +6,7 @@ import { BulkUploadSuccessModal } from './components/BulkUploadSuccessModal';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
@@ -145,17 +146,17 @@ export default function NewCategoryPage() {
 
   return (
     <div className="space-y-6 max-w-[1600px]">
-      <div className="flex items-start gap-3">
-        <Link to="/categories">
-          <Button variant="outline" className="h-9 w-9 p-0 flex items-center justify-center border-border shadow-sm transition-transform active:scale-95 text-muted-foreground hover:text-foreground hover:bg-muted">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h2 className="text-lg font-bold text-foreground tracking-tight uppercase">Categorías</h2>
-          <p className="text-[11px] text-muted-foreground font-medium mt-0.5">Administre y organice las categorías de productos del sistema.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Categorías"
+        subtitle="Administre y organice las categorías de productos del sistema."
+        leading={(
+          <Link to="/categories">
+            <Button variant="outline" className="h-9 w-9 p-0 flex items-center justify-center border-border shadow-sm transition-transform active:scale-95 text-muted-foreground hover:text-foreground hover:bg-muted">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+        )}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <BulkUploadCard

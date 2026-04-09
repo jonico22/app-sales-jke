@@ -9,8 +9,8 @@ function InfoCard({ icon, label, value }: { icon: React.ReactNode; label: string
                 {icon}
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tight sm:tracking-wider leading-none mb-1">{label}</p>
-                <p className="text-[13px] sm:text-sm font-bold text-foreground leading-tight break-words">{value}</p>
+                <p className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em] leading-none mb-1">{label}</p>
+                <p className="text-[13px] sm:text-sm font-semibold text-foreground leading-tight break-words">{value}</p>
             </div>
         </div>
     );

@@ -43,9 +43,9 @@ export function InventoryMovementsFilterBar({
             <div className="flex flex-wrap w-full md:w-auto gap-2 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
+                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
                             {getBranchName(originBranchId, 'origin')}
-                            <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            <ChevronDown className="w-3.5 h-3.5 ml-3 shrink-0 opacity-40" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">
@@ -60,9 +60,9 @@ export function InventoryMovementsFilterBar({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
+                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted min-w-[140px] md:min-w-[180px] rounded-xl transition-all">
                             {getBranchName(destinationBranchId, 'destination')}
-                            <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            <ChevronDown className="w-3.5 h-3.5 ml-3 shrink-0 opacity-40" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">
@@ -77,9 +77,9 @@ export function InventoryMovementsFilterBar({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 text-[10px] font-black uppercase tracking-widest text-foreground border-border bg-card hover:bg-muted min-w-[130px] md:min-w-[160px] rounded-xl transition-all">
+                        <Button variant="outline" className="flex-1 md:flex-none justify-between h-10 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted min-w-[130px] md:min-w-[160px] rounded-xl transition-all">
                             {getStatusLabel(statusFilter)}
-                            <ChevronDown className="w-3 h-3 ml-2 opacity-30" />
+                            <ChevronDown className="w-3.5 h-3.5 ml-3 shrink-0 opacity-40" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[180px] bg-card border-border shadow-2xl rounded-xl p-1 animate-in fade-in zoom-in-95 duration-200">

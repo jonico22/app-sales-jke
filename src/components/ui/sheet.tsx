@@ -62,8 +62,8 @@ const SheetContent = React.forwardRef<
 
       <div className={cn(
         "fixed z-[100] flex flex-col border-border bg-card shadow-2xl transition ease-in-out",
-        side === "right" && "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-md slide-in-from-right-full",
-        side === "left" && "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-md slide-in-from-left-full",
+        side === "right" && "inset-y-0 right-0 h-full w-full border-l sm:w-3/4 sm:max-w-md slide-in-from-right-full",
+        side === "left" && "inset-y-0 left-0 h-full w-full border-r sm:w-3/4 sm:max-w-md slide-in-from-left-full",
         side === "bottom" && "inset-x-0 bottom-0 h-[92vh] w-full border-t rounded-t-[32px] slide-in-from-bottom-full",
         className
       )}
@@ -87,16 +87,16 @@ const SheetHeader = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-5 pb-3 shrink-0",
+        "flex items-center justify-between p-4 sm:p-5 pb-2.5 sm:pb-3 shrink-0",
         className
       )}
       {...props}
     >
-      <div className="flex-1">
-        {children}
-      </div>
+        <div className="min-w-0 flex-1">
+          {children}
+        </div>
       <button
-        className="ml-4 rounded-lg p-2 opacity-60 transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        className="ml-3 rounded-lg p-1.5 sm:p-2 opacity-60 transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         onClick={() => setOpen(false)}
       >
         <X className="h-4 w-4 text-muted-foreground" />
@@ -113,7 +113,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn("text-base font-bold text-foreground uppercase tracking-tight", className)}
+    className={cn("text-sm sm:text-base font-semibold text-foreground uppercase tracking-tight", className)}
     {...props}
   />
 ))

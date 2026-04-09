@@ -24,7 +24,7 @@ export const getStatusBadge = (status: string) => {
     const config = styles[status as keyof typeof styles] || { bg: 'bg-muted', text: 'text-muted-foreground', dot: 'bg-muted-foreground', label: status };
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] ${config.bg} ${config.text}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
             {config.label}
         </span>
@@ -32,7 +32,7 @@ export const getStatusBadge = (status: string) => {
 };
 
 export const getPaymentBadge = (payment?: OrderPayment) => {
-    if (!payment) return <span className="text-muted-foreground/50 text-xs italic">-</span>;
+    if (!payment) return <span className="text-muted-foreground/50 text-[10px] italic">-</span>;
 
     const styles = {
         'CASH': { bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: Banknote, label: 'Efectivo' },
@@ -47,7 +47,7 @@ export const getPaymentBadge = (payment?: OrderPayment) => {
     const Icon = config.icon;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] ${config.bg} ${config.text}`}>
             <Icon size={14} />
             {config.label}
         </span>

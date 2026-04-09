@@ -6,7 +6,7 @@ const Card = memo(forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground shadow-lg overflow-hidden',
+        'rounded-2xl border border-border bg-card text-card-foreground shadow-sm overflow-hidden',
         className
       )}
       {...props}

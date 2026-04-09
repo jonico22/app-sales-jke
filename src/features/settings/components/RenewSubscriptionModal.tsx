@@ -49,19 +49,19 @@ export function RenewSubscriptionModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl p-0 border-0 shadow-2xl !rounded-xl overflow-hidden [&>button]:hidden">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-border bg-card">
-          <h3 className="text-lg font-bold text-foreground">Renovar Suscripción</h3>
+        <div className="flex justify-between items-center gap-3 px-4 py-3.5 sm:p-6 border-b border-border bg-card">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Renovar Suscripción</h3>
           <button
             onClick={() => onOpenChange(false)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <XCircle className="h-6 w-6" />
+            <XCircle className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto max-h-[85vh] bg-card">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[85vh] bg-card">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {/* Left Column */}
             <div className="space-y-8">
               {/* Resumen */}
@@ -216,16 +216,16 @@ export function RenewSubscriptionModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 p-6 border-t border-border bg-card">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t border-border bg-card">
           <button
             onClick={() => onOpenChange(false)}
             disabled={isRenewing}
-            className="px-6 py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 uppercase tracking-wider"
+            className="w-full sm:w-auto px-5 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
-            className={`px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 min-w-[180px] ${isRenewing || !file || !referenceCode ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full sm:w-auto px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 sm:min-w-[180px] ${isRenewing || !file || !referenceCode ? 'opacity-70 cursor-not-allowed' : ''}`}
             onClick={onConfirm}
             disabled={isRenewing || !file || !referenceCode}
           >

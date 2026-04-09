@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, FileText, Download, Plus } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 interface SalesHistoryHeaderProps {
   isExporting: boolean;
@@ -15,12 +16,11 @@ export function SalesHistoryHeader({
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-      <div>
-        <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Historial de Ventas</h1>
-        <p className="text-muted-foreground text-[10px] mt-0.5 font-medium">Gestione y verifique las transacciones recientes.</p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+    <PageHeader
+      title="Historial de Ventas"
+      subtitle="Gestione y verifique las transacciones recientes."
+      actions={(
+        <>
         <button
           onClick={onExportGeneral}
           disabled={isExporting}
@@ -43,7 +43,8 @@ export function SalesHistoryHeader({
           <Plus size={14} />
           Nueva Venta
         </button>
-      </div>
-    </div>
+        </>
+      )}
+    />
   );
 }

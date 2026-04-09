@@ -3,6 +3,13 @@ import { es } from 'date-fns/locale';
 import { Clock, Package, ArrowRightLeft } from 'lucide-react';
 import type { KardexTransaction } from '@/services/kardex.service';
 import { KardexMovementBadge } from './KardexMovementBadge';
+import { cn } from '@/lib/utils';
+import {
+    dataTableCellCodeClassName,
+    dataTableCellNumericClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName
+} from '@/components/shared/dataTableStyles';
 
 interface KardexMobileListProps {
     transactions: KardexTransaction[];
@@ -19,18 +26,20 @@ export function KardexMobileList({ transactions }: KardexMobileListProps) {
                                 <Package size={18} className="text-primary/60" />
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest">Producto</p>
-                                <h3 className="text-[12px] font-black text-foreground uppercase tracking-tight leading-tight">
+                                <p className="text-[8px] font-semibold text-muted-foreground/50 uppercase tracking-[0.08em]">Producto</p>
+                                <h3 className={cn(dataTableCellPrimaryClassName, 'text-[12px] leading-tight')}>
                                     {t.product?.name}
                                 </h3>
-                                <p className="text-[9px] font-bold text-muted-foreground/60">{t.product?.code}</p>
+                                <p className={cn(dataTableCellCodeClassName, 'text-[9px]')}>{t.product?.code}</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest">Cantidad</p>
-                            <span className={`text-[16px] font-black tracking-tighter ${
+                            <p className="text-[8px] font-semibold text-muted-foreground/50 uppercase tracking-[0.08em]">Cantidad</p>
+                            <span className={cn(
+                                'text-[16px] tracking-tight',
+                                dataTableCellNumericClassName,
                                 t.quantity > 0 ? 'text-emerald-500' : 'text-rose-500'
-                            }`}>
+                            )}>
                                 {t.quantity > 0 ? '+' : ''}{t.quantity}
                             </span>
                         </div>
@@ -38,15 +47,15 @@ export function KardexMobileList({ transactions }: KardexMobileListProps) {
 
                     <div className="grid grid-cols-2 gap-4 pt-3 border-t border-border/30">
                         <div>
-                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1.5">Operación</p>
+                            <p className="text-[8px] font-semibold text-muted-foreground/50 uppercase tracking-[0.08em] mb-1.5">Operación</p>
                             <KardexMovementBadge type={t.type} />
                         </div>
                         <div>
-                            <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1.5">Balance</p>
+                            <p className="text-[8px] font-semibold text-muted-foreground/50 uppercase tracking-[0.08em] mb-1.5">Balance</p>
                             <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-2 py-1.5 w-fit">
-                                <span className="text-[10px] font-bold text-muted-foreground/60">{t.previousStock}</span>
+                                <span className={dataTableCellSecondaryClassName}>{t.previousStock}</span>
                                 <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
-                                <span className="text-[11px] font-black text-foreground">{t.newStock}</span>
+                                <span className={dataTableCellNumericClassName}>{t.newStock}</span>
                             </div>
                         </div>
                     </div>
@@ -54,11 +63,11 @@ export function KardexMobileList({ transactions }: KardexMobileListProps) {
                     <div className="flex items-center justify-between pt-3 border-t border-border/30 bg-muted/5 -mx-4 -mb-4 px-4 py-3 rounded-b-2xl">
                         <div className="flex items-center gap-2 text-muted-foreground/70">
                             <Clock size={12} className="opacity-50" />
-                            <span className="text-[10px] font-bold uppercase tracking-tight">
+                            <span className={dataTableCellSecondaryClassName}>
                                 {format(new Date(t.date), 'dd MMM, hh:mm a', { locale: es })}
                             </span>
                         </div>
-                        <div className="text-[10px] font-black text-foreground uppercase tracking-widest opacity-60">
+                        <div className={cn(dataTableCellCodeClassName, 'opacity-60')}>
                             {t.documentNumber || '-'}
                         </div>
                     </div>

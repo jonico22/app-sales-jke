@@ -18,6 +18,7 @@ import { ChevronDown, Save, User as UserIcon, Building2, RefreshCw } from 'lucid
 import { type Client } from '@/services/client.service';
 import { useSocietyStore } from '@/store/society.store';
 import { cn } from '@/lib/utils';
+import { nativeSelectClassName } from '@/components/shared/formFieldStyles';
 import { useCreateClientMutation, useUpdateClientMutation } from '../hooks/useClientQueries';
 
 // Schema Definition
@@ -209,25 +210,25 @@ export function ClientEditModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] p-0 max-h-[90vh] overflow-hidden bg-card border-border shadow-2xl flex flex-col">
-        <div className="p-6 pb-4 border-b border-border shrink-0">
+        <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border shrink-0">
           <DialogHeader className="mb-0">
-            <DialogTitle className="text-xl font-bold text-foreground uppercase tracking-tight">
+            <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground tracking-tight">
               {client ? 'Editar Cliente' : 'Nuevo Cliente'}
             </DialogTitle>
           </DialogHeader>
         </div>
  
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo de Cliente</Label>
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Tipo de Cliente</Label>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-xl border border-border">
                   <button
                     type="button"
                     onClick={() => setValue('typeBP', 'PERSON')}
                     className={cn(
-                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-[0.12em] transition-all",
                       typeBP === 'PERSON' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
                     )}
                   >
@@ -237,7 +238,7 @@ export function ClientEditModal({
                     type="button"
                     onClick={() => setValue('typeBP', 'LEGAL_ENTITY')}
                     className={cn(
-                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold uppercase transition-all",
+                      "flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-[0.12em] transition-all",
                       typeBP === 'LEGAL_ENTITY' ? "bg-background text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-muted/50"
                     )}
                   >
@@ -248,26 +249,26 @@ export function ClientEditModal({
  
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="documentType" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo Documento</Label>
+                  <Label htmlFor="documentType" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Tipo Documento</Label>
                   <div className="relative">
                     <select
                       id="documentType"
                       {...register('documentType')}
-                      className="w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary appearance-none text-foreground transition-all"
+                      className={`${nativeSelectClassName} h-10 rounded-lg bg-muted/30 text-xs focus:ring-primary`}
                     >
                       <option value="DNI">DNI</option>
                       <option value="RUC">RUC</option>
                       <option value="PASSPORT">PAS (Pasaporte)</option>
                       <option value="CE">CE / CEX (Extranjería)</option>
                     </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50">
                       <ChevronDown className="h-4 w-4" />
                     </div>
                   </div>
                 </div>
  
                 <div className="space-y-2">
-                  <Label htmlFor="documentNumber" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Número Documento</Label>
+                  <Label htmlFor="documentNumber" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Número Documento</Label>
                   <Input
                     id="documentNumber"
                     placeholder="Ej. 12345678"
@@ -280,7 +281,7 @@ export function ClientEditModal({
                 {typeBP === 'PERSON' ? (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nombres</Label>
+                      <Label htmlFor="firstName" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Nombres</Label>
                       <Input
                         id="firstName"
                         placeholder="Ej. Juan Carlos"
@@ -289,7 +290,7 @@ export function ClientEditModal({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Apellidos</Label>
+                      <Label htmlFor="lastName" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Apellidos</Label>
                       <Input
                         id="lastName"
                         placeholder="Ej. Pérez García"
@@ -300,7 +301,7 @@ export function ClientEditModal({
                   </>
                 ) : (
                   <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="companyName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Razón Social</Label>
+                    <Label htmlFor="companyName" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Razón Social</Label>
                     <Input
                       id="companyName"
                       placeholder="Ej. Empresa de Transportes S.A.C."
@@ -311,7 +312,7 @@ export function ClientEditModal({
                 )}
  
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <Label htmlFor="email" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">
                     Correo Electrónico <span className="text-muted-foreground/50 font-normal normal-case">(Opcional)</span>
                   </Label>
                   <Input
@@ -325,7 +326,7 @@ export function ClientEditModal({
                 </div>
  
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Teléfono / Celular</Label>
+                  <Label htmlFor="phone" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Teléfono / Celular</Label>
                   <Input
                     id="phone"
                     placeholder="Ej. 987654321"
@@ -335,7 +336,7 @@ export function ClientEditModal({
                 </div>
  
                 <div className="md:col-span-2 space-y-2">
-                  <Label htmlFor="address" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dirección</Label>
+                  <Label htmlFor="address" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Dirección</Label>
                   <Textarea
                     id="address"
                     placeholder="Dirección completa del cliente..."
@@ -347,7 +348,7 @@ export function ClientEditModal({
  
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div>
-                  <Label className="text-[10px] font-bold text-foreground uppercase tracking-wider">Estado del Cliente</Label>
+                  <Label className="text-[10px] font-semibold text-foreground uppercase tracking-[0.12em]">Estado del Cliente</Label>
                   <p className="text-[10px] text-muted-foreground font-medium">Habilitar para transacciones comerciales</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -363,19 +364,19 @@ export function ClientEditModal({
             </div>
           </div>
  
-          <DialogFooter className="p-6 border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2 mt-0">
+          <DialogFooter className="p-4 sm:p-6 border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2 mt-0">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-muted-foreground hover:text-foreground font-bold text-[10px] uppercase tracking-wider h-10 px-6 rounded-xl"
+              className="w-full sm:w-auto text-muted-foreground hover:text-foreground font-semibold text-[10px] uppercase tracking-[0.12em] h-9 sm:h-10 px-6 rounded-xl"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-10 px-8 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2 rounded-xl"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-9 sm:h-10 px-8 font-semibold text-[10px] uppercase tracking-[0.12em] transition-all active:scale-95 flex items-center justify-center gap-2 rounded-xl"
             >
               {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {isSubmitting ? 'Guardando...' : (client ? 'Guardar Cambios' : 'Crear Cliente')}

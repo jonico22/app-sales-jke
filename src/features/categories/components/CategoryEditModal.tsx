@@ -120,7 +120,7 @@ export function CategoryEditModal({
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-card border-border shadow-2xl">
         <div className="p-5 pb-0">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-foreground uppercase tracking-tight">
+            <DialogTitle className="text-lg font-semibold text-foreground tracking-tight">
               {category ? 'Editar Categoría' : 'Nueva Categoría'}
             </DialogTitle>
           </DialogHeader>
@@ -130,7 +130,7 @@ export function CategoryEditModal({
           <div className="p-5 space-y-5">
             {/* Code Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="code" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
+              <Label htmlFor="code" className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.12em] flex items-center gap-1">
                 Código <span className="text-destructive">*</span>
               </Label>
               <div className="flex gap-2">
@@ -161,7 +161,7 @@ export function CategoryEditModal({
 
             {/* Name Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1">
+              <Label htmlFor="name" className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.12em] flex items-center gap-1">
                 Nombre de la Categoría <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -177,7 +177,7 @@ export function CategoryEditModal({
 
             {/* Description Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="description" className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
+              <Label htmlFor="description" className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.12em]">
                 Descripción (Opcional)
               </Label>
               <Textarea
@@ -190,7 +190,7 @@ export function CategoryEditModal({
 
             {/* Status Field */}
             <div className="space-y-2 pt-1">
-              <Label className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-wider">
+              <Label className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.12em]">
                 Estado
               </Label>
               <div className="flex items-center gap-3">
@@ -211,14 +211,14 @@ export function CategoryEditModal({
               variant="ghost"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="text-muted-foreground hover:text-foreground font-bold text-[10px] uppercase tracking-wider h-9"
+              className="text-muted-foreground hover:text-foreground font-semibold text-[10px] uppercase tracking-[0.12em] h-9"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 px-6 h-9 font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 px-6 h-9 font-semibold text-[10px] uppercase tracking-[0.12em] transition-all active:scale-95"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Guardando...' : (category ? 'Guardar Cambios' : 'Crear Categoría')}

@@ -1,6 +1,16 @@
 import { Loader2, Search, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import {
+  dataTableActionButtonClassName,
+  dataTableActionDestructiveClassName,
+  dataTableActionIconClassName,
+  dataTableActionPrimaryClassName,
+  dataTableCellCodeClassName,
+  dataTableCellPrimaryClassName,
+  dataTableCellSecondaryClassName
+} from '@/components/shared/dataTableStyles';
 import type { Category } from '@/services/category.service';
 
 interface CategoriesMobileListProps {
@@ -29,40 +39,40 @@ export function CategoriesMobileList({
             <div className="flex justify-between items-start gap-4 mb-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span className="font-mono text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-lg uppercase tracking-tight">
+                  <span className={cn(dataTableCellCodeClassName, 'bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded-lg text-primary')}>
                     {category.code || 'S/C'}
                   </span>
-                  <Badge variant={category.isActive ? 'success' : 'secondary'} className="uppercase text-[8px] font-black px-1.5 py-0 h-4 border border-current/20">
+                  <Badge variant={category.isActive ? 'success' : 'secondary'} className="uppercase text-[8px] font-semibold px-1.5 py-0 h-4 border border-current/20">
                     {category.isActive ? 'Activo' : 'Inactivo'}
                   </Badge>
                 </div>
-                <h3 className="text-[13px] font-black text-foreground leading-tight uppercase tracking-tight">{category.name}</h3>
+                <h3 className={cn(dataTableCellPrimaryClassName, 'text-[13px] leading-tight')}>{category.name}</h3>
                 {category.description && (
-                  <p className="text-[11px] text-muted-foreground font-medium mt-1.5 line-clamp-3 leading-relaxed">{category.description}</p>
+                  <p className={cn(dataTableCellSecondaryClassName, 'mt-1.5 line-clamp-3 leading-relaxed')}>{category.description}</p>
                 )}
               </div>
               <div className="flex flex-col gap-1 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-xl"
+                  className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName, 'rounded-xl')}
                   onClick={() => onEdit(category)}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className={dataTableActionIconClassName} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                  className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName, 'rounded-xl')}
                   onClick={() => onDelete(category.id)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className={dataTableActionIconClassName} />
                 </Button>
               </div>
             </div>
 
             <div className="pt-3 border-t border-border/40">
-              <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-tight">
+              <div className="flex justify-between items-center text-[10px] uppercase font-semibold tracking-[0.08em]">
                 <span className="text-muted-foreground/60">Fecha Creación</span>
                 <span className="text-foreground/80 tabular-nums bg-muted/30 px-2 py-0.5 rounded-lg border border-border/50">{category.createdAt}</span>
               </div>

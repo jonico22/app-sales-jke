@@ -2,8 +2,23 @@ import { RefreshCw, FileText, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
+import {
+  dataTableActionButtonClassName,
+  dataTableActionDestructiveClassName,
+  dataTableActionIconClassName,
+  dataTableActionPrimaryClassName,
+  dataTableCellCodeClassName,
+  dataTableCellNumericClassName,
+  dataTableCellPrimaryClassName,
+  dataTableCellSecondaryClassName,
+  dataTableHead,
+  dataTableHeaderRowClassName,
+  dataTableRowClassName,
+  dataTableShellClassName
+} from '@/components/shared/dataTableStyles';
 import type { Order } from '@/services/order.service';
 import { formatCurrency, getStatusBadge, getPaymentBadge } from './SalesHistoryUtils';
+import { cn } from '@/lib/utils';
 
 interface SalesHistoryTableProps {
   orders: Order[];
@@ -25,16 +40,17 @@ export function SalesHistoryTable({
   onCancel
 }: SalesHistoryTableProps) {
   return (
-    <div className="hidden md:block overflow-x-auto">
+    <div className={`hidden md:block ${dataTableShellClassName}`}>
+      <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-muted/30 border-b border-border">
+        <thead className={dataTableHeaderRowClassName}>
           <tr>
             <SortableTableHead
               field="orderCode"
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('px-5 py-3 text-left')}
             >
               ID Venta
             </SortableTableHead>
@@ -43,7 +59,7 @@ export function SalesHistoryTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('px-5 py-3 text-left')}
             >
               Fecha de Modificación
             </SortableTableHead>
@@ -52,7 +68,7 @@ export function SalesHistoryTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('px-5 py-3 text-left')}
             >
               Cliente
             </SortableTableHead>
@@ -61,24 +77,24 @@ export function SalesHistoryTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('px-5 py-3 text-left')}
             >
               Total
             </SortableTableHead>
-            <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Pago</th>
+            <th className={dataTableHead('px-5 py-3 text-left')}>Pago</th>
             <SortableTableHead
               field="status"
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('px-5 py-3 text-left')}
             >
               Estado
             </SortableTableHead>
-            <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Acciones</th>
+            <th className={dataTableHead('px-5 py-3 text-center')}>Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/70">
           {isLoading ? (
             <tr>
               <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
@@ -99,11 +115,11 @@ export function SalesHistoryTable({
               const payment = order.OrderPayment && order.OrderPayment.length > 0 ? order.OrderPayment[0] : undefined;
 
               return (
-                <tr key={order.id} className="hover:bg-muted/10 transition-colors group">
-                  <td className="px-5 py-3 whitespace-nowrap text-xs font-semibold text-foreground">
-                    #{order.orderCode}
+                <tr key={order.id} className={dataTableRowClassName}>
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <span className={cn(dataTableCellCodeClassName, 'text-slate-800 dark:text-slate-100')}>#{order.orderCode}</span>
                   </td>
-                  <td className="px-5 py-3 whitespace-nowrap text-[11px] text-muted-foreground/80 font-medium">
+                  <td className={cn('px-5 py-3 whitespace-nowrap', dataTableCellSecondaryClassName)}>
                     {order.updatedAt ? format(new Date(order.updatedAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap">
@@ -111,11 +127,11 @@ export function SalesHistoryTable({
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold border border-primary/20">
                         {initials}
                       </div>
-                      <span className="text-xs text-foreground font-semibold">{clientName}</span>
+                      <span className={dataTableCellPrimaryClassName}>{clientName}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 whitespace-nowrap text-xs font-bold text-foreground">
-                    {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/')}
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <span className={dataTableCellNumericClassName}>{formatCurrency(order.totalAmount, order.currency?.symbol || 'S/')}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getPaymentBadge(payment)}
@@ -127,18 +143,18 @@ export function SalesHistoryTable({
                     <div className="flex justify-center gap-1.5 transition-opacity">
                       <button
                         onClick={() => onViewDetail(order.id)}
-                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all active:scale-95"
+                        className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                         title="Ver Detalle"
                       >
-                        <FileText size={18} />
+                        <FileText className={dataTableActionIconClassName} />
                       </button>
                       {onCancel && order.status === 'COMPLETED' && (
                         <button
                           onClick={() => onCancel(order)}
-                          className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-all active:scale-95"
+                          className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName)}
                           title="Anular Venta"
                         >
-                          <XCircle size={18} />
+                          <XCircle className={dataTableActionIconClassName} />
                         </button>
                       )}
                     </div>
@@ -149,6 +165,7 @@ export function SalesHistoryTable({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

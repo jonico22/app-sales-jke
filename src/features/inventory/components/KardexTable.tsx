@@ -4,6 +4,17 @@ import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { RefreshCw, FileText, Package, ArrowRightLeft } from 'lucide-react';
 import type { KardexTransaction } from '@/services/kardex.service';
 import { KardexMovementBadge } from './KardexMovementBadge';
+import {
+    dataTableCellCodeClassName,
+    dataTableCellNumericClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHead,
+    dataTableHeaderRowClassName,
+    dataTableRowClassName,
+    dataTableShellClassName
+} from '@/components/shared/dataTableStyles';
+import { cn } from '@/lib/utils';
 
 interface KardexTableProps {
     transactions: KardexTransaction[];
@@ -21,16 +32,17 @@ export function KardexTable({
     onSort,
 }: KardexTableProps) {
     return (
-        <div className="hidden lg:block overflow-x-auto">
+        <div className={`hidden lg:block ${dataTableShellClassName}`}>
+            <div className="overflow-x-auto">
             <table className="w-full">
-                <thead className="bg-muted/30 border-b border-border">
+                <thead className={dataTableHeaderRowClassName}>
                     <tr>
                         <SortableTableHead 
                             field="date" 
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Fecha / Hora
                         </SortableTableHead>
@@ -39,7 +51,7 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Producto
                         </SortableTableHead>
@@ -48,7 +60,7 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Sucursal
                         </SortableTableHead>
@@ -57,7 +69,7 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Operación
                         </SortableTableHead>
@@ -66,7 +78,7 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Stock Movido
                         </SortableTableHead>
@@ -75,7 +87,7 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Balance
                         </SortableTableHead>
@@ -84,13 +96,13 @@ export function KardexTable({
                             currentSortBy={sortBy} 
                             currentSortOrder={sortOrder} 
                             onSort={onSort}
-                            className="px-5 py-4 text-left text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60"
+                            className={dataTableHead('px-5 py-4 text-left')}
                         >
                             Documento
                         </SortableTableHead>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
+                <tbody className="divide-y divide-border/70">
                     {isLoading && transactions.length === 0 ? (
                         <tr>
                             <td colSpan={7} className="px-6 py-24 text-center">
@@ -109,34 +121,34 @@ export function KardexTable({
                         </tr>
                     ) : (
                         transactions.map((t) => (
-                            <tr key={t.id} className="hover:bg-muted/5 transition-colors group">
+                            <tr key={t.id} className={dataTableRowClassName}>
                                 <td className="px-5 py-4 whitespace-nowrap">
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-foreground uppercase tracking-tight">
+                                        <span className={dataTableCellPrimaryClassName}>
                                             {format(new Date(t.date), 'dd MMM yyyy', { locale: es })}
                                         </span>
-                                        <span className="text-[10px] font-bold text-muted-foreground/60">
+                                        <span className={dataTableCellSecondaryClassName}>
                                             {format(new Date(t.date), 'hh:mm a')}
                                         </span>
                                     </div>
                                 </td>
                                 <td className="px-5 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 border border-border/50">
-                                            <Package size={14} className="text-muted-foreground/60" />
+                                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-border/60">
+                                            <Package size={14} className="text-slate-500 dark:text-slate-400" />
                                         </div>
                                         <div className="flex flex-col min-w-0 max-w-[250px]">
-                                            <span className="text-[11px] font-black text-foreground uppercase tracking-tight truncate leading-tight">
+                                            <span className={cn(dataTableCellPrimaryClassName, 'truncate leading-tight')}>
                                                 {t.product?.name || 'PRODUCTO DESCONOCIDO'}
                                             </span>
-                                            <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+                                            <span className={cn(dataTableCellCodeClassName, 'text-[9px] tracking-[0.08em]')}>
                                                 {t.product?.code || 'SIN CÓDIGO'}
                                             </span>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-5 py-4 whitespace-nowrap">
-                                    <span className="text-[10px] font-black text-foreground uppercase tracking-widest">
+                                    <span className={dataTableCellSecondaryClassName}>
                                         {t.branchOffice?.name || '-'}
                                     </span>
                                 </td>
@@ -144,19 +156,22 @@ export function KardexTable({
                                     <KardexMovementBadge type={t.type} />
                                 </td>
                                 <td className="px-5 py-4 whitespace-nowrap">
-                                    <span className={`text-[13px] font-black tracking-tighter ${
-                                        t.quantity > 0 ? 'text-emerald-500' : 'text-rose-500'
-                                    }`}>
+                                    <span
+                                        className={cn(
+                                            'text-[12px] font-semibold tabular-nums',
+                                            t.quantity > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                        )}
+                                    >
                                         {t.quantity > 0 ? '+' : ''}{t.quantity}
                                     </span>
                                 </td>
                                 <td className="px-5 py-4 whitespace-nowrap">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight">
+                                        <span className={dataTableCellSecondaryClassName}>
                                             {t.previousStock}
                                         </span>
-                                        <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
-                                        <span className="text-[12px] font-black text-foreground uppercase tracking-tight">
+                                        <ArrowRightLeft className="w-2.5 h-2.5 text-slate-400 dark:text-slate-500" />
+                                        <span className={dataTableCellNumericClassName}>
                                             {t.newStock}
                                         </span>
                                     </div>
@@ -165,12 +180,12 @@ export function KardexTable({
                                     {t.documentNumber ? (
                                         <div className="flex items-center gap-2">
                                             <FileText size={12} className="text-primary/50" />
-                                            <span className="text-[10px] font-black text-foreground uppercase tracking-widest">
+                                            <span className={dataTableCellCodeClassName}>
                                                 {t.documentNumber}
                                             </span>
                                         </div>
                                     ) : (
-                                        <span className="text-[10px] font-bold text-muted-foreground/30 italic uppercase tracking-widest">-</span>
+                                        <span className={cn(dataTableCellSecondaryClassName, 'italic')}>-</span>
                                     )}
                                 </td>
                             </tr>
@@ -178,6 +193,7 @@ export function KardexTable({
                     )}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 }

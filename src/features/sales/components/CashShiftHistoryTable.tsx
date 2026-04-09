@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { ShiftStatus } from '@/services/cash-shift.service';
 import type { CashShift } from '@/services/cash-shift.service';
 import { formatCurrency, parseDate, ShiftStatusBadge } from './SalesUtils';
+import { dataTableFooterClassName, dataTableHead, dataTableHeaderRowClassName, dataTableRowClassName, dataTableShellClassName } from '@/components/shared/dataTableStyles';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 40];
 
@@ -30,41 +31,41 @@ export function CashShiftHistoryTable({
     const navigate = useNavigate();
 
     return (
-        <div className="hidden md:block bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className={`hidden md:block ${dataTableShellClassName}`}>
             <div className="overflow-x-auto">
                 <table className="w-full">
-                    <thead className="bg-muted/30 border-b border-border">
+                    <thead className={dataTableHeaderRowClassName}>
                         <tr>
-                            <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-left')}>
                                 ID Turno
                             </th>
-                            <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-left')}>
                                 Sucursal
                             </th>
-                            <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-left')}>
                                 Estado
                             </th>
-                            <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-left')}>
                                 Apertura / Cierre
                             </th>
-                            <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-right')}>
                                 Monto Inicial
                             </th>
-                            <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-right')}>
                                 Ingresos
                             </th>
-                            <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-right')}>
                                 Egresos
                             </th>
-                            <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-right')}>
                                 Balance Final
                             </th>
-                            <th className="px-5 py-3 text-center text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
+                            <th className={dataTableHead('px-5 py-3 text-center')}>
                                 Acciones
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody className="divide-y divide-border/70">
                         {isLoading ? (
                             <tr>
                                 <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
@@ -99,7 +100,7 @@ export function CashShiftHistoryTable({
                                 const finalExpected = initialAmt + totalIncome - totalExpense;
 
                                 return (
-                                    <tr key={shift.id} className="hover:bg-muted/10 transition-colors group">
+                                    <tr key={shift.id} className={dataTableRowClassName}>
                                         <td className="px-5 py-4 whitespace-nowrap">
                                             <span className="text-xs font-bold text-primary tabular-nums">
                                                 #{shortId}
@@ -182,7 +183,7 @@ export function CashShiftHistoryTable({
             </div>
 
             {/* Pagination Desktop */}
-            <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-muted/20">
+            <div className={dataTableFooterClassName}>
                 <div className="flex items-center gap-4">
                     <span className="text-[11px] text-muted-foreground font-medium">
                         Mostrando <span className="font-bold text-foreground">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalShifts)}</span> de <span className="font-bold text-foreground">{totalShifts}</span> turnos

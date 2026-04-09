@@ -65,17 +65,17 @@ export function AdvancedFilterModal({
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5">
-                <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Filtros Avanzados</h2>
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 sm:py-5">
+                <h2 className="text-base sm:text-xl font-semibold sm:font-black text-foreground uppercase tracking-tight">Filtros Avanzados</h2>
                 <button 
                     onClick={onClose}
                     className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-accent transition-colors"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-8 space-y-8 custom-scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-6 sm:pb-8 space-y-6 sm:space-y-8 custom-scrollbar-hide">
                 {/* CATEGORY SECTION */}
                 <section className="space-y-4">
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.1em]">Categoría</h3>
@@ -215,7 +215,7 @@ export function AdvancedFilterModal({
                         />
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Mínimo</label>
                             <div className="relative">
@@ -245,17 +245,17 @@ export function AdvancedFilterModal({
             </div>
 
             {/* Footer Buttons */}
-            <div className="mt-auto shrink-0 w-full p-6 bg-card border-t border-border flex gap-4 z-20 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+            <div className="mt-auto shrink-0 w-full p-4 sm:p-6 bg-card border-t border-border flex flex-col sm:flex-row gap-2 sm:gap-4 z-20 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
                 <Button 
                     variant="outline"
                     onClick={handleReset}
-                    className="flex-1 h-12 rounded-xl border-border text-muted-foreground font-black uppercase text-[12px] hover:bg-muted"
+                    className="flex-1 h-10 sm:h-12 rounded-xl border-border text-muted-foreground font-semibold sm:font-black uppercase text-[12px] hover:bg-muted"
                 >
                     Limpiar Filtros
                 </Button>
                 <Button 
                     onClick={handleApply}
-                    className="flex-1 h-12 rounded-xl bg-[#5fa5d9] hover:bg-[#4096d8] text-white font-black uppercase text-[12px] shadow-lg shadow-blue-400/20"
+                    className="flex-1 h-10 sm:h-12 rounded-xl bg-[#5fa5d9] hover:bg-[#4096d8] text-white font-semibold sm:font-black uppercase text-[12px] shadow-lg shadow-blue-400/20"
                 >
                     Aplicar Filtros
                 </Button>

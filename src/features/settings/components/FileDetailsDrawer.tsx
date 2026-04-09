@@ -93,9 +93,9 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                     <SheetTitle>Detalles del Archivo</SheetTitle>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
                     {/* Preview Section */}
-                    <div className="h-52 w-full rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 overflow-hidden relative group">
+                    <div className="h-44 sm:h-52 w-full rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 overflow-hidden relative group">
                         {file.mimeType.includes('image') ? (
                             <img src={file.path} alt={file.name} className="w-full h-full object-contain" />
                         ) : (
@@ -116,7 +116,7 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">
                                     Tipo
@@ -131,7 +131,7 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">
                                     Dimensiones
@@ -158,7 +158,7 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                                 </div>
                                 <Button
                                     variant="primary"
-                                    className="w-full bg-[#56a3e2] hover:bg-[#4a8ec5] text-white font-bold h-10"
+                                    className="w-full bg-[#56a3e2] hover:bg-[#4a8ec5] text-white font-semibold h-9 sm:h-10"
                                     onClick={handleCopyUrl}
                                 >
                                     {isCopying ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
@@ -169,10 +169,10 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                     </div>
                 </div>
 
-                <SheetFooter className="p-6 border-t border-slate-50 flex flex-col gap-3 sm:flex-col sm:space-x-0 !mt-0 bg-slate-50/30">
+                <SheetFooter className="p-4 sm:p-6 border-t border-slate-50 flex flex-col gap-2 sm:gap-3 sm:flex-col sm:space-x-0 !mt-0 bg-slate-50/30">
                     <Button
                         variant="ghost"
-                        className="w-full h-11 border border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300"
+                        className="w-full h-10 sm:h-11 border border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300"
                         onClick={() => downloadFileFromUrl(downloadUrl, file.name)}
                     >
                         <Download className="w-4 h-4 mr-2" />
@@ -180,7 +180,7 @@ export function FileDetailsDrawer({ file, open, onOpenChange, onDelete }: FileDe
                     </Button>
                     <Button
                         variant="ghost"
-                        className="w-full h-11 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        className="w-full h-10 sm:h-11 text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={() => setIsDeleteConfirmOpen(true)}
                     >
                         <Trash2 className="w-4 h-4 mr-2" />

@@ -35,7 +35,7 @@ export function ReportsMobileList({
       {reports.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground/50 bg-card/50 rounded-2xl border-dashed">
           <FileText size={40} className="mx-auto mb-3 opacity-10" />
-          <p className="text-[10px] font-black uppercase tracking-widest">Sin reportes registrados</p>
+          <p className="text-xs font-semibold tracking-tight">Sin reportes registrados</p>
         </Card>
       ) : (
         reports.map((report) => {
@@ -60,13 +60,13 @@ export function ReportsMobileList({
                   {getFileIcon(report.mimeType, report.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[13px] font-black text-foreground tracking-tight truncate leading-tight uppercase">
+                  <h3 className="text-sm font-semibold text-foreground tracking-tight truncate leading-tight">
                     {report.name}
                   </h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[9px] font-black text-primary/50 uppercase tracking-widest">Reporte</span>
+                    <span className="text-[10px] font-semibold text-primary/60">Reporte</span>
                     <div className="w-1 h-1 rounded-full bg-border/50" />
-                    <span className="text-[10px] font-black text-foreground/70 uppercase">{fileSize}</span>
+                    <span className="text-[10px] font-medium text-foreground/70">{fileSize}</span>
                   </div>
                 </div>
               </div>
@@ -74,7 +74,7 @@ export function ReportsMobileList({
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[8px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mb-1.5">Generación</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Generación</p>
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-foreground/80">
                       <Clock size={10} className="opacity-40" />
                       <span>{genDateStr ? (() => {
@@ -84,7 +84,7 @@ export function ReportsMobileList({
                     </div>
                   </div>
                   <div>
-                    <p className="text-[8px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mb-1.5">Expira en</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Expira en</p>
                     <div className={cn("flex items-center gap-1.5 text-[10px] font-bold", report.status === 'EXPIRING_SOON' ? "text-amber-500" : "text-foreground/80")}>
                       <AlertCircle size={10} className="opacity-40" />
                       <span>{expDateStr ? (() => {
@@ -97,11 +97,11 @@ export function ReportsMobileList({
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/10">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest">Estado</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">Estado</span>
                     <Badge
                       variant="outline"
                       className={cn(
-                        "px-2 py-0.5 rounded-md font-bold text-[8px] flex items-center gap-1 border shadow-none uppercase tracking-wider",
+                        "px-2 py-0.5 rounded-md font-semibold text-[9px] flex items-center gap-1 border shadow-none",
                         statusInfo.className
                       )}
                     >
@@ -115,7 +115,7 @@ export function ReportsMobileList({
               <div className="p-3 bg-muted/20 border-t border-border/30 flex items-center gap-2">
                 <Button
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 h-11 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.97]",
+                    "flex-1 flex items-center justify-center gap-2 h-11 bg-primary text-primary-foreground rounded-xl text-xs font-semibold transition-all active:scale-[0.97]",
                     isExpired && "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
                   )}
                   disabled={isExpired}

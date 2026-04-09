@@ -47,9 +47,9 @@ export function SelectClientModal({
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Seleccionar Cliente" size="md">
-            <div className="flex flex-col h-[500px]">
+            <div className="flex flex-col h-[min(500px,70vh)] sm:h-[500px]">
                 {/* Search Input */}
-                <div className="p-3 border-b border-border bg-background shrink-0">
+                <div className="p-3 sm:p-4 border-b border-border bg-background shrink-0">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <input
@@ -85,14 +85,14 @@ export function SelectClientModal({
                             >
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className={`text-[15px] font-bold truncate ${selectedClient?.id === client.id ? 'text-[#4096d8]' : 'text-foreground'}`}>
+                                        <span className={`text-[15px] font-semibold truncate ${selectedClient?.id === client.id ? 'text-[#4096d8]' : 'text-foreground'}`}>
                                             {client.name}
                                         </span>
                                         {selectedClient?.id === client.id && (
                                             <Check className="h-5 w-5 text-[#4096d8] flex-shrink-0" />
                                         )}
                                     </div>
-                                    <span className="text-xs uppercase font-medium text-muted-foreground group-hover:text-foreground">
+                                    <span className="text-xs uppercase font-medium tracking-[0.12em] text-muted-foreground group-hover:text-foreground">
                                         DOCUMENTO - {client.documentNumber}
                                     </span>
                                 </div>
@@ -102,16 +102,16 @@ export function SelectClientModal({
                 </div>
 
                 {/* Footer Action */}
-                <div className="p-4 border-t border-border bg-background shrink-0">
+                <div className="p-3 sm:p-4 border-t border-border bg-background shrink-0">
                     <button
                         onClick={() => {
                             onClose();
                             onNewClient();
                         }}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-white bg-[#4096d8] hover:bg-blue-500 rounded-xl transition-all shadow-md shadow-[#4096d8]/20 active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white bg-[#4096d8] hover:bg-blue-500 rounded-xl transition-all shadow-md shadow-[#4096d8]/20 active:scale-95"
                     >
                         <UserPlus className="h-5 w-5" />
-                        AGREGAR NUEVO CLIENTE
+                        Agregar Nuevo Cliente
                     </button>
                 </div>
             </div>

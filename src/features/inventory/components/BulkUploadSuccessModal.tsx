@@ -23,8 +23,8 @@ export function BulkUploadSuccessModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-card rounded-3xl shadow-2xl w-full max-w-md flex flex-col items-center overflow-hidden p-6 text-center relative animate-in zoom-in-95 duration-300 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-card rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md flex flex-col items-center overflow-hidden p-5 sm:p-6 text-center relative animate-in zoom-in-95 duration-300 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
 
                 {/* Icon Container */}
                 <div className="relative mb-4">
@@ -37,7 +37,7 @@ export function BulkUploadSuccessModal({
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-foreground mb-1 uppercase tracking-tight">¡Importación Exitosa!</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 uppercase tracking-tight">¡Importación Exitosa!</h3>
 
                 {/* Subtitle */}
                 <p className="text-xs text-muted-foreground mb-6 max-w-[240px] leading-relaxed">
@@ -82,7 +82,7 @@ export function BulkUploadSuccessModal({
                 {/* Action Button */}
                 <Button
                     onClick={onNavigate}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 text-xs uppercase tracking-wide shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98] shrink-0"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 sm:h-11 text-xs uppercase tracking-wide shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98] shrink-0"
                 >
                     Finalizar y Ver Inventario
                 </Button>

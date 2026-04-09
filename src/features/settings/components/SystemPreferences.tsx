@@ -2,6 +2,7 @@ import { Coins, Percent, Clock, HardDrive } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { nativeSelectClassName } from '@/components/shared/formFieldStyles';
 import type { UseFormRegister, FieldValues, Path } from 'react-hook-form';
 import { type CurrencySelectOption } from '@/services/currency.service';
 
@@ -28,7 +29,7 @@ export function SystemPreferences<T extends FieldValues>({
           </Label>
           <select
             {...register('mainCurrencyId' as Path<T>)}
-            className="w-full h-10 px-3 py-2 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+            className={nativeSelectClassName}
           >
             <option value="">Seleccionar moneda</option>
             {currencies.map(c => (
@@ -68,7 +69,7 @@ export function SystemPreferences<T extends FieldValues>({
               </Label>
               <select
                 {...register('stockNotificationFrequency' as Path<T>)}
-                className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                className={nativeSelectClassName}
               >
                 <option value="DAILY">Diario</option>
                 <option value="WEEKLY">Semanal</option>
@@ -90,7 +91,7 @@ export function SystemPreferences<T extends FieldValues>({
               </Label>
               <select
                 {...register('salesNotificationFrequency' as Path<T>)}
-                className="w-full h-9 px-3 py-1 bg-muted/30 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                className={nativeSelectClassName}
               >
                 <option value="DAILY">Diario</option>
                 <option value="WEEKLY">Semanal</option>

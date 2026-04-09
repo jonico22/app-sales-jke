@@ -1,4 +1,5 @@
 import { Bell, CheckCheck, X } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 
 interface NotificationHeaderProps {
@@ -9,19 +10,15 @@ interface NotificationHeaderProps {
 }
 
 export function NotificationHeader({ unreadCount, hasFilters, onMarkAllAsRead, onClearFilters }: NotificationHeaderProps) {
-    return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
-            <div>
-                <h1 className="text-xl sm:text-2xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
-                    <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-                    Historial de Notificaciones
-                </h1>
-                <p className="text-muted-foreground text-[10px] sm:text-sm mt-1 font-medium">
-                    Administra tus alertas y mensajes de sistema en un solo lugar.
-                </p>
-            </div>
-
-            <div className="flex flex-row md:flex-row items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+  return (
+    <PageHeader
+      title="Historial de Notificaciones"
+      subtitle="Administra tus alertas y mensajes de sistema en un solo lugar."
+      leading={<Bell className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />}
+      className="gap-4 sm:gap-6"
+      actionsClassName="flex flex-row md:flex-row items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide"
+      actions={(
+        <>
                 {unreadCount > 0 && (
                     <Button
                         variant="outline"
@@ -45,7 +42,8 @@ export function NotificationHeader({ unreadCount, hasFilters, onMarkAllAsRead, o
                         Limpiar
                     </Button>
                 )}
-            </div>
-        </div>
-    );
+        </>
+      )}
+    />
+  );
 }

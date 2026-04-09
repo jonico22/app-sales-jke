@@ -143,17 +143,17 @@ export const UploadFileModal = React.memo(({
         >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col min-h-0">
                 <TabsList className="mb-6 shrink-0">
-                    <TabsTrigger value="upload" className="flex items-center gap-2">
+                    <TabsTrigger value="upload" className="flex items-center gap-2 font-semibold text-[11px] tracking-[0.08em] uppercase">
                         <Upload className="w-4 h-4" />
                         Subir nuevo
                     </TabsTrigger>
                     {showLibraryTab && (
-                        <TabsTrigger value="library" className="flex items-center gap-2">
+                        <TabsTrigger value="library" className="flex items-center gap-2 font-semibold text-[11px] tracking-[0.08em] uppercase">
                             <FileIcon className="w-4 h-4" />
                             Biblioteca
                         </TabsTrigger>
                     )}
-                    <TabsTrigger value="external" className="flex items-center gap-2">
+                    <TabsTrigger value="external" className="flex items-center gap-2 font-semibold text-[11px] tracking-[0.08em] uppercase">
                         <LinkIcon className="w-4 h-4" />
                         Enlace Externo
                     </TabsTrigger>

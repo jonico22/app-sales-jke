@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 
 interface UsersHeaderProps {
@@ -7,14 +8,12 @@ interface UsersHeaderProps {
 
 export function UsersHeader({ onNewUser }: UsersHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div className="space-y-0.5">
-        <h1 className="text-base sm:text-lg font-black text-foreground tracking-tight uppercase">Usuarios y Accesos</h1>
-        <p className="text-muted-foreground text-[10px] sm:text-[11px] font-medium leading-none">
-          Gestione el acceso al sistema y permisos.
-        </p>
-      </div>
-      <Button
+    <PageHeader
+      title="Usuarios y Accesos"
+      subtitle="Gestione el acceso al sistema y permisos."
+      subtitleClassName="text-[11px] sm:text-sm leading-relaxed"
+      actions={(
+        <Button
         onClick={onNewUser}
         variant="primary"
         size="sm"
@@ -22,7 +21,8 @@ export function UsersHeader({ onNewUser }: UsersHeaderProps) {
       >
         <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
         Nuevo Usuario
-      </Button>
-    </div>
+        </Button>
+      )}
+    />
   );
 }

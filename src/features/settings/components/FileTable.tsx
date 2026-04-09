@@ -1,6 +1,7 @@
 import { Download, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { dataTableHeadClassName, dataTableHeaderRowClassName, dataTableRowClassName } from '@/components/shared/dataTableStyles';
 import { type FileMetadata } from '@/services/file.service';
 
 interface FileTableProps {
@@ -19,22 +20,22 @@ export function FileTable({
   formatSize
 }: FileTableProps) {
   return (
-    <Card className="overflow-hidden border-border bg-card">
+    <Card className="overflow-hidden border-border/80 bg-card rounded-2xl shadow-sm">
       <table className="w-full text-left text-sm border-collapse">
-        <thead className="bg-muted/50 border-b border-border">
+        <thead className={dataTableHeaderRowClassName}>
           <tr>
-            <th className="px-4 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Nombre</th>
-            <th className="px-4 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Tipo</th>
-            <th className="px-4 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Tamaño</th>
-            <th className="px-4 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Fecha</th>
-            <th className="px-4 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[10px] text-right">Acciones</th>
+            <th className={`${dataTableHeadClassName} px-4 py-3`}>Nombre</th>
+            <th className={`${dataTableHeadClassName} px-4 py-3`}>Tipo</th>
+            <th className={`${dataTableHeadClassName} px-4 py-3`}>Tamaño</th>
+            <th className={`${dataTableHeadClassName} px-4 py-3`}>Fecha</th>
+            <th className={`${dataTableHeadClassName} px-4 py-3 text-right`}>Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/70">
           {files.map(file => (
             <tr
               key={file.id}
-              className="hover:bg-muted/30 transition-colors cursor-pointer group"
+              className={`${dataTableRowClassName} cursor-pointer`}
               onClick={() => onFileClick(file)}
             >
               <td className="px-4 py-3">

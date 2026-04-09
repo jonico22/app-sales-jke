@@ -1,5 +1,6 @@
 import { Search, ChevronDown } from 'lucide-react';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
+import { compactNativeSelectClassName } from '@/components/shared/formFieldStyles';
 
 interface CashShiftHistoryFilterBarProps {
     searchTerm: string;
@@ -39,46 +40,46 @@ export function CashShiftHistoryFilterBar({
 
                 {/* Branch filter */}
                 <div className="relative min-w-[180px]">
-                    <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
                         Sucursal
                     </label>
                     <div className="relative">
                         <select
                             value={branchFilter}
                             onChange={(e) => { setBranchFilter(e.target.value); resetPage(); }}
-                            className="w-full appearance-none pl-3 pr-8 py-2 bg-muted/50 hover:bg-muted border border-border rounded-xl text-xs text-foreground focus:outline-none cursor-pointer font-medium transition-colors"
+                            className={`${compactNativeSelectClassName} pr-11`}
                         >
                             <option value="">Todas las sucursales</option>
                             {branches.map((b) => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
                     </div>
                 </div>
 
                 {/* Status filter */}
                 <div className="relative min-w-[160px]">
-                    <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
                         Estado
                     </label>
                     <div className="relative">
                         <select
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as any); resetPage(); }}
-                            className="w-full appearance-none pl-3 pr-8 py-2 bg-muted/50 hover:bg-muted border border-border rounded-xl text-xs text-foreground focus:outline-none cursor-pointer font-medium transition-colors"
+                            className={`${compactNativeSelectClassName} pr-11`}
                         >
                             <option value="">Todos</option>
                             <option value="OPEN">Abierto</option>
                             <option value="CLOSED">Cerrado</option>
                         </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
                     </div>
                 </div>
 
                 {/* Date range */}
                 <div>
-                    <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em] mb-1.5">
                         Rango de Fechas
                     </label>
                     <DateRangePicker

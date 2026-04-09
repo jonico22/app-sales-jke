@@ -155,7 +155,7 @@ export default function SalesHistoryPage() {
 
     if (detailId) {
         return (
-            <div className="max-w-[1400px] mx-auto">
+            <div className="max-w-[1400px] mx-auto pb-10">
                 <SalesOrderDetailView
                     orderId={detailId}
                     onBack={handleClearDetail}
@@ -165,7 +165,7 @@ export default function SalesHistoryPage() {
     }
 
     return (
-        <div className="space-y-6 max-w-[1400px] mx-auto min-h-screen bg-background">
+        <div className="space-y-6 max-w-[1400px] mx-auto pb-10">
             <SalesHistoryHeader
                 isExporting={isExporting}
                 onExportGeneral={handleExportGeneral}

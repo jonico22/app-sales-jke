@@ -49,10 +49,10 @@ export function UpdateMovementStatusModal({
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl rounded-[1.5rem] bg-card">
                 <DialogHeader className="p-6 bg-muted/20 border-b border-border/40">
-                    <DialogTitle className="text-lg font-black text-foreground uppercase tracking-tight flex items-center gap-2">
+                    <DialogTitle className="text-lg font-semibold text-foreground tracking-tight flex items-center gap-2">
                         Actualizar Estado del Movimiento
                     </DialogTitle>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.12em] opacity-70">
                         Referencia: {movement.referenceCode || movement.id.slice(0, 8).toUpperCase()}
                     </p>
                 </DialogHeader>
@@ -76,7 +76,7 @@ export function UpdateMovementStatusModal({
                                 <CheckCircle2 className="w-5 h-5" />
                             </div>
                             <span className={cn(
-                                "text-xs font-black uppercase tracking-wider",
+                                "text-xs font-semibold uppercase tracking-[0.12em]",
                                 selectedStatus === MovementStatus.COMPLETED ? "text-emerald-600" : "text-muted-foreground"
                             )}>
                                 Completar
@@ -100,7 +100,7 @@ export function UpdateMovementStatusModal({
                                 <XCircle className="w-5 h-5" />
                             </div>
                             <span className={cn(
-                                "text-xs font-black uppercase tracking-wider",
+                                "text-xs font-semibold uppercase tracking-[0.12em]",
                                 selectedStatus === MovementStatus.CANCELLED ? "text-rose-600" : "text-muted-foreground"
                             )}>
                                 Cancelar
@@ -110,7 +110,7 @@ export function UpdateMovementStatusModal({
 
                     {selectedStatus === MovementStatus.CANCELLED && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                            <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground flex items-center gap-1.5">
                                 <AlertCircle className="w-3 h-3" />
                                 Motivo de Cancelación
                             </Label>
@@ -129,7 +129,7 @@ export function UpdateMovementStatusModal({
                         variant="ghost"
                         onClick={handleClose}
                         disabled={isLoading}
-                        className="flex-1 h-11 text-[11px] font-black uppercase tracking-widest text-muted-foreground rounded-xl"
+                        className="flex-1 h-11 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground rounded-xl"
                     >
                         Volver
                     </Button>
@@ -137,7 +137,7 @@ export function UpdateMovementStatusModal({
                         onClick={handleConfirm}
                         disabled={isLoading || !selectedStatus || (selectedStatus === 'CANCELLED' && !reason.trim())}
                         className={cn(
-                            "flex-1 h-11 text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg transition-all",
+                            "flex-1 h-11 text-[11px] font-semibold uppercase tracking-[0.12em] rounded-xl shadow-lg transition-all",
                             selectedStatus === 'CANCELLED' ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-primary hover:bg-primary/90 shadow-primary/20"
                         )}
                     >

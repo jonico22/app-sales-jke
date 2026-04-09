@@ -5,6 +5,20 @@ import { Button } from '@/components/ui/button';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { type Product } from '@/services/product.service';
 import { cn } from '@/lib/utils';
+import {
+    dataTableActionButtonClassName,
+    dataTableActionDestructiveClassName,
+    dataTableActionIconClassName,
+    dataTableActionPrimaryClassName,
+    dataTableCellCodeClassName,
+    dataTableCellMutedNumericClassName,
+    dataTableCellNumericClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHead,
+    dataTableHeaderRowClassName,
+    dataTableRow
+} from '@/components/shared/dataTableStyles';
 
 // Rule js-cache-function-results (Priority 2)
 const CURRENCY_FORMATTER = new Intl.NumberFormat('es-PE', {
@@ -38,14 +52,14 @@ export function ProductsTable({
     return (
         <div className="hidden md:block">
             <Table>
-                <TableHeader className="bg-muted/50 border-b border-border">
+                <TableHeader className={dataTableHeaderRowClassName}>
                     <TableRow className="hover:bg-transparent border-none">
                         <SortableTableHead
                             field="code"
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[120px] h-10')}
                         >
                             Código
                         </SortableTableHead>
@@ -54,7 +68,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[250px] h-10')}
                         >
                             Producto
                         </SortableTableHead>
@@ -63,7 +77,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[150px] h-10')}
                         >
                             Categoría
                         </SortableTableHead>
@@ -72,7 +86,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            className={dataTableHead('w-[100px] h-10 text-right')}
                         >
                             Min.
                         </SortableTableHead>
@@ -81,7 +95,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            className={dataTableHead('w-[100px] h-10 text-right')}
                         >
                             Stock
                         </SortableTableHead>
@@ -90,7 +104,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-right"
+                            className={dataTableHead('w-[120px] h-10 text-right')}
                         >
                             P. Venta
                         </SortableTableHead>
@@ -99,7 +113,7 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[120px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center"
+                            className={dataTableHead('w-[120px] h-10 text-center')}
                         >
                             Registro
                         </SortableTableHead>
@@ -108,11 +122,11 @@ export function ProductsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center"
+                            className={dataTableHead('w-[100px] h-10 text-center')}
                         >
                             Estado
                         </SortableTableHead>
-                        <TableHead className="w-[100px] h-10 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
+                        <TableHead className={dataTableHead('w-[100px] h-10 text-right')}>Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -134,37 +148,39 @@ export function ProductsTable({
                                 <TableRow
                                     key={product.id}
                                     className={cn(
-                                        "border-border transition-colors group relative",
-                                        isNoStock ? "bg-rose-50/50 hover:bg-rose-100/60 dark:bg-rose-950/10 dark:hover:bg-rose-900/20 border-l-2 border-l-rose-500 shadow-[inset_2px_0_0_0_#f43f5e]" :
-                                            isLowStock ? "bg-amber-50/30 hover:bg-amber-100/40 dark:bg-amber-950/5 dark:hover:bg-amber-900/10 border-l-2 border-l-amber-500 shadow-[inset_2px_0_0_0_#f59e0b]" :
-                                                "hover:bg-muted/30"
+                                        dataTableRow('relative'),
+                                        isNoStock ? "bg-rose-50/85 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 border-l-2 border-l-rose-500 shadow-[inset_2px_0_0_0_#f43f5e]" :
+                                            isLowStock ? "bg-amber-50/80 hover:bg-amber-100/90 dark:bg-amber-950/15 dark:hover:bg-amber-900/25 border-l-2 border-l-amber-500 shadow-[inset_2px_0_0_0_#f59e0b]" :
+                                                "bg-white hover:bg-slate-50/90 dark:bg-slate-900/20 dark:hover:bg-slate-800/60"
                                     )}
                                 >
-                                    <TableCell className="font-mono text-[10px] text-muted-foreground pl-4">{product.code || '—'}</TableCell>
+                                    <TableCell className={cn(dataTableCellCodeClassName, 'pl-4')}>{product.code || '—'}</TableCell>
                                     <TableCell>
-                                        <div className="text-[11px] font-bold text-foreground line-clamp-1">{product.name}</div>
-                                        <div className="text-[9px] text-muted-foreground font-medium group-hover:text-primary transition-colors">{product.category?.name || 'Genérico'}</div>
+                                        <div className={cn(dataTableCellPrimaryClassName, 'line-clamp-1')}>{product.name}</div>
+                                        <div className={cn(dataTableCellSecondaryClassName, 'text-[9px] transition-colors group-hover:text-slate-600 dark:group-hover:text-slate-300')}>
+                                            {product.category?.name || 'Genérico'}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-[11px] font-medium text-muted-foreground">
+                                    <TableCell className={cn(dataTableCellPrimaryClassName, 'text-slate-600 dark:text-slate-300')}>
                                         <div className="flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/70" />
                                             {product.category?.name || '—'}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-muted-foreground/60">{product.minStock}</TableCell>
+                                    <TableCell className={cn(dataTableCellMutedNumericClassName, 'text-right')}>{product.minStock}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex flex-col items-end">
                                             <span className={cn(
-                                                "text-[11px] font-black tabular-nums",
+                                                dataTableCellNumericClassName,
                                                 isNoStock ? "text-rose-600 dark:text-rose-400" :
                                                     isLowStock ? "text-amber-600 dark:text-amber-400" :
-                                                        "text-primary"
+                                                        "text-sky-600 dark:text-sky-400"
                                             )}>
                                                 {product.stock}
                                             </span>
                                             {(isNoStock || isLowStock) && (
                                                 <span className={cn(
-                                                    "text-[8px] font-black uppercase tracking-tighter",
+                                                    "text-[8px] font-semibold uppercase tracking-[0.08em]",
                                                     isNoStock ? "text-rose-600 dark:text-rose-400" : "text-amber-600 dark:text-amber-400"
                                                 )}>
                                                     {isNoStock ? 'Sin Stock' : 'Crítico'}
@@ -172,14 +188,14 @@ export function ProductsTable({
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-right text-[11px] font-bold text-foreground">
+                                    <TableCell className={cn(dataTableCellNumericClassName, 'text-right')}>
                                         {formatCurrency(product.price)}
                                     </TableCell>
-                                    <TableCell className="text-center text-[10px] font-medium text-muted-foreground">
+                                    <TableCell className={cn(dataTableCellSecondaryClassName, 'text-center')}>
                                         {product.createdAt?.split(' ')[0] || '—'}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant={product.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!product.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
+                                        <Badge variant={product.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-semibold tracking-[0.08em] px-2 py-0.5 rounded-md ${!product.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
                                             {product.isActive ? 'Activo' : 'Inactivo'}
                                         </Badge>
                                     </TableCell>
@@ -188,18 +204,18 @@ export function ProductsTable({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                                                 onClick={() => onEdit(product.id)}
                                             >
-                                                <Pencil className="h-4 w-4" />
+                                                <Pencil className={dataTableActionIconClassName} />
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName)}
                                                 onClick={() => onDelete(product.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className={dataTableActionIconClassName} />
                                             </Button>
                                         </div>
                                     </TableCell>

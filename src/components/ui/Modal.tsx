@@ -42,7 +42,7 @@ export const Modal = memo(({ isOpen, onClose, title, children, size = 'md', hide
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
@@ -52,28 +52,28 @@ export const Modal = memo(({ isOpen, onClose, title, children, size = 'md', hide
             {/* Modal Content */}
             <div
                 ref={modalRef}
-                className={`relative bg-card rounded-2xl shadow-xl w-full ${sizeClasses[size]} max-h-[calc(100vh-2rem)] flex flex-col transform transition-all animate-in fade-in zoom-in-95 duration-200`}
+                className={`relative bg-card rounded-xl sm:rounded-2xl shadow-xl w-full ${sizeClasses[size]} max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] flex flex-col transform transition-all animate-in fade-in zoom-in-95 duration-200`}
                 role="dialog"
                 aria-modal="true"
             >
                 {/* Header */}
                 {!hideHeader ? (
-                    <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
-                        <h3 className="text-lg font-bold text-foreground">
+                    <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:p-6 border-b border-border shrink-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground leading-tight">
                             {title}
                         </h3>
                         <button
                             onClick={onClose}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted p-2 rounded-lg transition-colors"
+                            className="shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted p-1.5 sm:p-2 rounded-lg transition-colors"
                             aria-label="Cerrar"
                         >
-                            <X className="h-5 w-5" />
+                            <X className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                     </div>
                 ) : null}
 
                 {/* Body */}
-                <div className={`p-6 overflow-y-auto custom-scrollbar ${contentClassName}`}>
+                <div className={`p-4 sm:p-6 overflow-y-auto custom-scrollbar ${contentClassName}`}>
                     {children}
                 </div>
             </div>

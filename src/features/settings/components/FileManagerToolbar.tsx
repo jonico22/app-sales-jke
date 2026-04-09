@@ -1,4 +1,5 @@
 import { Search, Grid, List } from 'lucide-react';
+import { compactNativeSelectClassName } from '@/components/shared/formFieldStyles';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -27,13 +28,13 @@ export function FileManagerToolbar({
         />
       </div>
       <div className="flex items-center gap-3">
-        <select className="h-10 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+        <select className={compactNativeSelectClassName}>
           <option>Todos los tipos</option>
           <option>Imágenes</option>
           <option>Documentos</option>
           <option>Hojas de cálculo</option>
         </select>
-        <select className="h-10 px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+        <select className={compactNativeSelectClassName}>
           <option>Más recientes</option>
           <option>Nombre (A-Z)</option>
           <option>Tamaño</option>

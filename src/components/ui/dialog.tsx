@@ -64,7 +64,7 @@ const DialogContent = React.forwardRef<
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in"
@@ -75,13 +75,13 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "relative z-50 w-full max-w-lg rounded-2xl bg-card border border-border p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200",
+          "relative z-50 w-full max-w-lg max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-xl sm:rounded-2xl bg-card border border-border p-4 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200",
           className
         )}
         {...props}
       >
         <button
-          className="absolute right-4 top-4 rounded-lg p-1.5 opacity-60 transition-all hover:opacity-100 hover:bg-muted focus:outline-none"
+          className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-lg p-1.5 opacity-60 transition-all hover:opacity-100 hover:bg-muted focus:outline-none"
           onClick={() => onOpenChange(false)}
         >
           <X className="h-4 w-4 text-muted-foreground" />
@@ -101,6 +101,7 @@ const DialogHeader = ({
   <div
     className={cn(
       "flex flex-col text-center sm:text-left mb-6",
+      "flex flex-col text-center sm:text-left mb-4 sm:mb-6",
       className
     )}
     {...props}
@@ -114,7 +115,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-8 pt-4 border-t border-border",
+      "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2 mt-6 sm:mt-8 pt-3 sm:pt-4 border-t border-border",
       className
     )}
     {...props}
@@ -129,7 +130,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-xl font-bold leading-none tracking-tight text-foreground",
+      "text-base sm:text-lg font-semibold leading-tight tracking-tight text-foreground",
       className
     )}
     {...props}
