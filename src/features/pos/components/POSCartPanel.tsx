@@ -6,7 +6,6 @@ import { OrderStatus } from '@/services/order.service';
 import { useCreateOrderMutation } from '@/features/orders/hooks/useOrderQueries';
 import { useSocietyStore } from '@/store/society.store';
 import { useBranchStore } from '@/store/branch.store';
-import { POSPaymentModal } from './POSPaymentModal';
 import { POSAlertModal } from './POSAlertModal';
 import { parseBackendError } from '@/utils/error.utils';
 import type { AxiosError } from 'axios';
@@ -41,7 +40,6 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
     const total = totalWithTax - (discount || 0);
 
     const [processingStatus, setProcessingStatus] = useState<OrderStatus | null>(null);
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showNotes, setShowNotes] = useState(false);
 
@@ -116,13 +114,6 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
                 setProcessingStatus(null);
             }
         });
-    };
-
-    const handlePaymentSuccess = () => {
-        setShowPaymentModal(false);
-        onClose(); // Close cart panel
-        clearCart(); // Clear cart after successful payment
-        // Optionally show success message
     };
 
     // Lock body scroll when cart is open
@@ -361,19 +352,15 @@ export const POSCartPanel = memo(function POSCartPanel({ isOpen, onClose, select
                 </div>
             </div>
 
-            <POSPaymentModal
-                isOpen={showPaymentModal}
-                onClose={() => setShowPaymentModal(false)}
-                onPaymentSuccess={handlePaymentSuccess}
-            />
-
-            <POSAlertModal
-                isOpen={!!errorMessage}
-                onClose={() => setErrorMessage(null)}
-                title="Error al Registrar"
-                message={errorMessage || ''}
-                type="error"
-            />
+            {errorMessage ? (
+                <POSAlertModal
+                    isOpen={true}
+                    onClose={() => setErrorMessage(null)}
+                    title="Error al Registrar"
+                    message={errorMessage}
+                    type="error"
+                />
+            ) : null}
 
         </>
     );

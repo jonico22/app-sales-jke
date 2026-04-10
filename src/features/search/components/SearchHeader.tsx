@@ -1,6 +1,6 @@
+import { memo, useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode } from 'lucide-react';
 import type { Color } from '@/services/product.service';
-import { useState, useRef, useEffect } from 'react';
 import { Portal } from '@/components/shared/Portal';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -17,7 +17,7 @@ interface SearchHeaderProps {
     onOpenFilters?: () => void;
 }
 
-function ColorList({ 
+const ColorList = memo(function ColorList({ 
     colors, 
     selectedColor, 
     onColorSelect 
@@ -59,9 +59,9 @@ function ColorList({
             ))}
         </>
     );
-}
+});
 
-export function SearchHeader({
+export const SearchHeader = memo(function SearchHeader({
     searchQuery,
     onSearchChange,
     activeQuickFilters,
@@ -75,6 +75,22 @@ export function SearchHeader({
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
     const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const selectedColorLabel = useMemo(
+        () => colors.find(c => c.id === selectedColor)?.color,
+        [colors, selectedColor]
+    );
+
+    const handleClearSearch = useCallback(() => onSearchChange(''), [onSearchChange]);
+    const handleFavoritesToggle = useCallback(() => onToggleQuickFilter('favorites'), [onToggleQuickFilter]);
+    const handleBestSellersToggle = useCallback(() => onToggleQuickFilter('bestSellers'), [onToggleQuickFilter]);
+    const handleColorDropdownToggle = useCallback(
+        () => setIsColorDropdownOpen(prev => !prev),
+        []
+    );
+    const handleColorSelect = useCallback((id: string) => {
+        onColorSelect(id);
+        setIsColorDropdownOpen(false);
+    }, [onColorSelect]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -103,7 +119,7 @@ export function SearchHeader({
                     </div>
                     {searchQuery && (
                         <button
-                            onClick={() => onSearchChange('')}
+                            onClick={handleClearSearch}
                             className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
                         >
                             <X className="w-[18px] h-[18px]" />
@@ -141,7 +157,7 @@ export function SearchHeader({
                 <div className="lg:hidden w-[1px] h-6 bg-slate-200 shrink-0 mx-1" />
 
                 <button
-                    onClick={() => onToggleQuickFilter('favorites')}
+                    onClick={handleFavoritesToggle}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <Heart className={`w-[14px] h-[14px] ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
@@ -149,7 +165,7 @@ export function SearchHeader({
                 </button>
 
                 <button
-                    onClick={() => onToggleQuickFilter('bestSellers')}
+                    onClick={handleBestSellersToggle}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${activeQuickFilters.includes('bestSellers') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <TrendingUp className="w-[14px] h-[14px]" />
@@ -159,14 +175,14 @@ export function SearchHeader({
                 {/* Color Dropdown */}
                 <div className="relative shrink-0" ref={dropdownRef}>
                     <button
-                        onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+                        onClick={handleColorDropdownToggle}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-card border-border text-muted-foreground hover:bg-accent'}`}
                     >
                         {/* Paint palette icon */}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                         </svg>
-                        <span>{selectedColor ? `Color: ${colors.find(c => c.id === selectedColor)?.color}` : 'Color'}</span>
+                        <span>{selectedColor ? `Color: ${selectedColorLabel}` : 'Color'}</span>
                     </button>
 
                     {/* Color Dropdown Content */}
@@ -192,10 +208,7 @@ export function SearchHeader({
                                             <ColorList 
                                                 colors={colors} 
                                                 selectedColor={selectedColor} 
-                                                onColorSelect={(id) => {
-                                                    onColorSelect(id);
-                                                    setIsColorDropdownOpen(false);
-                                                }} 
+                                                onColorSelect={handleColorSelect} 
                                             />
                                         </div>
                                     </div>
@@ -206,10 +219,7 @@ export function SearchHeader({
                                         <ColorList 
                                             colors={colors} 
                                             selectedColor={selectedColor} 
-                                            onColorSelect={(id) => {
-                                                onColorSelect(id);
-                                                setIsColorDropdownOpen(false);
-                                            }} 
+                                            onColorSelect={handleColorSelect} 
                                         />
                                     </div>
                                 </div>
@@ -229,4 +239,4 @@ export function SearchHeader({
             </div>
         </div>
     );
-}
+});

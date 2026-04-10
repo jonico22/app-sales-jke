@@ -4,12 +4,38 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { act } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { useSocietyStore } from '@/store/society.store';
+import { useBranchStore } from '@/store/branch.store';
+import { useCartStore } from '@/store/cart.store';
 
-// 1. Configuración de MSW para tus APIs (Ventas/Inventario)
-// Aquí puedes importar tus handlers específicos
 export const server = setupServer(); // Expandir con handlers conforme se necesiten
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+const STATIC_ASSET_PATTERN = /\.(css|less|scss|sass|png|jpg|jpeg|gif|svg|webp|ico|woff2?|ttf|otf)$/i;
+
+const isIgnoredUnhandledRequest = (url: URL) => {
+  if (url.protocol === 'data:' || url.protocol === 'blob:') return true;
+  if (STATIC_ASSET_PATTERN.test(url.pathname)) return true;
+  if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') return true;
+  if (url.hostname.includes('dicebear.com')) return true;
+  return false;
+};
+
+beforeAll(() =>
+  server.listen({
+    onUnhandledRequest(request) {
+      const url = new URL(request.url);
+
+      if (isIgnoredUnhandledRequest(url)) {
+        return;
+      }
+
+      throw new Error(
+        `Unhandled ${request.method} request in tests: ${url.toString()}. Add an MSW handler or mock the service explicitly.`,
+      );
+    },
+  }),
+);
 afterEach(() => {
   cleanup();
   server.resetHandlers();
@@ -20,43 +46,29 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-// 3. Utilidad para resetear todos los stores de Zustand
-// Importamos los hooks de los stores para acceder a su API interna (.getState().reset() o similar)
-import { useAuthStore } from '@/store/auth.store';
-import { useSocietyStore } from '@/store/society.store';
-import { useBranchStore } from '@/store/branch.store';
-import { useCartStore } from '@/store/cart.store';
-
 const resetAllStores = () => {
   act(() => {
-    // Para stores con persistencia, a veces es necesario limpiar el storage manual
     localStorage.clear();
-    
-    // Reseteamos el estado interno de cada store (si tienen un método específico o manualmente)
-    // Nota: Como Zustand guarda el estado fuera de React, usamos .setState() con el estado inicial
-    
-    // Auth Store reset
+
     useAuthStore.setState({
       token: null,
       user: null,
       role: null,
       subscription: null,
       modulePermissions: null,
-      isAuthenticated: false
+      isAuthenticated: false,
+      isAuthResolved: false,
     });
 
-    // Society Store reset
     useSocietyStore.setState({
       society: null
     });
 
-    // Branch Store reset
     useBranchStore.setState({
       branches: [],
       selectedBranch: null
     });
 
-    // Cart Store reset
     useCartStore.setState({
       items: [],
       currentOrderId: null,
@@ -68,7 +80,6 @@ const resetAllStores = () => {
   });
 };
 
-// 4. Mocks de navegador globales para JSDOM
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
@@ -83,7 +94,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock de ResizeObserver
 vi.stubGlobal('ResizeObserver', vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),

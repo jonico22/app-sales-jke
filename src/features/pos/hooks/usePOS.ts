@@ -13,22 +13,19 @@ import type { Product } from '@/services/product.service';
  * Optimized for performance using useCallback and granular state management.
  */
 export function usePOS() {
-  const { selectedBranch } = useBranchStore();
-  const { 
-    clearCurrentOrder, 
-    currentOrderCode, 
-    currentOrderTotal,
-    addItem: addItemToCart,
-    selectedClient,
-    setSelectedClient
-  } = useCartStore();
+  const selectedBranch = useBranchStore(state => state.selectedBranch);
+  const clearCurrentOrder = useCartStore(state => state.clearCurrentOrder);
+  const currentOrderCode = useCartStore(state => state.currentOrderCode);
+  const currentOrderTotal = useCartStore(state => state.currentOrderTotal);
+  const addItemToCart = useCartStore(state => state.addItem);
+  const selectedClient = useCartStore(state => state.selectedClient);
+  const setSelectedClient = useCartStore(state => state.setSelectedClient);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [productsRefreshTrigger, setProductsRefreshTrigger] = useState(0);
   
   
   const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('YAPE');
@@ -137,7 +134,6 @@ export function usePOS() {
   const handleSaleSuccess = useCallback(() => {
     setIsPaymentModalOpen(true);
     setSelectedProduct(null);
-    setProductsRefreshTrigger(prev => prev + 1);
   }, []);
 
   const handlePaymentSuccess = useCallback((paymentMethod: string) => {
@@ -145,7 +141,6 @@ export function usePOS() {
     setIsPaymentModalOpen(false);
     setIsSuccessModalOpen(true);
     setSelectedProduct(null);
-    setProductsRefreshTrigger(prev => prev + 1);
   }, []);
 
   const handleCloseSuccessModal = useCallback(() => {
@@ -172,7 +167,6 @@ export function usePOS() {
     isPaymentModalOpen,
     setIsPaymentModalOpen,
     isSuccessModalOpen,
-    productsRefreshTrigger,
     currentOrderCode,
     currentOrderTotal,
     lastPaymentMethod,
@@ -194,4 +188,3 @@ export function usePOS() {
     navigate,
   };
 }
-

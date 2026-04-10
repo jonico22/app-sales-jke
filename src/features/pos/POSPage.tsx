@@ -24,7 +24,6 @@ export default function POSPage() {
     isAddClientModalOpen,
     setIsAddClientModalOpen,
     isCartOpen,
-    productsRefreshTrigger,
     currentOrderCode,
     currentOrderTotal,
     lastPaymentMethod,
@@ -81,7 +80,6 @@ export default function POSPage() {
             onAdvancedSearch={() => { }}
             selectedProduct={selectedProduct}
             onSelectProduct={handleProductSelect}
-            refreshTrigger={productsRefreshTrigger}
           />
 
           {/* View Catalog Button */}
@@ -99,47 +97,55 @@ export default function POSPage() {
         <POSFloatingCart onClick={handleCartOpen} />
 
         {/* Cart Panel */}
-        <POSCartPanel
-          isOpen={isCartOpen}
-          onClose={closeCart}
-          selectedClient={selectedClient}
-          onSaleSuccess={handleSaleSuccess}
-        />
+        {isCartOpen ? (
+          <POSCartPanel
+            isOpen={true}
+            onClose={closeCart}
+            selectedClient={selectedClient}
+            onSaleSuccess={handleSaleSuccess}
+          />
+        ) : null}
 
         {/* Payment Modal */}
-        <POSPaymentModal
-          isOpen={isPaymentModalOpen}
-          onClose={closePaymentModal}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
+        {isPaymentModalOpen ? (
+          <POSPaymentModal
+            isOpen={true}
+            onClose={closePaymentModal}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        ) : null}
 
         {/* Success Modal */}
-        <POSSuccessModal
-          isOpen={isSuccessModalOpen}
-          orderCode={currentOrderCode || ''}
-          clientName={selectedClient?.name || 'Cliente'}
-          paymentMethod={lastPaymentMethod}
-          total={currentOrderTotal}
-          onClose={handleCloseSuccessModal}
-          onPrintTicket={() => {
-            // TODO: Implement print ticket functionality
-          }}
-          onShareWhatsApp={() => {
-            // TODO: Implement WhatsApp share functionality
-          }}
-        />
+        {isSuccessModalOpen ? (
+          <POSSuccessModal
+            isOpen={true}
+            orderCode={currentOrderCode || ''}
+            clientName={selectedClient?.name || 'Cliente'}
+            paymentMethod={lastPaymentMethod}
+            total={currentOrderTotal}
+            onClose={handleCloseSuccessModal}
+            onPrintTicket={() => {
+              // TODO: Implement print ticket functionality
+            }}
+            onShareWhatsApp={() => {
+              // TODO: Implement WhatsApp share functionality
+            }}
+          />
+        ) : null}
 
         {/* Mobile Footer */}
         <POSMobileFooter />
 
         {/* Client Edit/Add Modal */}
-        <ClientEditModal
-          open={isAddClientModalOpen}
-          onOpenChange={setIsAddClientModalOpen}
-          client={null}
-          onSave={() => {}}
-          onSuccess={handleClientSuccess}
-        />
+        {isAddClientModalOpen ? (
+          <ClientEditModal
+            open={true}
+            onOpenChange={setIsAddClientModalOpen}
+            client={null}
+            onSave={() => {}}
+            onSuccess={handleClientSuccess}
+          />
+        ) : null}
 
       </div>
     </div>

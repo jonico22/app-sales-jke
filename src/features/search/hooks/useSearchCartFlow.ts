@@ -8,18 +8,16 @@ import { OrderStatus, type CreateOrderRequest } from '@/services/order.service';
 
 export function useSearchCartFlow() {
     const society = useSocietyStore(state => state.society);
-    const { selectedBranch } = useBranchStore();
-    const { 
-        items, 
-        discount, 
-        orderNotes, 
-        currencyId, 
-        setCurrentOrder, 
-        clearCurrentOrder, 
-        clearCart,
-        selectedClient,
-        setSelectedClient
-    } = useCartStore();
+    const selectedBranch = useBranchStore(state => state.selectedBranch);
+    const items = useCartStore(state => state.items);
+    const discount = useCartStore(state => state.discount);
+    const orderNotes = useCartStore(state => state.orderNotes);
+    const currencyId = useCartStore(state => state.currencyId);
+    const setCurrentOrder = useCartStore(state => state.setCurrentOrder);
+    const clearCurrentOrder = useCartStore(state => state.clearCurrentOrder);
+    const clearCart = useCartStore(state => state.clearCart);
+    const selectedClient = useCartStore(state => state.selectedClient);
+    const setSelectedClient = useCartStore(state => state.setSelectedClient);
 
     const totalItems = useCartStore(selectTotalItems);
     const totalPrice = useCartStore(selectTotalPrice);

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { UserPlus, Check, Search, Loader2 } from 'lucide-react';
 import { type ClientSelectOption } from '@/services/client.service';
@@ -12,7 +12,7 @@ interface SelectClientModalProps {
     onNewClient: () => void;
 }
 
-export function SelectClientModal({
+export const SelectClientModal = memo(function SelectClientModal({
     isOpen,
     onClose,
     selectedClient,
@@ -22,6 +22,7 @@ export function SelectClientModal({
     const { data: clients = [], isLoading } = useClients();
     const [searchTerm, setSearchTerm] = useState('');
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const deferredSearchTerm = useDeferredValue(searchTerm);
 
     // Focus search input when modal opens
     useEffect(() => {
@@ -34,10 +35,21 @@ export function SelectClientModal({
         }
     }, [isOpen]);
 
-    const filteredClients = clients.filter(client =>
-        (client.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.documentNumber || '').includes(searchTerm)
+    const normalizedSearchTerm = useMemo(
+        () => deferredSearchTerm.trim().toLowerCase(),
+        [deferredSearchTerm]
     );
+
+    const filteredClients = useMemo(() => {
+        if (!normalizedSearchTerm) {
+            return clients;
+        }
+
+        return clients.filter(client =>
+            (client.name || '').toLowerCase().includes(normalizedSearchTerm) ||
+            (client.documentNumber || '').includes(normalizedSearchTerm)
+        );
+    }, [clients, normalizedSearchTerm]);
 
     const handleSelect = (client: ClientSelectOption) => {
         onSelectClient(client);
@@ -117,4 +129,4 @@ export function SelectClientModal({
             </div>
         </Modal>
     );
-}
+});

@@ -78,6 +78,26 @@ export default defineConfig([
 
 ---
 
+## 🧪 Testing
+
+### Playwright E2E
+
+- `npm run test:e2e` ejecuta la suite E2E local.
+- El workflow `Playwright Tests` de GitHub Actions corre automáticamente solo en pushes a `main`.
+- La ejecución automática de CI excluye tests marcados con `@manual`, pensados para flujos que dependen de credenciales u otros prerequisitos menos estables.
+- [authenticated-smoke.spec.ts](./tests/e2e/authenticated-smoke.spec.ts) cubre el smoke autenticado estable usando una sesión sembrada y stubs mínimos de API. Ese es el flujo pensado para `main`.
+- [pos-sale-smoke.spec.ts](./tests/e2e/pos-sale-smoke.spec.ts) cubre un flujo inicial de venta estable en POS: seleccionar producto y abrir carrito.
+- [pos-order-smoke.spec.ts](./tests/e2e/pos-order-smoke.spec.ts) cubre el registro de un pedido desde el carrito POS.
+- [pos-payment-smoke.spec.ts](./tests/e2e/pos-payment-smoke.spec.ts) cubre el flujo estable de venta completa en POS hasta confirmar el pago.
+- [search-smoke.spec.ts](./tests/e2e/search-smoke.spec.ts) cubre el agregado de productos desde búsqueda avanzada.
+- [search-order-smoke.spec.ts](./tests/e2e/search-order-smoke.spec.ts) cubre el registro de pedido desde búsqueda avanzada.
+- [search-payment-smoke.spec.ts](./tests/e2e/search-payment-smoke.spec.ts) cubre la venta completa desde búsqueda avanzada hasta confirmar pago.
+- [auth.spec.ts](./tests/e2e/auth.spec.ts) cubre login real, navegación autenticada y logout contra la API. Está marcado como `@manual`.
+- Los flujos reutilizables, page objects y utilidades de E2E están organizados dentro de [`tests/e2e`](./tests/e2e/README.md).
+- POS y Search comparten page objects de overlays para carrito, pago y éxito, mientras que los botones propios de cada pantalla permanecen en su page object específico.
+- Los tests reales autenticados usan `TEST_USER_EMAIL` y `TEST_USER_PASSWORD` del entorno, y esperan que la API acepte el header `x-turnstile-token: test-turnstile-bypass` para el bypass de Turnstile en testing.
+- Para correr la suite completa en GitHub, ejecuta manualmente el workflow `Playwright Tests` y activa `full_suite=true`.
+
 ## 📖 Documentación Adicional
 
 Para entender cómo funcionan los diferentes modos de la aplicación y el proceso de despliegue, consulta la **[Guía de Entornos](./GUIA_ENTORNOS.md)**.

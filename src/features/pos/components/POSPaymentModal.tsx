@@ -16,7 +16,10 @@ type PaymentMethodUI = 'CASH' | 'CARD' | 'YAPE' | 'PLIN';
 type CardNetwork = 'VISA' | 'MASTERCARD' | 'AMEX' | null;
 
 export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymentModalProps) {
-    const { currentOrderId, currentOrderCode, currentOrderTotal, currencyId } = useCartStore();
+    const currentOrderId = useCartStore(state => state.currentOrderId);
+    const currentOrderCode = useCartStore(state => state.currentOrderCode);
+    const currentOrderTotal = useCartStore(state => state.currentOrderTotal);
+    const currencyId = useCartStore(state => state.currencyId);
     const society = useSocietyStore(state => state.society);
     const total = currentOrderTotal;
     const [method, setMethod] = useState<PaymentMethodUI>('YAPE');

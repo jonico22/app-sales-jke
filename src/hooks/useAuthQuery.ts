@@ -5,7 +5,8 @@ import { useAuthStore } from '@/store/auth.store';
 export const AUTH_ME_QUERY_KEY = ['auth', 'me'];
 
 export function useAuthQuery() {
-  const { isAuthenticated, token } = useAuthStore();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const token = useAuthStore(state => state.token);
 
   return useQuery<MeResponse>({
     queryKey: AUTH_ME_QUERY_KEY,

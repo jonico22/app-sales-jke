@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { FilterSidebar } from './components/FilterSidebar';
 import { SearchHeader } from './components/SearchHeader';
 import { SearchCashBanners } from './components/SearchCashBanners';
@@ -88,26 +88,28 @@ export default function AdvancedSearchPage() {
 
     // ── Local UI State ─────────────────────────────────────────────────────
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-    const [, setRefreshTrigger] = useState(0);
 
     // ── Infinite Scroll Observer ───────────────────────────────────────────
     const observer = useRef<IntersectionObserver | null>(null);
+    const hasNextPage = productQuery.hasNextPage;
+    const isFetchingNextPage = productQuery.isFetchingNextPage;
+    const fetchNextPage = productQuery.fetchNextPage;
+
     const lastProductElementRef = useCallback((node: HTMLDivElement | null) => {
-        if (productQuery.isFetchingNextPage) return;
+        if (isFetchingNextPage) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && productQuery.hasNextPage) {
-                productQuery.fetchNextPage();
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
             }
         });
         if (node) observer.current.observe(node);
-    }, [productQuery]);
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     // ── Data Processing ────────────────────────────────────────────────────
-    const products = (() => {
+    const products = useMemo(() => {
         if (quickFilter === 'favorites') {
             const favs = favoritesQuery.data?.data || [];
-            // Apply client-side filters for favorites since API might not support all
             return favs.filter(p => {
                 const matchesSearch = !queryParams.search || p.name.toLowerCase().includes(queryParams.search.toLowerCase());
                 const matchesCategory = !filters.categoryId || p.categoryId === filters.categoryId;
@@ -119,9 +121,26 @@ export default function AdvancedSearchPage() {
             return bestSellersQuery.data?.data || [];
         }
         return productQuery.data?.pages.flatMap(page => page.data.data) || [];
-    })();
+    }, [
+        bestSellersQuery.data?.data,
+        favoritesQuery.data?.data,
+        filters.brand,
+        filters.categoryId,
+        productQuery.data?.pages,
+        queryParams.search,
+        quickFilter,
+    ]);
 
-    const favoritesSet = new Set((favoritesQuery.data?.data || []).map(f => f.id || (f as unknown as { productId: string }).productId));
+    const favoritesSet = useMemo(
+        () => new Set((favoritesQuery.data?.data || []).map(f => f.id || (f as unknown as { productId: string }).productId)),
+        [favoritesQuery.data?.data]
+    );
+    const activeQuickFilters = useMemo(() => [quickFilter], [quickFilter]);
+
+    const isProductsLoading =
+        productQuery.isLoading ||
+        (quickFilter === 'favorites' && favoritesQuery.isLoading) ||
+        (quickFilter === 'bestSellers' && bestSellersQuery.isLoading);
 
     // ── Effects ────────────────────────────────────────────────────────────
 
@@ -154,15 +173,22 @@ export default function AdvancedSearchPage() {
     };
 
     const queryClient = useQueryClient();
-    const handleRefresh = () => {
+    const handleQuickFilterToggle = useCallback((filter: string) => {
+        setQuickFilter(filter as QuickFilter);
+    }, [setQuickFilter]);
+    const handleOpenFilters = useCallback(() => {
+        setIsFilterSheetOpen(true);
+    }, []);
+    const handleSelectColor = useCallback((colorId: string) => {
+        handleFilterChange('color', colorId);
+    }, [handleFilterChange]);
+    const handleRefresh = useCallback(() => {
         // Invalidate all related caches to ensure stock and info are fresh globally
         invalidateProductRelatedCaches(queryClient);
         
-        // Explicitly refetch current page data if needed (though invalidation should trigger it)
         productQuery.refetch();
         favoritesQuery.refetch();
-        setRefreshTrigger(prev => prev + 1);
-    };
+    }, [favoritesQuery, productQuery, queryClient]);
 
     return (
         <div className="flex flex-col bg-background min-h-[calc(100vh-4rem)]">
@@ -183,13 +209,13 @@ export default function AdvancedSearchPage() {
                 <SearchHeader
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
-                    activeQuickFilters={[quickFilter]}
-                    onToggleQuickFilter={(filter: string) => setQuickFilter(filter as QuickFilter)}
+                    activeQuickFilters={activeQuickFilters}
+                    onToggleQuickFilter={handleQuickFilterToggle}
                     colors={metadataQuery.data?.colors || []}
                     selectedColor={filters.color}
-                    onColorSelect={(colorId) => handleFilterChange('color', colorId)}
+                    onColorSelect={handleSelectColor}
                     onClearFilters={clearFilters}
-                    onOpenFilters={() => setIsFilterSheetOpen(true)}
+                    onOpenFilters={handleOpenFilters}
                 />
             </div>
 
@@ -207,7 +233,6 @@ export default function AdvancedSearchPage() {
                 <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                     <SheetContent side="bottom" className="h-[90vh] sm:h-[95vh] p-0 border-t rounded-t-[32px] overflow-hidden">
                         <AdvancedFilterModal
-                            key={isFilterSheetOpen ? 'open' : 'closed'}
                             isOpen={isFilterSheetOpen}
                             onClose={() => setIsFilterSheetOpen(false)}
                             filters={filters}
@@ -227,7 +252,7 @@ export default function AdvancedSearchPage() {
                 <div className="flex-1 bg-muted/10 p-3 md:p-6 pb-32">
                     <SearchProductGrid
                         products={products}
-                        loading={productQuery.isLoading || favoritesQuery.isLoading || bestSellersQuery.isLoading}
+                        loading={isProductsLoading}
                         isLoadingMore={productQuery.isFetchingNextPage}
                         favorites={favoritesSet}
                         onToggleFavorite={(id) => toggleFavorite.mutate(id)}
@@ -236,21 +261,25 @@ export default function AdvancedSearchPage() {
                 </div>
             </div>
 
-            <ClientEditModal
-                open={isAddClientModalOpen}
-                onOpenChange={setIsAddClientModalOpen}
-                client={null}
-                onSave={() => { }}
-                onSuccess={handleClientSuccess}
-            />
+            {isAddClientModalOpen ? (
+                <ClientEditModal
+                    open={true}
+                    onOpenChange={setIsAddClientModalOpen}
+                    client={null}
+                    onSave={() => { }}
+                    onSuccess={handleClientSuccess}
+                />
+            ) : null}
 
-            <SelectClientModal
-                isOpen={isSelectClientModalOpen}
-                onClose={() => setIsSelectClientModalOpen(false)}
-                selectedClient={selectedClient}
-                onSelectClient={(client) => setSelectedClient(client)}
-                onNewClient={() => setIsAddClientModalOpen(true)}
-            />
+            {isSelectClientModalOpen ? (
+                <SelectClientModal
+                    isOpen={true}
+                    onClose={() => setIsSelectClientModalOpen(false)}
+                    selectedClient={selectedClient}
+                    onSelectClient={(client) => setSelectedClient(client)}
+                    onNewClient={() => setIsAddClientModalOpen(true)}
+                />
+            ) : null}
 
             <SearchCartFooter
                 totalItems={totalItems}
@@ -262,48 +291,56 @@ export default function AdvancedSearchPage() {
                 onPay={handleCreateOrder}
             />
 
-            <POSCartPanel
-                isOpen={isCartOpen}
-                onClose={() => setIsCartOpen(false)}
-                selectedClient={selectedClient}
-                onSaleSuccess={() => {
-                    setIsPaymentModalOpen(true);
-                    handleRefresh();
-                }}
-            />
+            {isCartOpen ? (
+                <POSCartPanel
+                    isOpen={true}
+                    onClose={() => setIsCartOpen(false)}
+                    selectedClient={selectedClient}
+                    onSaleSuccess={() => {
+                        setIsPaymentModalOpen(true);
+                        handleRefresh();
+                    }}
+                />
+            ) : null}
 
-            <POSPaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                onPaymentSuccess={(paymentMethod: string) => {
-                    setLastPaymentMethod(paymentMethod);
-                    setIsPaymentModalOpen(false);
-                    setIsSuccessModalOpen(true);
-                    handleRefresh();
-                }}
-            />
+            {isPaymentModalOpen ? (
+                <POSPaymentModal
+                    isOpen={true}
+                    onClose={() => setIsPaymentModalOpen(false)}
+                    onPaymentSuccess={(paymentMethod: string) => {
+                        setLastPaymentMethod(paymentMethod);
+                        setIsPaymentModalOpen(false);
+                        setIsSuccessModalOpen(true);
+                        handleRefresh();
+                    }}
+                />
+            ) : null}
 
-            <POSSuccessModal
-                isOpen={isSuccessModalOpen}
-                orderCode={useCartStore.getState().currentOrderCode || ''}
-                clientName={selectedClient?.name || 'Cliente'}
-                paymentMethod={lastPaymentMethod}
-                total={useCartStore.getState().currentOrderTotal}
-                onClose={() => {
-                    setIsSuccessModalOpen(false);
-                    clearCurrentOrder();
-                }}
-                onPrintTicket={() => { }}
-                onShareWhatsApp={() => { }}
-            />
+            {isSuccessModalOpen ? (
+                <POSSuccessModal
+                    isOpen={true}
+                    orderCode={useCartStore.getState().currentOrderCode || ''}
+                    clientName={selectedClient?.name || 'Cliente'}
+                    paymentMethod={lastPaymentMethod}
+                    total={useCartStore.getState().currentOrderTotal}
+                    onClose={() => {
+                        setIsSuccessModalOpen(false);
+                        clearCurrentOrder();
+                    }}
+                    onPrintTicket={() => { }}
+                    onShareWhatsApp={() => { }}
+                />
+            ) : null}
 
-            <POSAlertModal
-                isOpen={!!orderError}
-                onClose={resetOrderError}
-                title="Error al Generar Pedido"
-                message={orderError ? parseBackendError(orderError) : ''}
-                type="error"
-            />
+            {orderError ? (
+                <POSAlertModal
+                    isOpen={true}
+                    onClose={resetOrderError}
+                    title="Error al Generar Pedido"
+                    message={parseBackendError(orderError)}
+                    type="error"
+                />
+            ) : null}
         </div>
     );
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ShoppingCart, Loader2 } from 'lucide-react';
 
 interface SearchCartFooterProps {
@@ -10,7 +11,7 @@ interface SearchCartFooterProps {
     onPay: () => void;
 }
 
-export function SearchCartFooter({
+export const SearchCartFooter = memo(function SearchCartFooter({
     totalItems,
     totalPrice,
     currencySymbol,
@@ -80,4 +81,4 @@ export function SearchCartFooter({
             </div>
         </div>
     );
-}
+});

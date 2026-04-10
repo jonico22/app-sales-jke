@@ -59,4 +59,13 @@ describe('Vitest Setup Verification', () => {
     const statusText = await screen.findByText('Status: ok');
     expect(statusText).toBeInTheDocument();
   });
+
+  it('should fail when an application request is not mocked', async () => {
+    const response = await fetch('https://api.example.com/unhandled');
+    const payload = await response.json();
+
+    expect(response.ok).toBe(false);
+    expect(response.status).toBe(500);
+    expect(payload.message).toMatch(/Unhandled GET request in tests/i);
+  });
 });

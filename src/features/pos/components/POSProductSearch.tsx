@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useRef, useMemo, useDeferredValue } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { type Product } from '@/services/product.service';
@@ -10,7 +10,6 @@ interface POSProductSearchProps {
     onAdvancedSearch?: () => void;
     selectedProduct: Product | null;
     onSelectProduct?: (product: Product | null) => void;
-    refreshTrigger?: number;
 }
 
 export const POSProductSearch = memo(function POSProductSearch({
@@ -19,28 +18,28 @@ export const POSProductSearch = memo(function POSProductSearch({
     onAdvancedSearch,
     selectedProduct,
     onSelectProduct,
-    refreshTrigger,
 }: POSProductSearchProps) {
     const { data: products = [] } = useProductsSelect();
     const [showDropdown, setShowDropdown] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
+    const deferredSearchQuery = useDeferredValue(searchQuery);
 
-    // Filter products when search query changes
+    const normalizedQuery = useMemo(
+        () => deferredSearchQuery.trim().toLowerCase(),
+        [deferredSearchQuery]
+    );
+
     const filteredProducts = useMemo(() => {
         if (!products) return [];
-        let filtered = products;
-        if (searchQuery.trim().length > 0) {
-            const query = searchQuery.toLowerCase();
-            filtered = products.filter((product: Product) =>
-                product.name.toLowerCase().includes(query) ||
-                (product.code && product.code.toLowerCase().includes(query))
-            );
+        if (!normalizedQuery) {
+            return products.slice(0, 5);
         }
-        
-        // Force calculation on refreshTrigger change to ensure cache updates are visible
-        const _trigger = refreshTrigger;
-        return (_trigger !== undefined ? filtered : filtered).slice(0, 5);
-    }, [searchQuery, products, refreshTrigger]);
+
+        return products.filter((product: Product) =>
+            product.name.toLowerCase().includes(normalizedQuery) ||
+            (product.code && product.code.toLowerCase().includes(normalizedQuery))
+        ).slice(0, 5);
+    }, [normalizedQuery, products]);
 
     // Close dropdown when clicking outside
     useEffect(() => {

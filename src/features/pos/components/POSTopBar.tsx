@@ -7,8 +7,11 @@ import { useBranchStore } from '@/store/branch.store';
 import { useCurrencies } from '@/hooks/useCurrencies';
 
 export function POSTopBar() {
-    const { currencyId, setCurrencyId } = useCartStore();
-    const { branches, selectedBranch, selectBranch } = useBranchStore();
+    const currencyId = useCartStore(state => state.currencyId);
+    const setCurrencyId = useCartStore(state => state.setCurrencyId);
+    const branches = useBranchStore(state => state.branches);
+    const selectedBranch = useBranchStore(state => state.selectedBranch);
+    const selectBranch = useBranchStore(state => state.selectBranch);
 
     // No local state for selectedCurrency, use store
     const selectedCurrency = currencyId;

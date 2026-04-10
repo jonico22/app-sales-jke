@@ -23,14 +23,17 @@ describe('useSessionValidator hook', () => {
     const mockSetSubscription = vi.fn();
     const mockUpdateUser = vi.fn();
     const mockNavigate = vi.fn();
+    const mockAuthState = {
+        logout: mockLogout,
+        setSubscription: mockSetSubscription,
+        updateUser: mockUpdateUser,
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useAuthStore as any).mockReturnValue({
-            logout: mockLogout,
-            setSubscription: mockSetSubscription,
-            updateUser: mockUpdateUser,
-        });
+        sessionStorage.clear();
+        window.history.replaceState(null, '', '/dashboard?tab=main');
+        (useAuthStore as any).mockImplementation((selector: any) => selector(mockAuthState));
         (useNavigate as any).mockReturnValue(mockNavigate);
         
         // Default mock for useAuthQuery
@@ -82,6 +85,7 @@ describe('useSessionValidator hook', () => {
 
       expect(mockLogout).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith('/auth/login');
+      expect(sessionStorage.getItem('redirectUrl')).toBe('/dashboard?tab=main');
       expect(result.current.isSessionExpired).toBe(false);
     });
 });
