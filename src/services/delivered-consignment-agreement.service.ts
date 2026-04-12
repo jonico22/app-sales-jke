@@ -35,8 +35,8 @@ export interface CreateDeliveredConsignmentAgreementRequest {
     taxAmount?: number;
     totalCost?: number;
     totalValue?: number;
-    deliveryDate: string;
-    status: string;
+    deliveryDate?: string;
+    status?: string;
     notes?: string;
 }
 

@@ -25,7 +25,15 @@ const FileManagerPage = lazy(() => lazyRetry(() => import('./features/settings/F
 const UsersAndAccessPage = lazy(() => lazyRetry(() => import('./features/settings/UsersAndAccessPage')));
 const BranchOfficesPage = lazy(() => lazyRetry(() => import('@/features/inventory/BranchOfficesPage')));
 const InventoryMovementsPage = lazy(() => lazyRetry(() => import('@/features/inventory/InventoryMovementsPage')));
+const OutgoingConsignmentAgreementsPage = lazy(() => lazyRetry(() => import('@/features/consignment/agreements/OutgoingConsignmentAgreementsPage')));
+const DeliveredConsignmentAgreementsPage = lazy(() => lazyRetry(() => import('@/features/consignment/deliveries/DeliveredConsignmentAgreementsPage')));
+const ExternalConsignmentSalesPage = lazy(() => lazyRetry(() => import('@/features/consignment/sales/ExternalConsignmentSalesPage')));
+const ReceivedConsignmentSettlementsPage = lazy(() => lazyRetry(() => import('@/features/consignment/settlements/ReceivedConsignmentSettlementsPage')));
 const CreateInventoryMovementPage = lazy(() => lazyRetry(() => import('@/features/inventory/CreateInventoryMovementPage')));
+const CreateOutgoingConsignmentAgreementPage = lazy(() => lazyRetry(() => import('@/features/consignment/agreements/CreateOutgoingConsignmentAgreementPage')));
+const CreateDeliveredConsignmentAgreementPage = lazy(() => lazyRetry(() => import('@/features/consignment/deliveries/CreateDeliveredConsignmentAgreementPage')));
+const CreateExternalConsignmentSalePage = lazy(() => lazyRetry(() => import('@/features/consignment/sales/CreateExternalConsignmentSalePage')));
+const CreateReceivedConsignmentSettlementPage = lazy(() => lazyRetry(() => import('@/features/consignment/settlements/CreateReceivedConsignmentSettlementPage')));
 const BulkTransferPage = lazy(() => lazyRetry(() => import('@/features/inventory/BulkTransferPage')));
 const BillingPage = lazy(() => lazyRetry(() => import('./features/settings/BillingPage')));
 const CashClosingPage = lazy(() => lazyRetry(() => import('./features/sales/CashClosingPage')));
@@ -62,8 +70,24 @@ const router = createBrowserRouter([
           { path: 'inventory/new', element: withLoader(<NewInventoryPage />) },
           { path: 'inventory/branches', element: withLoader(<BranchOfficesPage />) },
           { path: 'inventory/movements', element: withLoader(<InventoryMovementsPage />) },
+          { path: 'inventory/consignment-agreements', element: <Navigate to="/consignment/agreements" replace /> },
+          { path: 'inventory/consignment-deliveries', element: <Navigate to="/consignment/deliveries" replace /> },
+          { path: 'inventory/consignment-sales', element: <Navigate to="/consignment/sales" replace /> },
+          { path: 'inventory/consignment-settlements', element: <Navigate to="/consignment/settlements" replace /> },
+          { path: 'consignment/agreements', element: withLoader(<OutgoingConsignmentAgreementsPage />) },
+          { path: 'consignment/deliveries', element: withLoader(<DeliveredConsignmentAgreementsPage />) },
+          { path: 'consignment/sales', element: withLoader(<ExternalConsignmentSalesPage />) },
+          { path: 'consignment/settlements', element: withLoader(<ReceivedConsignmentSettlementsPage />) },
           { path: 'inventory/kardex', element: withLoader(<KardexPage />) },
           { path: 'inventory/movements/new', element: withLoader(<CreateInventoryMovementPage />) },
+          { path: 'inventory/consignment-agreements/new', element: <Navigate to="/consignment/agreements/new" replace /> },
+          { path: 'inventory/consignment-deliveries/new', element: <Navigate to="/consignment/deliveries/new" replace /> },
+          { path: 'inventory/consignment-sales/new', element: <Navigate to="/consignment/sales/new" replace /> },
+          { path: 'inventory/consignment-settlements/new', element: <Navigate to="/consignment/settlements/new" replace /> },
+          { path: 'consignment/agreements/new', element: withLoader(<CreateOutgoingConsignmentAgreementPage />) },
+          { path: 'consignment/deliveries/new', element: withLoader(<CreateDeliveredConsignmentAgreementPage />) },
+          { path: 'consignment/sales/new', element: withLoader(<CreateExternalConsignmentSalePage />) },
+          { path: 'consignment/settlements/new', element: withLoader(<CreateReceivedConsignmentSettlementPage />) },
           { path: 'inventory/movements/bulk', element: withLoader(<BulkTransferPage />) },
           { path: 'orders/pending', element: withLoader(<PendingOrdersPage />) },
           { path: 'orders/history', element: withLoader(<SalesHistoryPage />) },

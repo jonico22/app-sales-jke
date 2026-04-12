@@ -40,7 +40,15 @@ vi.mock('./features/settings/FileManagerPage', () => ({ default: () => <div>file
 vi.mock('./features/settings/UsersAndAccessPage', () => ({ default: () => <div>users page</div> }));
 vi.mock('@/features/inventory/BranchOfficesPage', () => ({ default: () => <div>branches page</div> }));
 vi.mock('@/features/inventory/InventoryMovementsPage', () => ({ default: () => <div>movements page</div> }));
+vi.mock('@/features/consignment/agreements/OutgoingConsignmentAgreementsPage', () => ({ default: () => <div>consignment agreements page</div> }));
+vi.mock('@/features/consignment/deliveries/DeliveredConsignmentAgreementsPage', () => ({ default: () => <div>consignment deliveries page</div> }));
+vi.mock('@/features/consignment/sales/ExternalConsignmentSalesPage', () => ({ default: () => <div>consignment sales page</div> }));
+vi.mock('@/features/consignment/settlements/ReceivedConsignmentSettlementsPage', () => ({ default: () => <div>consignment settlements page</div> }));
 vi.mock('@/features/inventory/CreateInventoryMovementPage', () => ({ default: () => <div>new movement page</div> }));
+vi.mock('@/features/consignment/agreements/CreateOutgoingConsignmentAgreementPage', () => ({ default: () => <div>new agreement page</div> }));
+vi.mock('@/features/consignment/deliveries/CreateDeliveredConsignmentAgreementPage', () => ({ default: () => <div>new delivery page</div> }));
+vi.mock('@/features/consignment/sales/CreateExternalConsignmentSalePage', () => ({ default: () => <div>new external sale page</div> }));
+vi.mock('@/features/consignment/settlements/CreateReceivedConsignmentSettlementPage', () => ({ default: () => <div>new settlement page</div> }));
 vi.mock('@/features/inventory/BulkTransferPage', () => ({ default: () => <div>bulk transfer page</div> }));
 vi.mock('./features/settings/BillingPage', () => ({ default: () => <div>billing page</div> }));
 vi.mock('./features/sales/CashClosingPage', () => ({ default: () => <div>cash closing page</div> }));
@@ -68,6 +76,14 @@ describe('AppRouter', () => {
     expect(routes[0].children[0].children).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ path: 'categories' }),
+        expect.objectContaining({ path: 'consignment/agreements' }),
+        expect.objectContaining({ path: 'consignment/deliveries' }),
+        expect.objectContaining({ path: 'consignment/sales' }),
+        expect.objectContaining({ path: 'consignment/settlements' }),
+        expect.objectContaining({ path: 'inventory/consignment-agreements' }),
+        expect.objectContaining({ path: 'inventory/consignment-deliveries' }),
+        expect.objectContaining({ path: 'inventory/consignment-sales' }),
+        expect.objectContaining({ path: 'inventory/consignment-settlements' }),
         expect.objectContaining({ path: 'orders/history' }),
         expect.objectContaining({ path: 'settings/billing' }),
       ])

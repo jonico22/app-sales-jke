@@ -38,7 +38,7 @@ export interface CreateReceivedConsignmentSettlementRequest {
     receiptReference?: string;
     settlementNotes?: string;
     currencyId: string;
-    createdBy: string;
+    createdBy?: string;
 }
 
 export interface UpdateReceivedConsignmentSettlementRequest {

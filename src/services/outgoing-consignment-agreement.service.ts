@@ -40,12 +40,12 @@ export interface CreateOutgoingConsignmentAgreementRequest {
     endDate: string;
     commissionRate: number;
     currencyId: string;
-    totalValue: number;
-    creditLimit: number;
-    agreementCode: string;
-    status: OutgoingConsignmentAgreementStatus;
+    totalValue?: number;
+    creditLimit?: number;
+    agreementCode?: string;
+    status?: OutgoingConsignmentAgreementStatus;
     notes?: string;
-    createdBy: string;
+    createdBy?: string;
 }
 
 export interface UpdateOutgoingConsignmentAgreementRequest {

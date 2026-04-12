@@ -126,44 +126,44 @@ export function StatsGrid() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {/* 1. Ventas Netas (Primary Variant equivalent to "Total Sales" in design) */}
+      {/* 1. Ventas del mes */}
       <StatCard
         variant="primary"
-        title="Ventas Netas"
-        value={formatCurrency(stats?.netSales || 0)}
-        subtitle="Ingresos del mes actual"
+        title="Ventas del Mes"
+        value={formatCurrency(stats?.salesThisMonth || 0)}
+        subtitle="Total vendido este mes"
         trend={4.9} /* Placeholder to match visual */
         icon={<ShoppingCart className="h-[22px] w-[22px]" />}
         loading={isLoading}
       />
 
-      {/* 2. Valor Total Stock equivalent to "New Customer" layout */}
+      {/* 2. Ventas de la semana */}
       <StatCard
-        title="Valor de Stock"
-        value={formatCurrency(stats?.totalStockValue || 0)}
-        subtitle="Capital en inventario"
+        title="Ventas de la Semana"
+        value={formatCurrency(stats?.salesThisWeek || 0)}
+        subtitle="Total vendido esta semana"
         trend={7.5} /* Placeholder to match visual */
         iconBgClass="bg-[#24242B] text-white"
         icon={<Monitor className="h-[22px] w-[22px]" />}
         loading={isLoading}
       />
 
-      {/* 3. Bajo Stock equivalent to "Return Products" layout */}
+      {/* 3. Pedidos completados del mes */}
       <StatCard
-        title="Bajo Stock"
-        value={stats?.lowStockItems || 0}
-        subtitle="Items por debajo del mínimo"
+        title="Pedidos del Mes"
+        value={stats?.completedOrdersThisMonth || 0}
+        subtitle="Pedidos completados este mes"
         trend={-6.0} /* Placeholder to match visual */
         iconBgClass="bg-blue-500 text-white"
         icon={<AlertTriangle className="h-[22px] w-[22px]" />}
         loading={isLoading}
       />
 
-      {/* 4. Nuevos Productos equivalent to "Total Revenue" layout */}
+      {/* 4. Ticket promedio del mes */}
       <StatCard
-        title="Nuevos Productos"
-        value={stats?.newProducts || 0}
-        subtitle="Agregados recientemente"
+        title="Ticket Promedio"
+        value={formatCurrency(stats?.averageTicketThisMonth || 0)}
+        subtitle="Promedio por venta del mes"
         iconBgClass="bg-blue-500 text-white"
         icon={<Sparkles className="h-[22px] w-[22px]" />}
         loading={isLoading}

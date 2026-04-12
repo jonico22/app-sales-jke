@@ -27,10 +27,15 @@ describe('useDashboardStats', () => {
       success: true,
       message: 'ok',
       data: {
-        totalStockValue: 10,
-        lowStockItems: 2,
-        netSales: 8,
-        newProducts: 1,
+        salesToday: 10,
+        salesThisWeek: 20,
+        salesThisMonth: 30,
+        completedOrdersToday: 1,
+        completedOrdersThisWeek: 2,
+        completedOrdersThisMonth: 3,
+        averageTicketToday: 4,
+        averageTicketThisWeek: 5,
+        averageTicketThisMonth: 6,
       },
     });
 
@@ -38,10 +43,15 @@ describe('useDashboardStats', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual({
-      totalStockValue: 10,
-      lowStockItems: 2,
-      netSales: 8,
-      newProducts: 1,
+      salesToday: 10,
+      salesThisWeek: 20,
+      salesThisMonth: 30,
+      completedOrdersToday: 1,
+      completedOrdersThisWeek: 2,
+      completedOrdersThisMonth: 3,
+      averageTicketToday: 4,
+      averageTicketThisWeek: 5,
+      averageTicketThisMonth: 6,
     });
     expect(DASHBOARD_STATS_QUERY_KEY).toEqual(['dashboard-stats']);
   });
@@ -51,10 +61,15 @@ describe('useDashboardStats', () => {
       success: false,
       message: 'nope',
       data: {
-        totalStockValue: 0,
-        lowStockItems: 0,
-        netSales: 0,
-        newProducts: 0,
+        salesToday: 0,
+        salesThisWeek: 0,
+        salesThisMonth: 0,
+        completedOrdersToday: 0,
+        completedOrdersThisWeek: 0,
+        completedOrdersThisMonth: 0,
+        averageTicketToday: 0,
+        averageTicketThisWeek: 0,
+        averageTicketThisMonth: 0,
       },
     });
 
