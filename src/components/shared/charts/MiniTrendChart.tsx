@@ -1,4 +1,5 @@
 import type { EChartsCoreOption } from 'echarts/core';
+import { cn } from '@/lib/utils';
 import { BaseEChart } from './BaseEChart';
 import { buildAreaGradient, type ChartThemeTokens } from './chartTheme';
 
@@ -93,11 +94,11 @@ export function MiniTrendChart({
   color,
   data,
   showArea = true,
-  smooth = true,
+  smooth = false,
 }: MiniTrendChartProps) {
   return (
     <BaseEChart
-      className={className}
+      className={cn('h-full min-h-0', className)}
       getOption={(tokens) => buildMiniTrendOption(data, color, showArea, smooth, tokens)}
     />
   );

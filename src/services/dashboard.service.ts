@@ -35,30 +35,6 @@ export interface ApiResponse<T> {
     data: T;
 }
 
-// Legacy chart contracts kept for reference until the new chart library migration is complete.
-export interface SalesPerformanceData {
-    name: string;
-    total: number;
-}
-
-export interface RevenueByCategoryData {
-    category: string;
-    revenue: number;
-    percentage: number;
-}
-
-export interface TopProductData {
-    id: string;
-    name: string;
-    soldUnits: number;
-    stockRemaining: number;
-}
-
-export interface PaymentMethodData {
-    method: string;
-    value: number;
-}
-
 export interface DashboardSalesTrendPoint {
     label: string;
     value: number;
@@ -138,45 +114,23 @@ export interface CatalogSummaryResponse {
 }
 
 export const dashboardService = {
-    // Get general dashboard statistics
     getStats: async (params?: DashboardFilters): Promise<DashboardStatsResponse> => {
-        const response = await api.get<DashboardStatsResponse>('/dashboard/stats', { params });
+        const response = await api.get<DashboardStatsResponse>('/sales/dashboard/stats', { params });
         return response.data;
     },
 
-    // Compact dashboard charts payload for the new chart library integration.
     getOverview: async (params?: DashboardOverviewFilters): Promise<DashboardOverviewResponse> => {
-        const response = await api.get<DashboardOverviewResponse>('/dashboard/overview', { params });
+        const response = await api.get<DashboardOverviewResponse>('/sales/dashboard/overview', { params });
         return response.data;
     },
 
-    // Final operational block.
     getLowStockAlerts: async (params?: DashboardFilters & { limit?: number }): Promise<LowStockAlertsResponse> => {
-        const response = await api.get<LowStockAlertsResponse>('/dashboard/alerts/low-stock', { params });
+        const response = await api.get<LowStockAlertsResponse>('/sales/dashboard/alerts/low-stock', { params });
         return response.data;
     },
 
-    // Secondary block for slower or accumulated metrics.
     getCatalogSummary: async (params?: DashboardFilters): Promise<CatalogSummaryResponse> => {
-        const response = await api.get<CatalogSummaryResponse>('/dashboard/catalog-summary', { params });
+        const response = await api.get<CatalogSummaryResponse>('/sales/dashboard/catalog-summary', { params });
         return response.data;
     },
-
-    // Legacy chart endpoints kept commented out until the new dashboard chart library is fully integrated.
-    // getSalesPerformance: async (): Promise<SalesPerformanceData[]> => {
-    //     const response = await api.get<ApiResponse<SalesPerformanceData[]>>('/sales/dashboard/charts/sales-performance');
-    //     return response.data.data;
-    // },
-    // getRevenueByCategory: async (): Promise<RevenueByCategoryData[]> => {
-    //     const response = await api.get<ApiResponse<RevenueByCategoryData[]>>('/sales/dashboard/charts/revenue-by-category');
-    //     return response.data.data;
-    // },
-    // getTopProducts: async (): Promise<TopProductData[]> => {
-    //     const response = await api.get<ApiResponse<TopProductData[]>>('/sales/dashboard/charts/top-products');
-    //     return response.data.data;
-    // },
-    // getPaymentMethods: async (): Promise<PaymentMethodData[]> => {
-    //     const response = await api.get<ApiResponse<PaymentMethodData[]>>('/sales/dashboard/charts/payment-methods');
-    //     return response.data.data;
-    // },
 };

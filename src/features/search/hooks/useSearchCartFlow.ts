@@ -31,7 +31,7 @@ export function useSearchCartFlow() {
     const [lastPaymentMethod, setLastPaymentMethod] = useState<string>('YAPE');
 
 
-    const createOrder = useCreateSearchOrderMutation();
+    const createOrder = useCreateSearchOrderMutation({ suppressSuccessToast: true });
 
     const handleCreateOrder = useCallback(async () => {
         if (items.length === 0) return;

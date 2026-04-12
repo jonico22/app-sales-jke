@@ -54,6 +54,7 @@ describe('useDashboardStats', () => {
       averageTicketThisMonth: 6,
     });
     expect(DASHBOARD_STATS_QUERY_KEY).toEqual(['dashboard-stats']);
+    expect(dashboardService.getStats).toHaveBeenCalledWith(undefined);
   });
 
   it('surfaces an error when service returns unsuccessful payload', async () => {

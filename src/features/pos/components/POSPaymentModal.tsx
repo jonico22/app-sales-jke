@@ -40,8 +40,8 @@ export function POSPaymentModal({ isOpen, onClose, onPaymentSuccess }: POSPaymen
         }
     }, [isOpen]);
 
-    const { mutateAsync: createPayment } = useCreatePaymentMutation();
-    const { mutateAsync: updateOrder } = useUpdateOrderMutation();
+    const { mutateAsync: createPayment } = useCreatePaymentMutation({ suppressSuccessToast: true });
+    const { mutateAsync: updateOrder } = useUpdateOrderMutation({ suppressSuccessToast: true });
 
     if (!isOpen) return null;
 

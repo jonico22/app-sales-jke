@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { socket } from '@/services/socket';
-import { DASHBOARD_STATS_QUERY_KEY } from './useDashboardStats';
 import { CATEGORIES_QUERY_KEY } from './useCategories';
 import { BRANDS_QUERY_KEY } from './useBrands';
 import { COLORS_QUERY_KEY } from './useColors';
+import { invalidateDashboardQueries } from './dashboardQueryKeys';
 
 export function useRealtimeUpdates() {
     const queryClient = useQueryClient();
@@ -14,7 +14,7 @@ export function useRealtimeUpdates() {
             console.log('🔄 [Socket] Actualización recibida:', payload);
 
             // By default, we always invalidate dashboard stats as they are highly aggregate
-            queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_QUERY_KEY });
+            invalidateDashboardQueries(queryClient);
 
             // Invalidate specific queries based on payload entity/table
             const entity = payload?.table || payload?.entity || payload?.type;
@@ -45,13 +45,7 @@ export function useRealtimeUpdates() {
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     break;
                 case 'DASHBOARD':
-                    queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_QUERY_KEY });
-                    queryClient.invalidateQueries({ queryKey: ['salesPerformance'] });
-                    queryClient.invalidateQueries({ queryKey: ['revenueByCategory'] });
-                    queryClient.invalidateQueries({ queryKey: ['topProducts'] });
-                    queryClient.invalidateQueries({ queryKey: ['paymentMethods'] });
-                    queryClient.invalidateQueries({ queryKey: ['branchPerformance'] });
-                    queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
+                    invalidateDashboardQueries(queryClient);
                     break;
                 default:
                     // Fallback to broad invalidation for unknown entities
