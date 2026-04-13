@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const currencySymbol = society?.mainCurrency?.symbol || 'S/';
   const today = new Date();
   const currentYear = today.getFullYear();
-  const [granularity, setGranularity] = useState<DashboardGranularity>('week');
+  const [granularity, setGranularity] = useState<DashboardGranularity>('month');
   const [selectedMonth, setSelectedMonth] = useState(String(today.getMonth() + 1));
   const [selectedYear, setSelectedYear] = useState(String(currentYear));
 
@@ -38,8 +38,9 @@ export default function DashboardPage() {
 
   const branchId = selectedBranch?.id || undefined;
   const selectedMonthDate = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+  const selectedMonthEndDate = new Date(Number(selectedYear), Number(selectedMonth), 0);
   const dateFrom = format(selectedMonthDate, 'yyyy-MM-dd');
-  const dateTo = format(new Date(Number(selectedYear), Number(selectedMonth), 0), 'yyyy-MM-dd');
+  const dateTo = format(selectedMonthEndDate, 'yyyy-MM-dd');
   const dashboardFilters = {
     branchId,
     dateFrom,
@@ -47,7 +48,11 @@ export default function DashboardPage() {
   };
 
   const statsQuery = useDashboardStats(dashboardFilters);
-  const overviewQuery = useDashboardOverview({
+  const trendOverviewQuery = useDashboardOverview({
+    ...dashboardFilters,
+    granularity,
+  });
+  const operationalOverviewQuery = useDashboardOverview({
     ...dashboardFilters,
     granularity,
   });
@@ -59,7 +64,8 @@ export default function DashboardPage() {
 
   const isInitialLoading =
     !statsQuery.data ||
-    !overviewQuery.data ||
+    !trendOverviewQuery.data ||
+    !operationalOverviewQuery.data ||
     !lowStockQuery.data ||
     !catalogSummaryQuery.data;
 
@@ -73,9 +79,19 @@ export default function DashboardPage() {
     if (branch) selectBranch(branch);
   };
 
+  const handleMonthChange = (value: string) => {
+    setSelectedMonth(value);
+    setGranularity('month');
+  };
+
+  const handleYearChange = (value: string) => {
+    setSelectedYear(value);
+    setGranularity('month');
+  };
+
   const paymentMethodsRange =
-    formatDashboardDateRange(overviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
-    `${format(selectedMonthDate, 'dd MMM yyyy')} - ${format(new Date(Number(selectedYear), Number(selectedMonth), 0), 'dd MMM yyyy')}`;
+    formatDashboardDateRange(operationalOverviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
+    `${format(selectedMonthDate, 'dd MMM yyyy')} - ${format(selectedMonthEndDate, 'dd MMM yyyy')}`;
 
   return (
     <div className="space-y-6">
@@ -87,13 +103,13 @@ export default function DashboardPage() {
         selectedYear={selectedYear}
         selectedBranchId={selectedBranch?.id}
         onBranchChange={handleBranchChange}
-        onMonthChange={setSelectedMonth}
-        onYearChange={setSelectedYear}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
       />
 
       <StatsGrid
         stats={statsQuery.data}
-        overview={overviewQuery.data}
+        overview={trendOverviewQuery.data}
         currencySymbol={currencySymbol}
         granularity={granularity}
         isLoading={isInitialLoading}
@@ -102,31 +118,31 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <SalesTrendOverviewCard
           currencySymbol={currencySymbol}
-          data={overviewQuery.data?.salesTrend || []}
+          data={trendOverviewQuery.data?.salesTrend || []}
           granularity={granularity}
-          isLoading={overviewQuery.isLoading}
+          isLoading={trendOverviewQuery.isLoading}
           onGranularityChange={setGranularity}
         />
         <CashFlowOverviewCard
           currencySymbol={currencySymbol}
-          data={overviewQuery.data?.cashFlowMini || []}
+          data={trendOverviewQuery.data?.cashFlowMini || []}
           granularity={granularity}
-          isLoading={overviewQuery.isLoading}
+          isLoading={trendOverviewQuery.isLoading}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <PaymentMethodsOverviewCard
           currencySymbol={currencySymbol}
-          data={overviewQuery.data?.paymentMethods || []}
+          data={operationalOverviewQuery.data?.paymentMethods || []}
           dateRangeLabel={paymentMethodsRange}
-          isLoading={overviewQuery.isLoading}
+          isLoading={operationalOverviewQuery.isLoading}
         />
         <TopProductsListCard
           currencySymbol={currencySymbol}
-          data={overviewQuery.data?.topProducts || []}
+          data={operationalOverviewQuery.data?.topProducts || []}
           dateRangeLabel={paymentMethodsRange}
-          isLoading={overviewQuery.isLoading}
+          isLoading={operationalOverviewQuery.isLoading}
         />
       </div>
 
