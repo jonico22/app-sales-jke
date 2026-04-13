@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { BusinessHeader } from './components/BusinessHeader';
 import { CatalogSummaryGrid } from './components/CatalogSummaryGrid';
 import { CashFlowOverviewCard } from './components/CashFlowOverviewCard';
@@ -20,7 +21,11 @@ import { useSocietyStore } from '@/store/society.store';
 export default function DashboardPage() {
   const society = useSocietyStore((state) => state.society);
   const currencySymbol = society?.mainCurrency?.symbol || 'S/';
+  const today = new Date();
+  const currentYear = today.getFullYear();
   const [granularity, setGranularity] = useState<DashboardGranularity>('week');
+  const [selectedMonth, setSelectedMonth] = useState(String(today.getMonth() + 1));
+  const [selectedYear, setSelectedYear] = useState(String(currentYear));
 
   const { data: branchesData = [] } = useBranches();
   const { branches, selectedBranch, selectBranch, setBranches } = useBranchStore();
@@ -32,17 +37,25 @@ export default function DashboardPage() {
   }, [branches.length, branchesData, setBranches]);
 
   const branchId = selectedBranch?.id || undefined;
-
-  const statsQuery = useDashboardStats({ branchId });
-  const overviewQuery = useDashboardOverview({
+  const selectedMonthDate = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+  const dateFrom = format(selectedMonthDate, 'yyyy-MM-dd');
+  const dateTo = format(new Date(Number(selectedYear), Number(selectedMonth), 0), 'yyyy-MM-dd');
+  const dashboardFilters = {
     branchId,
+    dateFrom,
+    dateTo,
+  };
+
+  const statsQuery = useDashboardStats(dashboardFilters);
+  const overviewQuery = useDashboardOverview({
+    ...dashboardFilters,
     granularity,
   });
   const lowStockQuery = useDashboardLowStockAlerts({
-    branchId,
+    ...dashboardFilters,
     limit: 6,
   });
-  const catalogSummaryQuery = useDashboardCatalogSummary({ branchId });
+  const catalogSummaryQuery = useDashboardCatalogSummary(dashboardFilters);
 
   const isInitialLoading =
     !statsQuery.data ||
@@ -60,9 +73,9 @@ export default function DashboardPage() {
     if (branch) selectBranch(branch);
   };
 
-  const paymentMethodsRange = formatDashboardDateRange(
-    overviewQuery.data?.salesTrend.map((item) => item.label) || [],
-  );
+  const paymentMethodsRange =
+    formatDashboardDateRange(overviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
+    `${format(selectedMonthDate, 'dd MMM yyyy')} - ${format(new Date(Number(selectedYear), Number(selectedMonth), 0), 'dd MMM yyyy')}`;
 
   return (
     <div className="space-y-6">
@@ -70,8 +83,12 @@ export default function DashboardPage() {
 
       <DashboardFiltersBar
         branches={branches}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
         selectedBranchId={selectedBranch?.id}
         onBranchChange={handleBranchChange}
+        onMonthChange={setSelectedMonth}
+        onYearChange={setSelectedYear}
       />
 
       <StatsGrid

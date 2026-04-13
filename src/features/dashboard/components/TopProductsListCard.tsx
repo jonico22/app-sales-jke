@@ -65,6 +65,7 @@ export function TopProductsListCard({
 }: TopProductsListCardProps) {
   const topRevenue = Math.max(...data.map((item) => item.revenue), 0);
   const topProducts = data.slice(0, 5);
+  const hasProducts = topProducts.length > 0;
 
   return (
     <div className="rounded-[28px] border border-border bg-card px-6 pb-6 pt-4 shadow-sm xl:col-span-2">
@@ -73,10 +74,6 @@ export function TopProductsListCard({
           {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="h-16 animate-pulse rounded-2xl bg-muted" />
           ))}
-        </div>
-      ) : data.length === 0 ? (
-        <div className="flex h-[280px] items-center justify-center rounded-[24px] border border-dashed border-border bg-muted/20 text-sm font-medium text-muted-foreground">
-          Sin top productos disponibles.
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]">
@@ -97,6 +94,12 @@ export function TopProductsListCard({
               <p className="text-xs leading-tight text-muted-foreground">Ranking por ingresos</p>
             </div>
           </div>
+
+          {!hasProducts ? (
+            <div className="flex h-[170px] items-center justify-center rounded-[24px] border border-dashed border-border bg-muted/20 text-sm font-medium text-muted-foreground md:col-span-1 xl:col-span-2">
+              Sin top productos disponibles.
+            </div>
+          ) : null}
 
           {topProducts.map((item, index) => (
             <ProductTopCard

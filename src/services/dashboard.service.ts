@@ -14,11 +14,11 @@ export interface DashboardStats {
 
 export interface DashboardFilters {
     branchId?: string;
+    dateFrom?: string;
+    dateTo?: string;
 }
 
 export interface DashboardOverviewFilters extends DashboardFilters {
-    dateFrom?: string;
-    dateTo?: string;
     granularity?: 'day' | 'week' | 'month';
     limit?: number;
 }
