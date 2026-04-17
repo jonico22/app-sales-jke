@@ -3,6 +3,11 @@ import { useExternalConsignmentSalesQuery } from '../hooks/useConsignmentQueries
 import { ExternalConsignmentSalesHeader } from './components/ExternalConsignmentSalesHeader';
 import { ConsignmentPagination } from '../components/ConsignmentPagination';
 
+function formatAmount(value: number | string | null | undefined) {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue.toFixed(2) : '0.00';
+}
+
 export default function ExternalConsignmentSalesPage() {
   const [deliveryId, setDeliveryId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -84,8 +89,8 @@ export default function ExternalConsignmentSalesPage() {
                   <td className="px-4 py-3 text-sm">{sale.deliveredConsignmentId}</td>
                   <td className="px-4 py-3 text-sm">{sale.soldQuantity}</td>
                   <td className="px-4 py-3 text-sm">{sale.reportedSaleDate}</td>
-                  <td className="px-4 py-3 text-sm">{sale.reportedSalePrice.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm">{sale.totalCommissionAmount.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-sm">{formatAmount(sale.reportedSalePrice)}</td>
+                  <td className="px-4 py-3 text-sm">{formatAmount(sale.totalCommissionAmount)}</td>
                 </tr>
               ))}
             </tbody>
@@ -103,7 +108,7 @@ export default function ExternalConsignmentSalesPage() {
               <div className="text-xs text-muted-foreground">Entrega: {sale.deliveredConsignmentId}</div>
               <div className="text-xs text-muted-foreground">Cantidad: {sale.soldQuantity}</div>
               <div className="text-xs text-muted-foreground">Fecha: {sale.reportedSaleDate}</div>
-              <div className="text-xs text-muted-foreground">Venta: {sale.reportedSalePrice.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground">Venta: {formatAmount(sale.reportedSalePrice)}</div>
             </div>
           ))}
         </div>

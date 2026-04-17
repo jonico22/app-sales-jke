@@ -16,6 +16,8 @@ import { useSocietyStore } from '@/store/society.store';
 import { useBranchStore } from '@/store/branch.store';
 import { useCartStore } from '@/store/cart.store';
 import { useAuthStore } from '@/store/auth.store';
+import { generateSku } from '@/lib/utils';
+import { OutgoingConsignmentAgreementStatus } from '@/services/outgoing-consignment-agreement.service';
 
 const agreementSchema = z.object({
   branchId: z.string().min(1, { message: 'La sucursal es obligatoria' }),
@@ -38,6 +40,24 @@ type AgreementFormValues = z.output<typeof agreementSchema>;
 const inputClassName = 'bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors';
 const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors';
 const labelClassName = 'text-[10px] font-bold text-muted-foreground uppercase tracking-wider';
+const LEGACY_PLACEHOLDER_ID = '1';
+
+function resolveSelectValue<T extends { id: string; code?: string }>(
+  options: T[],
+  ...preferredIds: Array<string | undefined | null>
+) {
+  const validOptionIds = new Set(options.map((option) => option.id));
+  const preferredId = preferredIds.find((candidate) => {
+    return Boolean(candidate && candidate !== LEGACY_PLACEHOLDER_ID && validOptionIds.has(candidate));
+  });
+
+  if (preferredId) {
+    return preferredId;
+  }
+
+  const penCurrency = options.find((option) => option.code === 'PEN');
+  return penCurrency?.id || options[0]?.id || '';
+}
 
 interface CreateOutgoingAgreementFormProps {
   onCancel: () => void;
@@ -58,8 +78,8 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const defaultBranchId = selectedBranch?.id || cartBranchId || '';
-  const defaultCurrencyId = cartCurrencyId || society?.mainCurrency?.id || '';
+  const defaultBranchId = resolveSelectValue(branches, selectedBranch?.id, cartBranchId);
+  const defaultCurrencyId = resolveSelectValue(currencies, cartCurrencyId, society?.mainCurrency?.id);
   const defaultPartnerId = selectedClient?.id && selectedClient.id !== 'public' ? selectedClient.id : '';
 
   const {
@@ -85,11 +105,11 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
   useEffect(() => {
     reset((currentValues) => ({
       ...currentValues,
-      branchId: currentValues.branchId || defaultBranchId,
+      branchId: resolveSelectValue(branches, currentValues.branchId, defaultBranchId),
       partnerId: currentValues.partnerId || defaultPartnerId,
-      currencyId: currentValues.currencyId || defaultCurrencyId,
+      currencyId: resolveSelectValue(currencies, currentValues.currencyId, defaultCurrencyId),
     }));
-  }, [defaultBranchId, defaultCurrencyId, defaultPartnerId, reset]);
+  }, [branches, currencies, defaultBranchId, defaultCurrencyId, defaultPartnerId, reset]);
 
   useEffect(() => {
     let isMounted = true;
@@ -157,6 +177,8 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
         endDate: data.endDate,
         commissionRate: data.commissionRate,
         currencyId: data.currencyId,
+        agreementCode: generateSku('CONS'),
+        status: OutgoingConsignmentAgreementStatus.ACTIVE,
         notes: data.notes || undefined,
         createdBy: user?.email,
       });

@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { deliveredConsignmentAgreementService, type DeliveredConsignmentAgreement } from '@/services/delivered-consignment-agreement.service';
 import { externalConsignmentSaleService } from '@/services/external-consignment-sale.service';
+import { outgoingConsignmentAgreementService, type OutgoingConsignmentAgreement } from '@/services/outgoing-consignment-agreement.service';
+import { productService, type Product } from '@/services/product.service';
 import { useSocietyStore } from '@/store/society.store';
 
 const saleSchema = z.object({
@@ -37,6 +39,8 @@ interface CreateExternalConsignmentSaleFormProps {
 export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: CreateExternalConsignmentSaleFormProps) {
   const society = useSocietyStore((state) => state.society);
   const [deliveries, setDeliveries] = useState<DeliveredConsignmentAgreement[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedAgreement, setSelectedAgreement] = useState<OutgoingConsignmentAgreement | null>(null);
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,6 +49,7 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<SaleFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +103,69 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
     () => deliveries.find((delivery) => delivery.id === selectedDeliveryId) || null,
     [deliveries, selectedDeliveryId]
   );
+  const soldQuantity = Number(watch('soldQuantity') || 0);
+  const unitSalePrice = Number(watch('unitSalePrice') || 0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const hydrateSelectedDelivery = async () => {
+      if (!selectedDelivery) {
+        setSelectedProduct(null);
+        setSelectedAgreement(null);
+        setValue('soldQuantity', 1, { shouldDirty: false, shouldValidate: false });
+        setValue('unitSalePrice', 0, { shouldDirty: false, shouldValidate: false });
+        setValue('reportedSalePrice', 0, { shouldDirty: false, shouldValidate: false });
+        setValue('totalCommissionAmount', 0, { shouldDirty: false, shouldValidate: false });
+        return;
+      }
+
+      try {
+        const [productResponse, agreementResponse] = await Promise.all([
+          productService.getById(selectedDelivery.productId),
+          outgoingConsignmentAgreementService.getById(selectedDelivery.consignmentAgreementId),
+        ]);
+
+        if (!isMounted) return;
+
+        setSelectedProduct(productResponse.data);
+        setSelectedAgreement(agreementResponse.data);
+
+        const defaultUnitPrice = Number(selectedDelivery.suggestedSalePrice || productResponse.data.price || 0);
+        const defaultQuantity = 1;
+        const totalSale = defaultQuantity * defaultUnitPrice;
+        const commissionRate = Number(agreementResponse.data.commissionRate || 0);
+
+        setValue('soldQuantity', defaultQuantity, { shouldDirty: true, shouldValidate: true });
+        setValue('unitSalePrice', defaultUnitPrice, { shouldDirty: true, shouldValidate: true });
+        setValue('reportedSalePrice', totalSale, { shouldDirty: true, shouldValidate: true });
+        setValue('totalCommissionAmount', totalSale * commissionRate, { shouldDirty: true, shouldValidate: true });
+      } catch (error) {
+        console.error('Error loading selected delivery details:', error);
+        if (isMounted) {
+          toast.error('No se pudieron cargar los datos de la entrega seleccionada');
+        }
+      }
+    };
+
+    void hydrateSelectedDelivery();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedDelivery, setValue]);
+
+  useEffect(() => {
+    if (!selectedDelivery || !selectedAgreement) {
+      return;
+    }
+
+    const totalSale = soldQuantity * unitSalePrice;
+    const commissionRate = Number(selectedAgreement.commissionRate || 0);
+
+    setValue('reportedSalePrice', totalSale, { shouldDirty: true, shouldValidate: true });
+    setValue('totalCommissionAmount', totalSale * commissionRate, { shouldDirty: true, shouldValidate: true });
+  }, [selectedAgreement, selectedDelivery, setValue, soldQuantity, unitSalePrice]);
 
   const onSubmit = async (data: SaleFormValues) => {
     try {
@@ -163,6 +231,28 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
             />
           </div>
           {errors.deliveredConsignmentId ? <span className="text-[10px] font-medium text-destructive">{errors.deliveredConsignmentId.message}</span> : null}
+        </div>
+
+        <div className="rounded-xl border border-border bg-muted/20 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">Resumen de la Entrega</p>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
+            <div>
+              <span className="font-semibold text-foreground">Producto:</span>{' '}
+              {selectedProduct?.name || selectedDelivery?.productId || 'Selecciona una entrega'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Stock restante:</span>{' '}
+              {selectedDelivery?.remainingStock ?? 'N/D'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Precio sugerido:</span>{' '}
+              {selectedDelivery ? Number(selectedDelivery.suggestedSalePrice || 0).toFixed(2) : '0.00'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Comisión:</span>{' '}
+              {selectedAgreement ? `${(Number(selectedAgreement.commissionRate || 0) * 100).toFixed(2)}%` : '0.00%'}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

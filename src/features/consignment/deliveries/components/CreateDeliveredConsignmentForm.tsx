@@ -16,22 +16,44 @@ import { useBranchStore } from '@/store/branch.store';
 import { useCartStore } from '@/store/cart.store';
 import { useSocietyStore } from '@/store/society.store';
 
+const inputClassName = 'bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors';
+const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors';
+const labelClassName = 'text-[10px] font-bold text-muted-foreground uppercase tracking-wider';
+
+function requiredNumberField(requiredMessage: string, minMessage: string) {
+  return z.preprocess((value) => {
+    if (value === '' || value === null || value === undefined) {
+      return undefined;
+    }
+
+    return Number(value);
+  }, z.number({ error: requiredMessage }).min(0, { message: minMessage }));
+}
+
 const deliverySchema = z.object({
   consignmentAgreementId: z.string().min(1, { message: 'El acuerdo es obligatorio' }),
   productId: z.string().min(1, { message: 'El producto es obligatorio' }),
   branchId: z.string().min(1, { message: 'La sucursal es obligatoria' }),
-  deliveredStock: z.coerce.number().min(1, { message: 'La cantidad debe ser mayor a 0' }),
-  costPrice: z.coerce.number().min(0, { message: 'El costo debe ser mayor o igual a 0' }),
-  suggestedSalePrice: z.coerce.number().min(0, { message: 'El precio sugerido debe ser mayor o igual a 0' }),
+  deliveredStock: z.preprocess((value) => Number(value), z.number().min(1, { message: 'La cantidad debe ser mayor a 0' })),
+  costPrice: requiredNumberField('El costo es obligatorio', 'El costo debe ser mayor o igual a 0'),
+  suggestedSalePrice: requiredNumberField('El precio sugerido es obligatorio', 'El precio sugerido debe ser mayor o igual a 0'),
   deliveryDate: z.string().optional(),
   notes: z.string().optional(),
 });
 
 type DeliveryFormValues = z.output<typeof deliverySchema>;
 
-const inputClassName = 'bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors';
-const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors';
-const labelClassName = 'text-[10px] font-bold text-muted-foreground uppercase tracking-wider';
+function normalizeCollection<T>(value: unknown): T[] {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value && typeof value === 'object' && 'data' in value && Array.isArray(value.data)) {
+    return value.data as T[];
+  }
+
+  return [];
+}
 
 interface CreateDeliveredConsignmentFormProps {
   onCancel: () => void;
@@ -58,6 +80,7 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
     control,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<DeliveryFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,14 +90,15 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
       productId: '',
       branchId: defaultBranchId,
       deliveredStock: 1,
-      costPrice: 0,
-      suggestedSalePrice: 0,
+      costPrice: undefined,
+      suggestedSalePrice: undefined,
       deliveryDate: new Date().toISOString().slice(0, 10),
       notes: '',
     },
   });
 
   const selectedBranchId = watch('branchId');
+  const selectedProductId = watch('productId');
 
   useEffect(() => {
     reset((currentValues) => ({
@@ -139,7 +163,7 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
       try {
         const response = await productService.getForSelect({ branchId: selectedBranchId });
         if (!isMounted) return;
-        setProducts(response.data.data);
+        setProducts(normalizeCollection<Product>(response.data));
       } catch (error) {
         console.error('Error loading products for delivery:', error);
         if (isMounted) {
@@ -154,6 +178,36 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
       isMounted = false;
     };
   }, [selectedBranchId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncProductPricing = async () => {
+      const selectedProduct = products.find((product) => product.id === selectedProductId);
+
+      if (!selectedProduct) {
+        setValue('costPrice', undefined, { shouldDirty: false, shouldValidate: false });
+        setValue('suggestedSalePrice', undefined, { shouldDirty: false, shouldValidate: false });
+        return;
+      }
+
+      const hasInlinePricing = selectedProduct.priceCost !== undefined && selectedProduct.price !== undefined;
+      const pricingSource = hasInlinePricing
+        ? selectedProduct
+        : (await productService.getById(selectedProduct.id)).data;
+
+      if (!isMounted) return;
+
+      setValue('costPrice', Number(pricingSource.priceCost), { shouldDirty: true, shouldValidate: true });
+      setValue('suggestedSalePrice', Number(pricingSource.price), { shouldDirty: true, shouldValidate: true });
+    };
+
+    void syncProductPricing();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [products, selectedProductId, setValue]);
 
   const currencySymbol = useMemo(() => {
     const currentAgreement = agreements.find((agreement) => agreement.id === watch('consignmentAgreementId'));
@@ -174,6 +228,7 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
         costPrice: data.costPrice,
         suggestedSalePrice: data.suggestedSalePrice,
         deliveryDate: data.deliveryDate || undefined,
+        status: 'active',
         notes: data.notes || undefined,
       });
 
