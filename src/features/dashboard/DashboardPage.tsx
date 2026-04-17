@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { BusinessHeader } from './components/BusinessHeader';
 import { CatalogSummaryGrid } from './components/CatalogSummaryGrid';
@@ -15,7 +15,6 @@ import { useDashboardLowStockAlerts } from '@/hooks/useDashboardLowStockAlerts';
 import { useDashboardOverview } from '@/hooks/useDashboardOverview';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useBranches } from '@/hooks/useBranches';
-import { useBranchStore } from '@/store/branch.store';
 import { useSocietyStore } from '@/store/society.store';
 
 export default function DashboardPage() {
@@ -23,20 +22,14 @@ export default function DashboardPage() {
   const currencySymbol = society?.mainCurrency?.symbol || 'S/';
   const today = new Date();
   const currentYear = today.getFullYear();
-  const [granularity, setGranularity] = useState<DashboardGranularity>('month');
+  const [trendGranularity, setTrendGranularity] = useState<DashboardGranularity>('month');
   const [selectedMonth, setSelectedMonth] = useState(String(today.getMonth() + 1));
   const [selectedYear, setSelectedYear] = useState(String(currentYear));
+  const [selectedDashboardBranchId, setSelectedDashboardBranchId] = useState<string>('all');
+  const dashboardGranularity: DashboardGranularity = 'month';
 
   const { data: branchesData = [] } = useBranches();
-  const { branches, selectedBranch, selectBranch, setBranches } = useBranchStore();
-
-  useEffect(() => {
-    if (branchesData.length > 0 && (branches.length === 0 || branches.length !== branchesData.length)) {
-      setBranches(branchesData);
-    }
-  }, [branches.length, branchesData, setBranches]);
-
-  const branchId = selectedBranch?.id || undefined;
+  const branchId = selectedDashboardBranchId === 'all' ? undefined : selectedDashboardBranchId;
   const selectedMonthDate = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
   const selectedMonthEndDate = new Date(Number(selectedYear), Number(selectedMonth), 0);
   const dateFrom = format(selectedMonthDate, 'yyyy-MM-dd');
@@ -50,11 +43,11 @@ export default function DashboardPage() {
   const statsQuery = useDashboardStats(dashboardFilters);
   const trendOverviewQuery = useDashboardOverview({
     ...dashboardFilters,
-    granularity,
+    granularity: trendGranularity,
   });
-  const operationalOverviewQuery = useDashboardOverview({
+  const dashboardOverviewQuery = useDashboardOverview({
     ...dashboardFilters,
-    granularity,
+    granularity: dashboardGranularity,
   });
   const lowStockQuery = useDashboardLowStockAlerts({
     ...dashboardFilters,
@@ -65,32 +58,24 @@ export default function DashboardPage() {
   const isInitialLoading =
     !statsQuery.data ||
     !trendOverviewQuery.data ||
-    !operationalOverviewQuery.data ||
+    !dashboardOverviewQuery.data ||
     !lowStockQuery.data ||
     !catalogSummaryQuery.data;
 
   const handleBranchChange = (value: string) => {
-    if (value === 'all') {
-      useBranchStore.setState({ selectedBranch: null });
-      return;
-    }
-
-    const branch = branches.find((item) => item.id === value);
-    if (branch) selectBranch(branch);
+    setSelectedDashboardBranchId(value);
   };
 
   const handleMonthChange = (value: string) => {
     setSelectedMonth(value);
-    setGranularity('month');
   };
 
   const handleYearChange = (value: string) => {
     setSelectedYear(value);
-    setGranularity('month');
   };
 
   const paymentMethodsRange =
-    formatDashboardDateRange(operationalOverviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
+    formatDashboardDateRange(dashboardOverviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
     `${format(selectedMonthDate, 'dd MMM yyyy')} - ${format(selectedMonthEndDate, 'dd MMM yyyy')}`;
 
   return (
@@ -98,10 +83,10 @@ export default function DashboardPage() {
       <BusinessHeader />
 
       <DashboardFiltersBar
-        branches={branches}
+        branches={branchesData}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
-        selectedBranchId={selectedBranch?.id}
+        selectedBranchId={selectedDashboardBranchId === 'all' ? undefined : selectedDashboardBranchId}
         onBranchChange={handleBranchChange}
         onMonthChange={handleMonthChange}
         onYearChange={handleYearChange}
@@ -109,9 +94,9 @@ export default function DashboardPage() {
 
       <StatsGrid
         stats={statsQuery.data}
-        overview={trendOverviewQuery.data}
+        overview={dashboardOverviewQuery.data}
         currencySymbol={currencySymbol}
-        granularity={granularity}
+        granularity={dashboardGranularity}
         isLoading={isInitialLoading}
       />
 
@@ -119,30 +104,30 @@ export default function DashboardPage() {
         <SalesTrendOverviewCard
           currencySymbol={currencySymbol}
           data={trendOverviewQuery.data?.salesTrend || []}
-          granularity={granularity}
+          granularity={trendGranularity}
           isLoading={trendOverviewQuery.isLoading}
-          onGranularityChange={setGranularity}
+          onGranularityChange={setTrendGranularity}
         />
         <CashFlowOverviewCard
           currencySymbol={currencySymbol}
-          data={trendOverviewQuery.data?.cashFlowMini || []}
-          granularity={granularity}
-          isLoading={trendOverviewQuery.isLoading}
+          data={dashboardOverviewQuery.data?.cashFlowMini || []}
+          granularity={dashboardGranularity}
+          isLoading={dashboardOverviewQuery.isLoading}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <PaymentMethodsOverviewCard
           currencySymbol={currencySymbol}
-          data={operationalOverviewQuery.data?.paymentMethods || []}
+          data={dashboardOverviewQuery.data?.paymentMethods || []}
           dateRangeLabel={paymentMethodsRange}
-          isLoading={operationalOverviewQuery.isLoading}
+          isLoading={dashboardOverviewQuery.isLoading}
         />
         <TopProductsListCard
           currencySymbol={currencySymbol}
-          data={operationalOverviewQuery.data?.topProducts || []}
+          data={dashboardOverviewQuery.data?.topProducts || []}
           dateRangeLabel={paymentMethodsRange}
-          isLoading={operationalOverviewQuery.isLoading}
+          isLoading={dashboardOverviewQuery.isLoading}
         />
       </div>
 
