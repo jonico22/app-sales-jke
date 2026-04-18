@@ -1,117 +1,141 @@
 import { useMemo, useState } from 'react';
-import { useExternalConsignmentSalesQuery } from '../hooks/useConsignmentQueries';
+import { alerts } from '@/utils/alerts';
+import { useDeleteExternalConsignmentSale, useExternalConsignmentSalesQuery } from '../hooks/useConsignmentQueries';
 import { ExternalConsignmentSalesHeader } from './components/ExternalConsignmentSalesHeader';
 import { ConsignmentPagination } from '../components/ConsignmentPagination';
-
-function formatAmount(value: number | string | null | undefined) {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) ? parsedValue.toFixed(2) : '0.00';
-}
+import { ExternalConsignmentSalesFilterBar } from './components/ExternalConsignmentSalesFilterBar';
+import { ExternalConsignmentSalesTable } from './components/ExternalConsignmentSalesTable';
+import { ExternalConsignmentSalesMobileList } from './components/ExternalConsignmentSalesMobileList';
+import { ExternalConsignmentSaleEditPanel } from './components/ExternalConsignmentSaleEditPanel';
 
 export default function ExternalConsignmentSalesPage() {
   const [deliveryId, setDeliveryId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [periodFilter, setPeriodFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState('reportedSaleDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [editPanelOpen, setEditPanelOpen] = useState(false);
+  const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
+
+  const resolveDates = () => {
+    if (periodFilter === 'all') {
+      return {
+        from: dateFrom || undefined,
+        to: dateTo || undefined,
+      };
+    }
+
+    const end = new Date();
+    const start = new Date(end);
+
+    if (periodFilter === 'today') {
+      // same day
+    } else if (periodFilter === 'week') {
+      start.setDate(end.getDate() - 7);
+    } else if (periodFilter === 'month') {
+      start.setDate(end.getDate() - 30);
+    }
+
+    return {
+      from: start.toISOString().slice(0, 10),
+      to: end.toISOString().slice(0, 10),
+    };
+  };
+
+  const resolvedDates = resolveDates();
 
   const params = useMemo(() => ({
     deliveredConsignmentId: deliveryId || undefined,
-    reportedSaleDateFrom: dateFrom || undefined,
-    reportedSaleDateTo: dateTo || undefined,
+    reportedSaleDateFrom: resolvedDates.from,
+    reportedSaleDateTo: resolvedDates.to,
     page: currentPage,
     limit: pageSize,
-    sortBy: 'reportedSaleDate',
-    sortOrder: 'desc' as const,
-  }), [currentPage, dateFrom, dateTo, deliveryId, pageSize]);
+    sortBy,
+    sortOrder,
+  }), [currentPage, deliveryId, pageSize, resolvedDates.from, resolvedDates.to, sortBy, sortOrder]);
 
   const { data, isLoading } = useExternalConsignmentSalesQuery(params);
+  const deleteMutation = useDeleteExternalConsignmentSale();
   const sales = data?.data || [];
   const pagination = data?.pagination || { total: 0, totalPages: 1, hasNextPage: false, hasPrevPage: false };
+
+  const handleSort = (field: string) => {
+    if (field === sortBy) {
+      setSortOrder((current) => (current === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const handleEditSale = (saleId: string) => {
+    setSelectedSaleId(saleId);
+    setEditPanelOpen(true);
+  };
+
+  const handleDeleteSale = async (saleId: string) => {
+    const isConfirmed = await alerts.confirm({
+      title: '¿Estás seguro?',
+      text: '¿Deseas eliminar esta venta externa? Esta acción no se puede deshacer.',
+      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#ef4444',
+    });
+
+    if (isConfirmed) {
+      await deleteMutation.mutateAsync(saleId);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <ExternalConsignmentSalesHeader />
 
-      <div className="bg-card rounded-2xl border border-border shadow-sm p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input
-            value={deliveryId}
-            onChange={(e) => {
-              setDeliveryId(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder="Filtrar por entrega"
-            className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-xs"
-          />
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-xs"
-          />
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="h-10 rounded-lg border border-border bg-muted/30 px-3 text-xs"
-          />
-        </div>
-      </div>
+      <ExternalConsignmentSalesFilterBar
+        searchTerm={deliveryId}
+        onSearchTermChange={(value) => {
+          setDeliveryId(value);
+          setCurrentPage(1);
+        }}
+        periodFilter={periodFilter}
+        onPeriodFilterChange={(value) => {
+          setPeriodFilter(value);
+          setCurrentPage(1);
+        }}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={(value) => {
+          setDateFrom(value);
+          setPeriodFilter('all');
+          setCurrentPage(1);
+        }}
+        onDateToChange={(value) => {
+          setDateTo(value);
+          setPeriodFilter('all');
+          setCurrentPage(1);
+        }}
+      />
 
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/20 border-b border-border">
-              <tr className="text-left">
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Venta</th>
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Entrega</th>
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Cantidad</th>
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Fecha</th>
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-[10px] uppercase tracking-wider">Comision</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">Cargando ventas...</td></tr>
-              ) : sales.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">No se encontraron ventas externas.</td></tr>
-              ) : sales.map((sale) => (
-                <tr key={sale.id} className="border-b border-border/60">
-                  <td className="px-4 py-3 text-sm font-medium">{sale.documentReference || sale.id}</td>
-                  <td className="px-4 py-3 text-sm">{sale.deliveredConsignmentId}</td>
-                  <td className="px-4 py-3 text-sm">{sale.soldQuantity}</td>
-                  <td className="px-4 py-3 text-sm">{sale.reportedSaleDate}</td>
-                  <td className="px-4 py-3 text-sm">{formatAmount(sale.reportedSalePrice)}</td>
-                  <td className="px-4 py-3 text-sm">{formatAmount(sale.totalCommissionAmount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ExternalConsignmentSalesTable
+          sales={sales}
+          isLoading={isLoading || deleteMutation.isPending}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onEdit={handleEditSale}
+          onDelete={handleDeleteSale}
+        />
 
-        <div className="md:hidden divide-y divide-border">
-          {isLoading ? (
-            <div className="p-4 text-sm text-muted-foreground">Cargando ventas...</div>
-          ) : sales.length === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground">No se encontraron ventas externas.</div>
-          ) : sales.map((sale) => (
-            <div key={sale.id} className="p-4 space-y-1">
-              <div className="text-sm font-semibold">{sale.documentReference || sale.id}</div>
-              <div className="text-xs text-muted-foreground">Entrega: {sale.deliveredConsignmentId}</div>
-              <div className="text-xs text-muted-foreground">Cantidad: {sale.soldQuantity}</div>
-              <div className="text-xs text-muted-foreground">Fecha: {sale.reportedSaleDate}</div>
-              <div className="text-xs text-muted-foreground">Venta: {formatAmount(sale.reportedSalePrice)}</div>
-            </div>
-          ))}
-        </div>
+        <ExternalConsignmentSalesMobileList
+          sales={sales}
+          isLoading={isLoading || deleteMutation.isPending}
+          onEdit={handleEditSale}
+          onDelete={handleDeleteSale}
+        />
 
         <ConsignmentPagination
           currentPage={currentPage}
@@ -128,6 +152,12 @@ export default function ExternalConsignmentSalesPage() {
           }}
         />
       </div>
+
+      <ExternalConsignmentSaleEditPanel
+        open={editPanelOpen}
+        onOpenChange={setEditPanelOpen}
+        saleId={selectedSaleId}
+      />
     </div>
   );
 }

@@ -8,13 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { deliveredConsignmentAgreementService } from '@/services/delivered-consignment-agreement.service';
+import {
+  deliveredConsignmentAgreementService,
+  type DeliveredConsignmentAgreement,
+} from '@/services/delivered-consignment-agreement.service';
 import { outgoingConsignmentAgreementService, type OutgoingConsignmentAgreement } from '@/services/outgoing-consignment-agreement.service';
 import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
 import { productService, type Product } from '@/services/product.service';
 import { useBranchStore } from '@/store/branch.store';
 import { useCartStore } from '@/store/cart.store';
 import { useSocietyStore } from '@/store/society.store';
+import { useUpdateDeliveredConsignmentAgreement } from '../../hooks/useConsignmentQueries';
 
 const inputClassName = 'bg-muted/30 border-border h-10 text-xs focus:bg-background transition-colors';
 const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/50 transition-colors';
@@ -56,11 +60,18 @@ function normalizeCollection<T>(value: unknown): T[] {
 }
 
 interface CreateDeliveredConsignmentFormProps {
+  mode?: 'create' | 'edit';
+  delivery?: DeliveredConsignmentAgreement;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDeliveredConsignmentFormProps) {
+export function CreateDeliveredConsignmentForm({
+  mode = 'create',
+  delivery,
+  onCancel,
+  onSuccess,
+}: CreateDeliveredConsignmentFormProps) {
   const society = useSocietyStore((state) => state.society);
   const { branches: storedBranches, selectedBranch, setBranches } = useBranchStore();
   const cartBranchId = useCartStore((state) => state.branchId);
@@ -71,6 +82,7 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
   const [products, setProducts] = useState<Product[]>([]);
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateMutation = useUpdateDeliveredConsignmentAgreement();
 
   const defaultBranchId = selectedBranch?.id || cartBranchId || '';
 
@@ -106,6 +118,21 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
       branchId: currentValues.branchId || defaultBranchId,
     }));
   }, [defaultBranchId, reset]);
+
+  useEffect(() => {
+    if (!delivery) return;
+
+    reset({
+      consignmentAgreementId: delivery.consignmentAgreementId || '',
+      productId: delivery.productId || '',
+      branchId: delivery.branchId || defaultBranchId,
+      deliveredStock: Number(delivery.deliveredStock ?? 1),
+      costPrice: Number(delivery.costPrice ?? 0),
+      suggestedSalePrice: Number(delivery.suggestedSalePrice ?? 0),
+      deliveryDate: delivery.deliveryDate?.slice(0, 10) || '',
+      notes: delivery.notes || '',
+    });
+  }, [defaultBranchId, delivery, reset]);
 
   useEffect(() => {
     let isMounted = true;
@@ -220,38 +247,63 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
   const onSubmit = async (data: DeliveryFormValues) => {
     try {
       setIsSubmitting(true);
-      await deliveredConsignmentAgreementService.create({
-        consignmentAgreementId: data.consignmentAgreementId,
-        productId: data.productId,
-        branchId: data.branchId,
-        deliveredStock: data.deliveredStock,
-        costPrice: data.costPrice,
-        suggestedSalePrice: data.suggestedSalePrice,
-        deliveryDate: data.deliveryDate || undefined,
-        status: 'active',
-        notes: data.notes || undefined,
-      });
+      if (mode === 'edit' && delivery?.id) {
+        await updateMutation.mutateAsync({
+          id: delivery.id,
+          data: {
+            consignmentAgreementId: data.consignmentAgreementId,
+            productId: data.productId,
+            branchId: data.branchId,
+            deliveredStock: data.deliveredStock,
+            costPrice: data.costPrice,
+            suggestedSalePrice: data.suggestedSalePrice,
+            deliveryDate: data.deliveryDate || undefined,
+            status: delivery.status,
+            notes: data.notes || undefined,
+            remainingStock: delivery.remainingStock,
+          },
+        });
+      } else {
+        await deliveredConsignmentAgreementService.create({
+          consignmentAgreementId: data.consignmentAgreementId,
+          productId: data.productId,
+          branchId: data.branchId,
+          deliveredStock: data.deliveredStock,
+          costPrice: data.costPrice,
+          suggestedSalePrice: data.suggestedSalePrice,
+          deliveryDate: data.deliveryDate || undefined,
+          status: 'active',
+          notes: data.notes || undefined,
+        });
 
-      toast.success('Entrega registrada correctamente');
+        toast.success('Entrega registrada correctamente');
+      }
+
       onSuccess();
     } catch (error) {
       console.error('Error creating delivered consignment agreement:', error);
-      toast.error('No se pudo registrar la entrega');
+      if (mode === 'create') {
+        toast.error('No se pudo registrar la entrega');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className={mode === 'edit' ? 'space-y-6' : 'bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8'}>
+      <div className={mode === 'edit' ? 'flex items-center gap-3' : 'flex items-center gap-3 mb-6'}>
         <div className="bg-primary/10 p-2.5 rounded-lg">
           <Package2 className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-foreground text-lg">Paso 2. Registrar entrega</h3>
+          <h3 className="font-bold text-foreground text-lg">
+            {mode === 'edit' ? 'Actualizar entrega' : 'Paso 2. Registrar entrega'}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Asocia el producto al acuerdo y registra el stock entregado al consignatario.
+            {mode === 'edit'
+              ? 'Ajusta acuerdo, producto, stock y valores comerciales desde el listado.'
+              : 'Asocia el producto al acuerdo y registra el stock entregado al consignatario.'}
           </p>
         </div>
       </div>
@@ -404,11 +456,15 @@ export function CreateDeliveredConsignmentForm({ onCancel, onSuccess }: CreateDe
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || isOptionsLoading}
+            disabled={isSubmitting || isOptionsLoading || updateMutation.isPending}
             className="w-full sm:flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.99] uppercase tracking-wider"
           >
             <Save className="mr-2 h-4 w-4" />
-            {isSubmitting ? 'Guardando...' : 'Registrar Entrega'}
+            {isSubmitting || updateMutation.isPending
+              ? 'Guardando...'
+              : mode === 'edit'
+                ? 'Guardar Cambios'
+                : 'Registrar Entrega'}
           </Button>
         </div>
       </form>

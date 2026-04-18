@@ -12,10 +12,12 @@ import { outgoingConsignmentAgreementService, type OutgoingConsignmentAgreement 
 import {
   receivedConsignmentSettlementService,
   ReceivedConsignmentSettlementStatus,
+  type ReceivedConsignmentSettlement,
 } from '@/services/received-consignment-settlement.service';
 import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
 import { useSocietyStore } from '@/store/society.store';
 import { useCartStore } from '@/store/cart.store';
+import { useUpdateReceivedConsignmentSettlement } from '../../hooks/useConsignmentQueries';
 
 const settlementSchema = z.object({
   outgoingAgreementId: z.string().min(1, { message: 'El acuerdo es obligatorio' }),
@@ -42,11 +44,18 @@ const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-
 const labelClassName = 'text-[10px] font-bold text-muted-foreground uppercase tracking-wider';
 
 interface CreateReceivedConsignmentSettlementFormProps {
+  mode?: 'create' | 'edit';
+  settlement?: ReceivedConsignmentSettlement;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }: CreateReceivedConsignmentSettlementFormProps) {
+export function CreateReceivedConsignmentSettlementForm({
+  mode = 'create',
+  settlement,
+  onCancel,
+  onSuccess,
+}: CreateReceivedConsignmentSettlementFormProps) {
   const society = useSocietyStore((state) => state.society);
   const cartCurrencyId = useCartStore((state) => state.currencyId);
 
@@ -54,6 +63,7 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
   const [currencies, setCurrencies] = useState<CurrencySelectOption[]>([]);
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateMutation = useUpdateReceivedConsignmentSettlement();
 
   const defaultCurrencyId = cartCurrencyId || society?.mainCurrency?.id || '';
 
@@ -63,6 +73,7 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
     control,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<SettlementFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,6 +90,49 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
       settlementNotes: '',
     },
   });
+
+  const selectedAgreementId = watch('outgoingAgreementId');
+  const selectedAgreement = useMemo(
+    () => agreements.find((agreement) => agreement.id === selectedAgreementId) || null,
+    [agreements, selectedAgreementId]
+  );
+  const totalReportedSalesAmount = Number(watch('totalReportedSalesAmount') || 0);
+
+  useEffect(() => {
+    if (!selectedAgreement) {
+      return;
+    }
+
+    setValue('currencyId', selectedAgreement.currencyId, { shouldDirty: true, shouldValidate: true });
+  }, [selectedAgreement, setValue]);
+
+  useEffect(() => {
+    if (!settlement) return;
+
+    reset({
+      outgoingAgreementId: settlement.outgoingAgreementId || '',
+      settlementDate: settlement.settlementDate?.slice(0, 10) || '',
+      totalReportedSalesAmount: Number(settlement.totalReportedSalesAmount ?? 0),
+      consigneeCommissionAmount: Number(settlement.consigneeCommissionAmount ?? 0),
+      totalReceivedAmount: Number(settlement.totalReceivedAmount ?? 0),
+      status: settlement.status,
+      currencyId: settlement.currencyId || defaultCurrencyId,
+      receiptReference: settlement.receiptReference || '',
+      settlementNotes: settlement.settlementNotes || '',
+    });
+  }, [defaultCurrencyId, reset, settlement]);
+
+  useEffect(() => {
+    if (!selectedAgreement) {
+      return;
+    }
+
+    const commissionAmount = totalReportedSalesAmount * Number(selectedAgreement.commissionRate || 0);
+    const receivedAmount = totalReportedSalesAmount - commissionAmount;
+
+    setValue('consigneeCommissionAmount', Number(commissionAmount.toFixed(2)), { shouldDirty: true, shouldValidate: true });
+    setValue('totalReceivedAmount', Number(receivedAmount.toFixed(2)), { shouldDirty: true, shouldValidate: true });
+  }, [selectedAgreement, setValue, totalReportedSalesAmount]);
 
   useEffect(() => {
     reset((currentValues) => ({
@@ -133,38 +187,62 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
   const onSubmit = async (data: SettlementFormValues) => {
     try {
       setIsSubmitting(true);
-      await receivedConsignmentSettlementService.create({
-        outgoingAgreementId: data.outgoingAgreementId,
-        settlementDate: data.settlementDate,
-        totalReportedSalesAmount: data.totalReportedSalesAmount,
-        consigneeCommissionAmount: data.consigneeCommissionAmount,
-        totalReceivedAmount: data.totalReceivedAmount,
-        status: data.status,
-        currencyId: data.currencyId,
-        receiptReference: data.receiptReference || undefined,
-        settlementNotes: data.settlementNotes || undefined,
-      });
+      if (mode === 'edit' && settlement?.id) {
+        await updateMutation.mutateAsync({
+          id: settlement.id,
+          data: {
+            outgoingAgreementId: data.outgoingAgreementId,
+            settlementDate: data.settlementDate,
+            totalReportedSalesAmount: data.totalReportedSalesAmount,
+            consigneeCommissionAmount: data.consigneeCommissionAmount,
+            totalReceivedAmount: data.totalReceivedAmount,
+            status: data.status,
+            currencyId: data.currencyId,
+            receiptReference: data.receiptReference || undefined,
+            settlementNotes: data.settlementNotes || undefined,
+          },
+        });
+      } else {
+        await receivedConsignmentSettlementService.create({
+          outgoingAgreementId: data.outgoingAgreementId,
+          settlementDate: data.settlementDate,
+          totalReportedSalesAmount: data.totalReportedSalesAmount,
+          consigneeCommissionAmount: data.consigneeCommissionAmount,
+          totalReceivedAmount: data.totalReceivedAmount,
+          status: data.status,
+          currencyId: data.currencyId,
+          receiptReference: data.receiptReference || undefined,
+          settlementNotes: data.settlementNotes || undefined,
+        });
 
-      toast.success('Liquidación registrada correctamente');
+        toast.success('Liquidación registrada correctamente');
+      }
+
       onSuccess();
     } catch (error) {
       console.error('Error creating received consignment settlement:', error);
-      toast.error('No se pudo registrar la liquidación');
+      if (mode === 'create') {
+        toast.error('No se pudo registrar la liquidación');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className={mode === 'edit' ? 'space-y-6' : 'bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8'}>
+      <div className={mode === 'edit' ? 'flex items-center gap-3' : 'flex items-center gap-3 mb-6'}>
         <div className="bg-primary/10 p-2.5 rounded-lg">
           <Landmark className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-foreground text-lg">Paso 4. Registrar liquidación</h3>
+          <h3 className="font-bold text-foreground text-lg">
+            {mode === 'edit' ? 'Actualizar liquidación' : 'Paso 4. Registrar liquidación'}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Registra la liquidación recibida sobre un acuerdo de consignación.
+            {mode === 'edit'
+              ? 'Ajusta montos, fecha, estado y referencia sin salir del listado.'
+              : 'Registra la liquidación recibida sobre un acuerdo de consignación.'}
           </p>
         </div>
       </div>
@@ -195,6 +273,28 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
             />
           </div>
           {errors.outgoingAgreementId ? <span className="text-[10px] font-medium text-destructive">{errors.outgoingAgreementId.message}</span> : null}
+        </div>
+
+        <div className="rounded-xl border border-border bg-muted/20 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-foreground">Resumen del Acuerdo</p>
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
+            <div>
+              <span className="font-semibold text-foreground">Código:</span>{' '}
+              {selectedAgreement?.agreementCode || selectedAgreement?.id || 'Selecciona un acuerdo'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Estado:</span>{' '}
+              {selectedAgreement?.status || 'N/D'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Comisión:</span>{' '}
+              {selectedAgreement ? `${(Number(selectedAgreement.commissionRate || 0) * 100).toFixed(2)}%` : '0.00%'}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Moneda:</span>{' '}
+              {selectedAgreement?.currencyId || 'N/D'}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -312,11 +412,15 @@ export function CreateReceivedConsignmentSettlementForm({ onCancel, onSuccess }:
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || isOptionsLoading}
+            disabled={isSubmitting || isOptionsLoading || updateMutation.isPending}
             className="w-full sm:flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.99] uppercase tracking-wider"
           >
             <Save className="mr-2 h-4 w-4" />
-            {isSubmitting ? 'Guardando...' : 'Registrar Liquidación'}
+            {isSubmitting || updateMutation.isPending
+              ? 'Guardando...'
+              : mode === 'edit'
+                ? 'Guardar Cambios'
+                : 'Registrar Liquidación'}
           </Button>
         </div>
       </form>

@@ -11,13 +11,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { clientService, type ClientSelectOption } from '@/services/client.service';
 import { branchOfficeService, type BranchOfficeSelectOption } from '@/services/branch-office.service';
 import { currencyService, type CurrencySelectOption } from '@/services/currency.service';
-import { outgoingConsignmentAgreementService } from '@/services/outgoing-consignment-agreement.service';
+import {
+  outgoingConsignmentAgreementService,
+  type OutgoingConsignmentAgreement,
+} from '@/services/outgoing-consignment-agreement.service';
 import { useSocietyStore } from '@/store/society.store';
 import { useBranchStore } from '@/store/branch.store';
 import { useCartStore } from '@/store/cart.store';
 import { useAuthStore } from '@/store/auth.store';
 import { generateSku } from '@/lib/utils';
 import { OutgoingConsignmentAgreementStatus } from '@/services/outgoing-consignment-agreement.service';
+import { useUpdateOutgoingConsignmentAgreement } from '../../hooks/useConsignmentQueries';
 
 const agreementSchema = z.object({
   branchId: z.string().min(1, { message: 'La sucursal es obligatoria' }),
@@ -60,11 +64,18 @@ function resolveSelectValue<T extends { id: string; code?: string }>(
 }
 
 interface CreateOutgoingAgreementFormProps {
+  mode?: 'create' | 'edit';
+  agreement?: OutgoingConsignmentAgreement;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgoingAgreementFormProps) {
+export function CreateOutgoingAgreementForm({
+  mode = 'create',
+  agreement,
+  onCancel,
+  onSuccess,
+}: CreateOutgoingAgreementFormProps) {
   const society = useSocietyStore((state) => state.society);
   const { branches: storedBranches, selectedBranch, setBranches } = useBranchStore();
   const cartBranchId = useCartStore((state) => state.branchId);
@@ -77,6 +88,7 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
   const [currencies, setCurrencies] = useState<CurrencySelectOption[]>([]);
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateMutation = useUpdateOutgoingConsignmentAgreement();
 
   const defaultBranchId = resolveSelectValue(branches, selectedBranch?.id, cartBranchId);
   const defaultCurrencyId = resolveSelectValue(currencies, cartCurrencyId, society?.mainCurrency?.id);
@@ -110,6 +122,20 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
       currencyId: resolveSelectValue(currencies, currentValues.currencyId, defaultCurrencyId),
     }));
   }, [branches, currencies, defaultBranchId, defaultCurrencyId, defaultPartnerId, reset]);
+
+  useEffect(() => {
+    if (!agreement) return;
+
+    reset({
+      branchId: agreement.branchId || '',
+      partnerId: agreement.partnerId || '',
+      startDate: agreement.startDate?.slice(0, 10) || '',
+      endDate: agreement.endDate?.slice(0, 10) || '',
+      commissionRate: Number(agreement.commissionRate ?? 0),
+      currencyId: agreement.currencyId || '',
+      notes: agreement.notes || '',
+    });
+  }, [agreement, reset]);
 
   useEffect(() => {
     let isMounted = true;
@@ -169,40 +195,65 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
     try {
       setIsSubmitting(true);
 
-      await outgoingConsignmentAgreementService.create({
-        societyId: society.code || society.id,
-        branchId: data.branchId,
-        partnerId: data.partnerId,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        commissionRate: data.commissionRate,
-        currencyId: data.currencyId,
-        agreementCode: generateSku('CONS'),
-        status: OutgoingConsignmentAgreementStatus.ACTIVE,
-        notes: data.notes || undefined,
-        createdBy: user?.email,
-      });
+      if (mode === 'edit' && agreement?.id) {
+        await updateMutation.mutateAsync({
+          id: agreement.id,
+          data: {
+            societyId: society.code || society.id,
+            branchId: data.branchId,
+            partnerId: data.partnerId,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            commissionRate: data.commissionRate,
+            currencyId: data.currencyId,
+            notes: data.notes || undefined,
+            status: agreement.status,
+            agreementCode: agreement.agreementCode,
+          },
+        });
+      } else {
+        await outgoingConsignmentAgreementService.create({
+          societyId: society.code || society.id,
+          branchId: data.branchId,
+          partnerId: data.partnerId,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          commissionRate: data.commissionRate,
+          currencyId: data.currencyId,
+          agreementCode: generateSku('CONS'),
+          status: OutgoingConsignmentAgreementStatus.ACTIVE,
+          notes: data.notes || undefined,
+          createdBy: user?.email,
+        });
 
-      toast.success('Acuerdo de consignación creado correctamente');
+        toast.success('Acuerdo de consignación creado correctamente');
+      }
+
       onSuccess();
     } catch (error) {
       console.error('Error creating outgoing consignment agreement:', error);
-      toast.error('No se pudo crear el acuerdo de consignación');
+      if (mode === 'create') {
+        toast.error('No se pudo crear el acuerdo de consignación');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className={mode === 'edit' ? 'space-y-6' : 'bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8'}>
+      <div className={mode === 'edit' ? 'flex items-center gap-3' : 'flex items-center gap-3 mb-6'}>
         <div className="bg-primary/10 p-2.5 rounded-lg">
           <Building2 className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-foreground text-lg">Paso 1. Crear acuerdo</h3>
+          <h3 className="font-bold text-foreground text-lg">
+            {mode === 'edit' ? 'Actualizar acuerdo' : 'Paso 1. Crear acuerdo'}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Registra el acuerdo base con consignatario, sucursal, fechas y comisión.
+            {mode === 'edit'
+              ? 'Ajusta sucursal, consignatario, vigencia y comisión sin salir del listado.'
+              : 'Registra el acuerdo base con consignatario, sucursal, fechas y comisión.'}
           </p>
         </div>
       </div>
@@ -381,11 +432,15 @@ export function CreateOutgoingAgreementForm({ onCancel, onSuccess }: CreateOutgo
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || isOptionsLoading}
+            disabled={isSubmitting || isOptionsLoading || updateMutation.isPending}
             className="w-full sm:flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.99] uppercase tracking-wider"
           >
             <Save className="mr-2 h-4 w-4" />
-            {isSubmitting ? 'Guardando...' : 'Crear Acuerdo'}
+            {isSubmitting || updateMutation.isPending
+              ? 'Guardando...'
+              : mode === 'edit'
+                ? 'Guardar Cambios'
+                : 'Crear Acuerdo'}
           </Button>
         </div>
       </form>

@@ -9,10 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { deliveredConsignmentAgreementService, type DeliveredConsignmentAgreement } from '@/services/delivered-consignment-agreement.service';
-import { externalConsignmentSaleService } from '@/services/external-consignment-sale.service';
+import {
+  externalConsignmentSaleService,
+  type ExternalConsignmentSale,
+} from '@/services/external-consignment-sale.service';
 import { outgoingConsignmentAgreementService, type OutgoingConsignmentAgreement } from '@/services/outgoing-consignment-agreement.service';
 import { productService, type Product } from '@/services/product.service';
 import { useSocietyStore } from '@/store/society.store';
+import { useUpdateExternalConsignmentSale } from '../../hooks/useConsignmentQueries';
 
 const saleSchema = z.object({
   deliveredConsignmentId: z.string().min(1, { message: 'La entrega es obligatoria' }),
@@ -32,17 +36,25 @@ const selectClassName = 'w-full h-10 px-3 py-2 text-xs rounded-lg border border-
 const labelClassName = 'text-[10px] font-bold text-muted-foreground uppercase tracking-wider';
 
 interface CreateExternalConsignmentSaleFormProps {
+  mode?: 'create' | 'edit';
+  sale?: ExternalConsignmentSale;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: CreateExternalConsignmentSaleFormProps) {
+export function CreateExternalConsignmentSaleForm({
+  mode = 'create',
+  sale,
+  onCancel,
+  onSuccess,
+}: CreateExternalConsignmentSaleFormProps) {
   const society = useSocietyStore((state) => state.society);
   const [deliveries, setDeliveries] = useState<DeliveredConsignmentAgreement[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedAgreement, setSelectedAgreement] = useState<OutgoingConsignmentAgreement | null>(null);
   const [isOptionsLoading, setIsOptionsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateMutation = useUpdateExternalConsignmentSale();
 
   const {
     register,
@@ -65,6 +77,19 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
       documentReference: '',
     },
   });
+
+  useEffect(() => {
+    if (!sale) return;
+
+    setValue('deliveredConsignmentId', sale.deliveredConsignmentId, { shouldDirty: false, shouldValidate: false });
+    setValue('soldQuantity', Number(sale.soldQuantity ?? 1), { shouldDirty: false, shouldValidate: false });
+    setValue('reportedSaleDate', sale.reportedSaleDate?.slice(0, 10) || '', { shouldDirty: false, shouldValidate: false });
+    setValue('reportedSalePrice', Number(sale.reportedSalePrice ?? 0), { shouldDirty: false, shouldValidate: false });
+    setValue('unitSalePrice', Number(sale.unitSalePrice ?? 0), { shouldDirty: false, shouldValidate: false });
+    setValue('totalCommissionAmount', Number(sale.totalCommissionAmount ?? 0), { shouldDirty: false, shouldValidate: false });
+    setValue('remarks', sale.remarks || '', { shouldDirty: false, shouldValidate: false });
+    setValue('documentReference', sale.documentReference || '', { shouldDirty: false, shouldValidate: false });
+  }, [sale, setValue]);
 
   useEffect(() => {
     let isMounted = true;
@@ -170,37 +195,61 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
   const onSubmit = async (data: SaleFormValues) => {
     try {
       setIsSubmitting(true);
-      await externalConsignmentSaleService.create({
-        deliveredConsignmentId: data.deliveredConsignmentId,
-        soldQuantity: data.soldQuantity,
-        reportedSaleDate: data.reportedSaleDate,
-        reportedSalePrice: data.reportedSalePrice,
-        unitSalePrice: data.unitSalePrice,
-        totalCommissionAmount: data.totalCommissionAmount,
-        remarks: data.remarks || undefined,
-        documentReference: data.documentReference || undefined,
-      });
+      if (mode === 'edit' && sale?.id) {
+        await updateMutation.mutateAsync({
+          id: sale.id,
+          data: {
+            deliveredConsignmentId: data.deliveredConsignmentId,
+            soldQuantity: data.soldQuantity,
+            reportedSaleDate: data.reportedSaleDate,
+            reportedSalePrice: data.reportedSalePrice,
+            unitSalePrice: data.unitSalePrice,
+            totalCommissionAmount: data.totalCommissionAmount,
+            netTotal: data.reportedSalePrice - data.totalCommissionAmount,
+            remarks: data.remarks || undefined,
+            documentReference: data.documentReference || undefined,
+          },
+        });
+      } else {
+        await externalConsignmentSaleService.create({
+          deliveredConsignmentId: data.deliveredConsignmentId,
+          soldQuantity: data.soldQuantity,
+          reportedSaleDate: data.reportedSaleDate,
+          reportedSalePrice: data.reportedSalePrice,
+          unitSalePrice: data.unitSalePrice,
+          totalCommissionAmount: data.totalCommissionAmount,
+          remarks: data.remarks || undefined,
+          documentReference: data.documentReference || undefined,
+        });
 
-      toast.success('Venta externa registrada correctamente');
+        toast.success('Venta externa registrada correctamente');
+      }
+
       onSuccess();
     } catch (error) {
       console.error('Error creating external consignment sale:', error);
-      toast.error('No se pudo registrar la venta externa');
+      if (mode === 'create') {
+        toast.error('No se pudo registrar la venta externa');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8">
-      <div className="flex items-center gap-3 mb-6">
+    <div className={mode === 'edit' ? 'space-y-6' : 'bg-card rounded-2xl border border-border shadow-sm p-6 lg:p-8'}>
+      <div className={mode === 'edit' ? 'flex items-center gap-3' : 'flex items-center gap-3 mb-6'}>
         <div className="bg-primary/10 p-2.5 rounded-lg">
           <ShoppingBag className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-foreground text-lg">Paso 3. Registrar venta externa</h3>
+          <h3 className="font-bold text-foreground text-lg">
+            {mode === 'edit' ? 'Actualizar venta externa' : 'Paso 3. Registrar venta externa'}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Registra la venta reportada por el consignatario sobre una entrega existente.
+            {mode === 'edit'
+              ? 'Ajusta cantidad, fecha, importes y referencia desde el listado.'
+              : 'Registra la venta reportada por el consignatario sobre una entrega existente.'}
           </p>
         </div>
       </div>
@@ -351,11 +400,15 @@ export function CreateExternalConsignmentSaleForm({ onCancel, onSuccess }: Creat
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || isOptionsLoading}
+            disabled={isSubmitting || isOptionsLoading || updateMutation.isPending}
             className="w-full sm:flex-1 h-11 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.99] uppercase tracking-wider"
           >
             <Save className="mr-2 h-4 w-4" />
-            {isSubmitting ? 'Guardando...' : 'Registrar Venta Externa'}
+            {isSubmitting || updateMutation.isPending
+              ? 'Guardando...'
+              : mode === 'edit'
+                ? 'Guardar Cambios'
+                : 'Registrar Venta Externa'}
           </Button>
         </div>
       </form>
