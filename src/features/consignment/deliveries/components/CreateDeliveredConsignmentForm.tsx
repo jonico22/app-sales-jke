@@ -46,6 +46,7 @@ const deliverySchema = z.object({
 });
 
 type DeliveryFormValues = z.output<typeof deliverySchema>;
+type DeliveryFormInput = z.input<typeof deliverySchema>;
 
 function normalizeCollection<T>(value: unknown): T[] {
   if (Array.isArray(value)) {
@@ -94,7 +95,7 @@ export function CreateDeliveredConsignmentForm({
     reset,
     setValue,
     formState: { errors },
-  } = useForm<DeliveryFormValues>({
+  } = useForm<DeliveryFormInput, unknown, DeliveryFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(deliverySchema) as any,
     defaultValues: {

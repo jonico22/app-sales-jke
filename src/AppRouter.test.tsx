@@ -23,6 +23,7 @@ vi.mock('./components/layout/DashboardLayout', () => ({ default: () => <div>dash
 vi.mock('./components/layout/POSLayout', () => ({ default: () => <div>pos layout</div> }));
 vi.mock('./components/shared/GlobalErrorBoundary', () => ({ GlobalErrorBoundary: () => <div>boundary</div> }));
 vi.mock('./features/dashboard/DashboardPage', () => ({ default: () => <div>dashboard page</div> }));
+vi.mock('./features/analytics/AnalyticsPage', () => ({ default: () => <div>analytics page</div> }));
 vi.mock('./features/categories/CategoriesPage', () => ({ default: () => <div>categories page</div> }));
 vi.mock('./features/categories/NewCategoryPage', () => ({ default: () => <div>new category page</div> }));
 vi.mock('@/features/inventory/ProductsPage', () => ({ default: () => <div>products page</div> }));
@@ -85,6 +86,7 @@ describe('AppRouter', () => {
         expect.objectContaining({ path: 'inventory/consignment-sales' }),
         expect.objectContaining({ path: 'inventory/consignment-settlements' }),
         expect.objectContaining({ path: 'orders/history' }),
+        expect.objectContaining({ path: 'reports/analytics' }),
         expect.objectContaining({ path: 'settings/billing' }),
       ])
     );

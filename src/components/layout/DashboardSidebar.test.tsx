@@ -89,6 +89,28 @@ describe('DashboardSidebar', () => {
     expect(screen.queryByText('Usuarios')).toBeNull();
   });
 
+  it('shows analytics entry inside reportes when the reports module is active', () => {
+    setupMockStore();
+    (usePermissions as any).mockReturnValue({
+      data: { modules: { REPORTES: true } },
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/reports/analytics']}>
+        <DashboardSidebar
+          isOpen={true}
+          onClose={vi.fn()}
+          isCollapsed={false}
+          toggleCollapse={vi.fn()}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Reportes')).toBeDefined();
+    expect(screen.getByText('Analytics')).toBeDefined();
+  });
+
   it('restricts navigation when subscription is EXPIRED', () => {
     setupMockStore({ subscription: { status: 'EXPIRED' } });
     (usePermissions as any).mockReturnValue({

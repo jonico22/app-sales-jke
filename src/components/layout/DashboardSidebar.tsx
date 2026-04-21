@@ -57,6 +57,7 @@ const navItems: NavItem[] = [
         name: 'Reportes', icon: FileText,
         children: [
             { name: 'Histórico de Ventas', href: '/orders/history' },
+            { name: 'Analytics', href: '/reports/analytics' },
             { name: 'Historial de Reportes', href: '/downloads' }
         ]
     },

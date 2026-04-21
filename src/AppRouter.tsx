@@ -8,6 +8,7 @@ import { lazyRetry } from '@/utils/lazyRetry';
 const DashboardLayout = lazy(() => lazyRetry(() => import('./components/layout/DashboardLayout')));
 const POSLayout = lazy(() => lazyRetry(() => import('./components/layout/POSLayout')));
 const DashboardPage = lazy(() => lazyRetry(() => import('./features/dashboard/DashboardPage')));
+const AnalyticsPage = lazy(() => lazyRetry(() => import('./features/analytics/AnalyticsPage')));
 const CategoriesPage = lazy(() => lazyRetry(() => import('./features/categories/CategoriesPage')));
 const NewCategoryPage = lazy(() => lazyRetry(() => import('./features/categories/NewCategoryPage')));
 const ProductsPage = lazy(() => lazyRetry(() => import('@/features/inventory/ProductsPage')));
@@ -91,6 +92,7 @@ const router = createBrowserRouter([
           { path: 'inventory/movements/bulk', element: withLoader(<BulkTransferPage />) },
           { path: 'orders/pending', element: withLoader(<PendingOrdersPage />) },
           { path: 'orders/history', element: withLoader(<SalesHistoryPage />) },
+          { path: 'reports/analytics', element: withLoader(<AnalyticsPage />) },
           { path: 'sales/shifts', element: withLoader(<CashShiftHistoryPage />) },
           { path: 'sales/shifts/:shiftId', element: withLoader(<CashShiftDetailPage />) },
           { path: 'sales/clients', element: withLoader(<ClientsPage />) },

@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BadgeDollarSign, Landmark, Loader2, Pencil, ReceiptText, Trash2 } from 'lucide-react';
+import { Landmark, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ReceivedConsignmentSettlement, type ReceivedConsignmentSettlementStatus } from '@/services/received-consignment-settlement.service';
 import {

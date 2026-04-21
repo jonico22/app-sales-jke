@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Boxes, CalendarRange, Loader2, Pencil, ScrollText, Trash2, Truck } from 'lucide-react';
+import { CalendarRange, Loader2, Pencil, Trash2, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type DeliveredConsignmentAgreement } from '@/services/delivered-consignment-agreement.service';
 import {

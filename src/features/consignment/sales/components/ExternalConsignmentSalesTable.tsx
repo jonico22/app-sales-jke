@@ -1,8 +1,7 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BadgeDollarSign, CalendarRange, Loader2, Pencil, ShoppingBag, Trash2 } from 'lucide-react';
+import { CalendarRange, Loader2, Pencil, ShoppingBag, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ExternalConsignmentSale } from '@/services/external-consignment-sale.service';
 import {
