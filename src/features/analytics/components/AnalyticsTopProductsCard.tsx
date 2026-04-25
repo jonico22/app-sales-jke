@@ -123,7 +123,7 @@ export function AnalyticsTopProductsCard({
         <AnalyticsCardState title="No se pudo cargar el ranking" description={error.message} variant="error" />
       ) : (
         <div className="grid grid-cols-1 gap-3">
-          <div className="flex min-h-[160px] flex-col rounded-[24px] border border-dashed border-border/80 bg-muted/10 px-5 py-4">
+          <div className="flex min-h-[140px] flex-col rounded-[24px] border border-dashed border-border/80 bg-muted/10 px-5 py-4">
             <div className="inline-flex items-center gap-2 self-start rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">
               <Package2 className="h-3.5 w-3.5" />
               Ranking
@@ -137,7 +137,7 @@ export function AnalyticsTopProductsCard({
           {items.length === 0 ? (
             <AnalyticsCardState title="Sin top productos" description="No hay suficiente venta consolidada para construir el ranking." variant="empty" heightClass="h-[170px]" />
           ) : (
-            <div className="h-[320px] rounded-2xl border border-border/70 bg-background/60 p-2">
+            <div className="h-[380px] rounded-2xl border border-border/70 bg-background/60 p-2">
               <BaseEChart getOption={(tokens) => buildOption(items, currencySymbol, tokens)} />
             </div>
           )}

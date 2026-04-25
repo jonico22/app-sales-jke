@@ -241,21 +241,19 @@ export default function AnalyticsPage() {
           error={paymentsDistributionQuery.error}
           isLoading={paymentsDistributionQuery.isLoading}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <AnalyticsTopProductsCard
-          currencySymbol={currencySymbol}
-          data={topProductsQuery.data}
-          error={topProductsQuery.error}
-          isLoading={topProductsQuery.isLoading}
-        />
         <AnalyticsLowStockCard
           data={lowStockTrendQuery.data}
           error={lowStockTrendQuery.error}
           isLoading={lowStockTrendQuery.isLoading}
         />
       </div>
+
+      <AnalyticsTopProductsCard
+        currencySymbol={currencySymbol}
+        data={topProductsQuery.data}
+        error={topProductsQuery.error}
+        isLoading={topProductsQuery.isLoading}
+      />
     </div>
   );
 }
