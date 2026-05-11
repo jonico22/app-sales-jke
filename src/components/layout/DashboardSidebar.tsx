@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
             { name: 'Kardex / Historial', href: '/inventory/kardex' },
         ]
     },
-    {
+    /*{
         name: 'Consignación', icon: Package,
         children: [
             { name: 'Acuerdos', href: '/consignment/agreements' },
@@ -41,7 +41,7 @@ const navItems: NavItem[] = [
             { name: 'Ventas', href: '/consignment/sales' },
             { name: 'Liquidaciones', href: '/consignment/settlements' },
         ]
-    },
+    },*/
     {
         name: 'Ventas',
         icon: ShoppingCart,
