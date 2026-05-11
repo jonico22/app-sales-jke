@@ -3,7 +3,20 @@ import { SortableTableHead } from '@/components/shared/SortableTableHead';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import {
+    dataTableActionButtonClassName,
+    dataTableActionDestructiveClassName,
+    dataTableActionIconClassName,
+    dataTableActionPrimaryClassName,
+    dataTableCellCodeClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHead,
+    dataTableHeaderRowClassName,
+    dataTableRow
+} from '@/components/shared/dataTableStyles';
 import type { Client } from '@/services/client.service';
+import { cn } from '@/lib/utils';
 
 const TABLE_BODY_STYLE = { contentVisibility: 'auto' } as React.CSSProperties;
 
@@ -22,16 +35,16 @@ export function ClientsTable({
     clients, isLoading, sortBy, sortOrder, onSort, onEdit, onDelete, getClientDisplayName
 }: ClientsTableProps) {
     return (
-        <div className="hidden lg:block overflow-x-auto">
+        <div className="hidden lg:block">
             <Table>
-                <TableHeader className="bg-muted/30 border-b border-border">
-                    <TableRow className="hover:bg-muted/40 border-none h-10">
+                <TableHeader className={dataTableHeaderRowClassName}>
+                    <TableRow className="hover:bg-transparent border-none h-10">
                         <SortableTableHead
                             field="documentNumber"
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[140px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pl-6"
+                            className={dataTableHead('w-[140px] pl-6')}
                         >
                             Documento
                         </SortableTableHead>
@@ -40,7 +53,7 @@ export function ClientsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[250px]')}
                         >
                             Nombre / Razón Social
                         </SortableTableHead>
@@ -49,7 +62,7 @@ export function ClientsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[200px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[200px]')}
                         >
                             Contacto
                         </SortableTableHead>
@@ -58,7 +71,7 @@ export function ClientsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[250px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[250px]')}
                         >
                             Dirección
                         </SortableTableHead>
@@ -67,11 +80,11 @@ export function ClientsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[100px]')}
                         >
                             Estado
                         </SortableTableHead>
-                        <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70 pr-6">Acciones</TableHead>
+                        <TableHead className={dataTableHead('w-[90px] text-right pr-6')}>Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody style={TABLE_BODY_STYLE}>
@@ -86,32 +99,32 @@ export function ClientsTable({
                         </TableRow>
                     ) : clients.length > 0 ? (
                         clients.map((client) => (
-                            <TableRow key={client.id} className="hover:bg-muted/30 border-border transition-colors group">
+                            <TableRow key={client.id} className={dataTableRow()}>
                                 <TableCell className="pl-6">
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter px-1.5 h-4 border-muted-foreground/30 text-muted-foreground/80">
+                                        <Badge variant="outline" className="text-[9px] font-semibold uppercase tracking-[0.08em] px-1.5 h-4 border-border/80 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800">
                                             {client.documentType}
                                         </Badge>
-                                        <span className="font-mono text-[11px] font-bold text-foreground">
+                                        <span className={cn(dataTableCellCodeClassName, 'text-slate-800 dark:text-slate-100')}>
                                             {client.documentNumber || 'S/N'}
                                         </span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="font-bold text-foreground text-xs">{getClientDisplayName(client)}</div>
-                                    <div className="text-[9px] text-muted-foreground font-medium group-hover:text-primary transition-colors">ID: {client.id.substring(0, 8)}...</div>
+                                    <div className={dataTableCellPrimaryClassName}>{getClientDisplayName(client)}</div>
+                                    <div className={cn(dataTableCellSecondaryClassName, 'text-[9px] transition-colors group-hover:text-slate-600 dark:group-hover:text-slate-300')}>ID: {client.id.substring(0, 8)}...</div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="space-y-1">
                                         {client.email && (
-                                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
-                                                <Mail className="h-3 w-3 text-primary/40" />
+                                            <div className={cn('flex items-center gap-1.5', dataTableCellSecondaryClassName)}>
+                                                <Mail className="h-3 w-3 text-primary/60" />
                                                 {client.email}
                                             </div>
                                         )}
                                         {client.phone && (
-                                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
-                                                <Phone className="h-3 w-3 text-primary/40" />
+                                            <div className={cn('flex items-center gap-1.5', dataTableCellSecondaryClassName)}>
+                                                <Phone className="h-3 w-3 text-primary/60" />
                                                 {client.phone}
                                             </div>
                                         )}
@@ -119,12 +132,12 @@ export function ClientsTable({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="text-muted-foreground/80 text-[11px] max-w-[200px] truncate" title={client.address || ''}>
-                                        {client.address || <span className="text-muted-foreground/40 italic">Sin dirección</span>}
+                                    <div className={cn(dataTableCellSecondaryClassName, 'max-w-[200px] truncate')} title={client.address || ''}>
+                                        {client.address || <span className="text-slate-400 dark:text-slate-500 italic">Sin dirección</span>}
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={client.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] tracking-wide px-2 py-0.5 border border-current/20">
+                                    <Badge variant={client.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] font-semibold tracking-[0.08em] px-2 py-0.5 border border-current/20">
                                         {client.isActive ? 'Activo' : 'Inactivo'}
                                     </Badge>
                                 </TableCell>
@@ -133,18 +146,18 @@ export function ClientsTable({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-lg"
+                                            className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                                             onClick={() => onEdit(client)}
                                         >
-                                            <Pencil className="h-4 w-4" />
+                                            <Pencil className={dataTableActionIconClassName} />
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg"
+                                            className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName)}
                                             onClick={() => onDelete(client.id)}
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className={dataTableActionIconClassName} />
                                         </Button>
                                     </div>
                                 </TableCell>

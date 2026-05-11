@@ -41,9 +41,9 @@ export function BranchOfficesFilterBar({
             <div className="flex w-full sm:w-auto gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex-1 sm:flex-none justify-between h-10 text-[11px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted min-w-[160px] rounded-xl transition-all">
+                        <Button variant="outline" className="flex-1 sm:flex-none justify-between h-10 px-3.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted min-w-[160px] rounded-xl transition-all">
                             {getStatusLabel()}
-                            <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
+                            <ChevronDown className="h-4 w-4 ml-3 shrink-0 opacity-45" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[180px] bg-card border-border shadow-xl rounded-xl p-1">
@@ -61,7 +61,7 @@ export function BranchOfficesFilterBar({
 
                 <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none h-10 text-[11px] font-bold uppercase tracking-wider text-foreground border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
+                    className="flex-1 sm:flex-none h-10 text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground border-border bg-card hover:bg-muted gap-2 rounded-xl transition-all"
                     onClick={onOpenFilters}
                 >
                     <SlidersHorizontal className="h-4 w-4" />

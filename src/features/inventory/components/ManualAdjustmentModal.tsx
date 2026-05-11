@@ -111,7 +111,7 @@ export function ManualAdjustmentModal({
             <div className="flex-1 overflow-y-auto px-5 pt-2 pb-5 space-y-5 custom-scrollbar-hide">
                 {/* Branch Selection */}
                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                    <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em] flex items-center gap-2">
                         <Building2 className="w-3 h-3 text-primary" />
                         Sucursal de Origen
                     </label>
@@ -123,20 +123,20 @@ export function ManualAdjustmentModal({
                                 setSelectedProduct(null);
                                 setSearchTerm('');
                             }}
-                            className="w-full h-11 px-4 rounded-xl bg-muted/30 border border-border/50 text-[11px] font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer pr-10"
+                            className="w-full h-11 px-4 pr-12 rounded-xl bg-muted/30 border border-border/50 text-[11px] font-semibold tracking-[0.02em] outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
                         >
                             <option value="">Selecciona una sucursal...</option>
                             {branches.map(branch => (
                                 <option key={branch.id} value={branch.id}>{branch.name}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
                     </div>
                 </div>
 
                 {/* Product Search */}
                 <div className="space-y-2">
-                    <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                    <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em] flex items-center gap-2">
                         <Package className="w-3 h-3 text-primary" />
                         Producto a Ajustar
                     </label>
@@ -147,15 +147,15 @@ export function ManualAdjustmentModal({
                                     <Package className="w-4 h-4 text-primary" />
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                    <span className="text-[11px] font-black text-foreground uppercase truncate">{selectedProduct.name}</span>
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{selectedProduct.code}</span>
+                                    <span className="text-[11px] font-semibold text-foreground truncate">{selectedProduct.name}</span>
+                                    <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.12em]">{selectedProduct.code}</span>
                                 </div>
                             </div>
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => setSelectedProduct(null)}
-                                className="h-8 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 ml-2"
+                                className="h-8 text-[10px] font-semibold text-rose-500 uppercase tracking-[0.12em] hover:bg-rose-500/10 ml-2"
                             >
                                 Cambiar
                             </Button>
@@ -168,7 +168,7 @@ export function ManualAdjustmentModal({
                                 disabled={!selectedBranchId}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="h-11 pl-10 rounded-xl bg-muted/30 border-border/50 text-[11px] font-bold uppercase tracking-wider"
+                                className="h-11 pl-10 rounded-xl bg-muted/30 border-border/50 text-[11px] font-medium tracking-[0.02em]"
                             />
                             {isSearchingProducts && (
                                 <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
@@ -186,8 +186,8 @@ export function ManualAdjustmentModal({
                                                 <Package className="w-3.5 h-3.5 text-muted-foreground" />
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-black text-foreground uppercase truncate">{product.name}</span>
-                                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">{product.code}</span>
+                                                <span className="text-[10px] font-semibold text-foreground truncate">{product.name}</span>
+                                                <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-[0.12em]">{product.code}</span>
                                             </div>
                                         </button>
                                     ))}
@@ -200,13 +200,13 @@ export function ManualAdjustmentModal({
                 {/* Adjustment Type & Quantity */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Tipo de Ajuste</label>
+                        <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Tipo de Ajuste</label>
                         <div className="flex p-1 bg-muted/40 rounded-xl gap-1">
                             <button
                                 type="button"
                                 onClick={() => setAdjustmentType('ADJUSTMENT_ADD')}
                                 className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-[0.12em] transition-all",
                                     adjustmentType === 'ADJUSTMENT_ADD'
                                         ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                                         : 'text-muted-foreground hover:bg-muted'
@@ -219,7 +219,7 @@ export function ManualAdjustmentModal({
                                 type="button"
                                 onClick={() => setAdjustmentType('ADJUSTMENT_SUB')}
                                 className={cn(
-                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-[0.12em] transition-all",
                                     adjustmentType === 'ADJUSTMENT_SUB'
                                         ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                         : 'text-muted-foreground hover:bg-muted'
@@ -231,13 +231,13 @@ export function ManualAdjustmentModal({
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Cantidad</label>
+                        <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Cantidad</label>
                         <Input
                             type="number"
                             placeholder="0"
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
-                            className="h-11 rounded-xl bg-muted/30 border-border/50 text-[14px] font-black text-center"
+                            className="h-11 rounded-xl bg-muted/30 border-border/50 text-[14px] font-semibold text-center"
                         />
                     </div>
                 </div>
@@ -245,20 +245,20 @@ export function ManualAdjustmentModal({
                 {/* Cost & Notes */}
                 <div className="grid grid-cols-1 gap-6">
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Costo Unitario (S/)</label>
+                        <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Costo Unitario (S/)</label>
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[12px] font-black text-muted-foreground/40">S/</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-muted-foreground/40">S/</span>
                             <Input
                                 type="number"
                                 placeholder="0.00"
                                 value={unitCost}
                                 onChange={(e) => setUnitCost(e.target.value)}
-                                className="h-11 pl-10 rounded-xl bg-muted/30 border-border/50 text-[14px] font-black"
+                                className="h-11 pl-10 rounded-xl bg-muted/30 border-border/50 text-[14px] font-semibold"
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Notas / Observaciones</label>
+                        <label className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.12em]">Notas / Observaciones</label>
                         <Textarea
                             placeholder="Indica el motivo del ajuste (ej. Rotura, Error de inventario físico...)"
                             value={notes}
@@ -273,14 +273,14 @@ export function ManualAdjustmentModal({
                 <Button
                     variant="ghost"
                     onClick={() => onOpenChange(false)}
-                    className="flex-1 h-11 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted"
+                    className="flex-1 h-11 rounded-2xl text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:bg-muted"
                 >
                     Cancelar
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     disabled={isSubmitting || !selectedProduct}
-                    className="flex-[2] h-11 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] bg-primary hover:bg-primary-hover text-primary-foreground shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-[2] h-11 rounded-2xl text-[9px] font-semibold uppercase tracking-[0.12em] bg-primary hover:bg-primary-hover text-primary-foreground shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isSubmitting ? (
                         <>
@@ -305,8 +305,8 @@ export function ManualAdjustmentModal({
                     <DialogHeader className="p-5 pb-3">
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <DialogTitle className="text-lg font-black text-foreground uppercase tracking-tight">Ajuste Manual</DialogTitle>
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Corrige discrepancias en el inventario</p>
+                                <DialogTitle className="text-lg font-semibold text-foreground tracking-tight">Ajuste Manual</DialogTitle>
+                                <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.12em] opacity-70">Corrige discrepancias en el inventario</p>
                             </div>
                         </div>
                     </DialogHeader>
@@ -327,8 +327,8 @@ export function ManualAdjustmentModal({
                 </div>
                 <SheetHeader className="p-5 pb-0 border-none bg-background text-left">
                     <div className="space-y-0.5">
-                        <SheetTitle className="text-lg font-black text-foreground uppercase tracking-tight">Ajuste Manual</SheetTitle>
-                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Corrige discrepancias en el inventario</p>
+                        <SheetTitle className="text-lg font-semibold text-foreground tracking-tight">Ajuste Manual</SheetTitle>
+                        <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.12em] opacity-70">Corrige discrepancias en el inventario</p>
                     </div>
                 </SheetHeader>
                 <div className="flex-1 overflow-hidden mt-2">

@@ -28,8 +28,8 @@ export function CategoriesPagination({
 }: CategoriesPaginationProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 gap-4 border-t border-border bg-card">
-      <div className="text-[10px] sm:text-[11px] text-muted-foreground font-bold uppercase tracking-tight w-full sm:w-auto text-center sm:text-left">
-        Mostrando <span className="font-black text-foreground bg-muted px-1.5 py-0.5 rounded-lg">{categoriesCount > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-black text-foreground bg-muted px-1.5 py-0.5 rounded-lg">{totalCategories}</span> categorías
+      <div className="text-[10px] sm:text-[11px] text-muted-foreground font-semibold uppercase tracking-[0.08em] w-full sm:w-auto text-center sm:text-left">
+        Mostrando <span className="font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded-lg">{categoriesCount > 0 ? ((currentPage - 1) * pageLimit) + 1 : 0}-{Math.min(currentPage * pageLimit, totalCategories)}</span> de <span className="font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded-lg">{totalCategories}</span> categorías
       </div>
       <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
         <Button
@@ -41,7 +41,7 @@ export function CategoriesPagination({
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="text-[10px] font-black text-foreground uppercase tracking-widest min-w-[100px] text-center bg-muted/20 px-3 py-1.5 rounded-xl border border-border/40">
+        <div className="text-[10px] font-semibold text-foreground uppercase tracking-[0.08em] min-w-[100px] text-center bg-muted/20 px-3 py-1.5 rounded-xl border border-border/40">
           {currentPage} / {totalPages}
         </div>
         <Button

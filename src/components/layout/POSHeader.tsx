@@ -22,15 +22,13 @@ export function POSHeader({ title = 'Punto de Venta', onMenuClick }: POSHeaderPr
 
   // Sync branches from query to store - ONLY if store is empty
   useEffect(() => {
-    if (branchesData.length > 0 && (branches.length === 0 || branches.length !== branchesData.length)) {
+    if (
+      branchesData.length > 0 &&
+      (branches.length === 0 || branches.length !== branchesData.length || !selectedBranch)
+    ) {
       setBranches(branchesData);
-
-      // Also set default branch if none selected
-      if (!selectedBranch) {
-        selectBranch(branchesData[0]);
-      }
     }
-  }, [branchesData, setBranches]); // Only re-run when source data changes
+  }, [branches.length, branchesData, selectedBranch, setBranches]); // Only re-run when source data changes
 
   // Update time every minute
   useEffect(() => {

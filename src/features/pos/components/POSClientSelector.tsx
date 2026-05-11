@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef, useMemo, useDeferredValue } from 'react';
 import { User, UserPlus, ChevronDown, Check, Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type ClientSelectOption } from '@/services/client.service';
@@ -10,7 +10,7 @@ interface POSClientSelectorProps {
     onNewClient?: () => void;
 }
 
-export function POSClientSelector({
+export const POSClientSelector = memo(function POSClientSelector({
     selectedClient,
     onSelectClient,
     onNewClient
@@ -21,6 +21,7 @@ export function POSClientSelector({
     const [searchTerm, setSearchTerm] = useState('');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const deferredSearchTerm = useDeferredValue(searchTerm);
 
     // Set default client once loaded if none selected
     useEffect(() => {
@@ -56,10 +57,21 @@ export function POSClientSelector({
         }
     }, [isOpen]);
 
-    const filteredClients = clients.filter(client =>
-        (client.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.documentNumber || '').includes(searchTerm)
+    const normalizedSearchTerm = useMemo(
+        () => deferredSearchTerm.trim().toLowerCase(),
+        [deferredSearchTerm]
     );
+
+    const filteredClients = useMemo(() => {
+        if (!normalizedSearchTerm) {
+            return clients;
+        }
+
+        return clients.filter(client =>
+            (client.name || '').toLowerCase().includes(normalizedSearchTerm) ||
+            (client.documentNumber || '').includes(normalizedSearchTerm)
+        );
+    }, [clients, normalizedSearchTerm]);
 
     const handleSelect = (client: ClientSelectOption) => {
         onSelectClient(client);
@@ -172,4 +184,4 @@ export function POSClientSelector({
             </div>
         </div>
     );
-}
+});

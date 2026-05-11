@@ -1,4 +1,5 @@
 import { SlidersHorizontal } from 'lucide-react';
+import { inlineNativeSelectClassName } from '@/components/shared/formFieldStyles';
 
 interface PendingOrdersFilterBarProps {
   sortBy: string;
@@ -18,7 +19,7 @@ export function PendingOrdersFilterBar({ sortBy, onSortChange }: PendingOrdersFi
       <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
         <span>Ordenar por:</span>
         <select
-          className="bg-transparent font-bold text-foreground focus:outline-none cursor-pointer text-xs"
+          className={inlineNativeSelectClassName}
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value)}
         >

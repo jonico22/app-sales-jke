@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { nativeSelectClassName } from '@/components/shared/formFieldStyles';
 import { roleService, type Role } from '@/services/role.service';
 import { userService, type BusinessUser } from '@/services/user.service';
 import { isAxiosError } from 'axios';
@@ -130,9 +131,9 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
                     <SheetTitle className="text-sm font-bold uppercase tracking-wider text-foreground">Editar Usuario</SheetTitle>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
                     <form id="edit-user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label htmlFor="edit-firstName" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Nombres</Label>
                                 <Input
@@ -199,7 +200,7 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
                                 <select
                                     id="edit-roleCode"
                                     {...register('roleCode')}
-                                    className="w-full h-9 px-3 bg-muted/20 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none disabled:opacity-50 font-medium"
+                                    className={`${nativeSelectClassName} h-9 rounded-lg bg-muted/20 text-xs disabled:opacity-50 font-medium focus:ring-primary/20`}
                                     disabled={isSaving || isLoadingRoles}
                                 >
                                     <option value="" className="text-muted-foreground/40">Seleccionar Rol</option>
@@ -238,7 +239,7 @@ export function EditUserPanel({ isOpen, onClose, user, onSuccess }: EditUserPane
                     </form>
                 </div>
 
-                <div className="p-5 border-t border-border bg-background/80 backdrop-blur-md sticky bottom-0 flex flex-col gap-3">
+                <div className="p-4 sm:p-5 border-t border-border bg-background/80 backdrop-blur-md sticky bottom-0 flex flex-col gap-2 sm:gap-3">
                     <Button
                         type="submit"
                         form="edit-user-form"

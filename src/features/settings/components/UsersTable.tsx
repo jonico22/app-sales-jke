@@ -1,7 +1,20 @@
 import { Search, FileEdit, Trash2 } from 'lucide-react';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
+import {
+  dataTableActionButtonClassName,
+  dataTableActionDestructiveClassName,
+  dataTableActionIconClassName,
+  dataTableActionPrimaryClassName,
+  dataTableCellPrimaryClassName,
+  dataTableCellSecondaryClassName,
+  dataTableHead,
+  dataTableHeaderRowClassName,
+  dataTableRowClassName,
+  dataTableShellClassName
+} from '@/components/shared/dataTableStyles';
 import { type BusinessUser } from '@/services/user.service';
 import { getRoleBadgeColor } from '../UsersUtils';
+import { cn } from '@/lib/utils';
 
 interface UsersTableProps {
   users: BusinessUser[];
@@ -27,16 +40,17 @@ export function UsersTable({
   togglingUserId
 }: UsersTableProps) {
   return (
-    <div className="hidden md:block overflow-x-auto w-full">
+    <div className={`hidden md:block w-full ${dataTableShellClassName}`}>
+      <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-muted/30 border-b border-border">
+          <tr className={dataTableHeaderRowClassName}>
             <SortableTableHead
               field="name"
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('py-3 px-5')}
             >
               Nombre
             </SortableTableHead>
@@ -45,7 +59,7 @@ export function UsersTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('py-3 px-5')}
             >
               Email
             </SortableTableHead>
@@ -54,7 +68,7 @@ export function UsersTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('py-3 px-5')}
             >
               Rol
             </SortableTableHead>
@@ -63,7 +77,7 @@ export function UsersTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider"
+              className={dataTableHead('py-3 px-5')}
             >
               Último Acceso
             </SortableTableHead>
@@ -72,14 +86,14 @@ export function UsersTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-center"
+              className={dataTableHead('py-3 px-5 text-center')}
             >
               Estado
             </SortableTableHead>
-            <th className="py-3 px-5 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider text-right">Acciones</th>
+            <th className={dataTableHead('py-3 px-5 text-right')}>Acciones</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/70">
           {loading ? (
             <tr>
               <td colSpan={6} className="py-12 text-center">
@@ -102,31 +116,31 @@ export function UsersTable({
             </tr>
           ) : (
             users.map((user) => (
-              <tr key={user.id} className="hover:bg-muted/10 transition-colors group">
+              <tr key={user.id} className={dataTableRowClassName}>
                 <td className="py-3 px-5">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center flex-shrink-0 text-[11px] font-bold border border-border select-none">
                       {(user.person?.firstName?.[0] || user.name?.[0] || user.email[0]).toUpperCase()}
                       {(user.person?.lastName?.[0] || '').toUpperCase()}
                     </div>
-                    <div className="font-bold text-foreground text-xs tracking-tight">
+                    <div className={dataTableCellPrimaryClassName}>
                       {user.name || `${user.person?.firstName || ''} ${user.person?.lastName || ''}`}
                     </div>
                   </div>
                 </td>
                 <td className="py-3 px-5">
-                  <span className="text-[11px] font-medium text-muted-foreground">{user.email}</span>
+                  <span className={dataTableCellSecondaryClassName}>{user.email}</span>
                 </td>
                 <td className="py-3 px-5">
-                  <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border shadow-none uppercase tracking-wider ${getRoleBadgeColor(user.role.code)}`}>
+                  <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold border shadow-none uppercase tracking-[0.08em] ${getRoleBadgeColor(user.role.code)}`}>
                     {user.role.name}
                   </span>
                 </td>
                 <td className="py-3 px-5">
                   {user.lastLogin ? (
-                    <span className="text-[11px] font-medium text-muted-foreground/80">{new Date(user.lastLogin).toLocaleDateString()}</span>
+                    <span className={dataTableCellSecondaryClassName}>{new Date(user.lastLogin).toLocaleDateString()}</span>
                   ) : (
-                    <span className="text-[11px] font-medium text-muted-foreground/40 italic">Nunca</span>
+                    <span className={cn(dataTableCellSecondaryClassName, 'italic text-muted-foreground/40')}>Nunca</span>
                   )}
                 </td>
                 <td className="py-3 px-5">
@@ -151,18 +165,18 @@ export function UsersTable({
                 <td className="py-3 px-5">
                   <div className="flex items-center justify-end gap-1.5">
                     <button
-                      className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
+                      className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                       title="Editar usuario"
                       onClick={() => onEdit(user)}
                     >
-                      <FileEdit className="w-4 h-4 cursor-pointer" />
+                      <FileEdit className={dataTableActionIconClassName} />
                     </button>
                     <button
-                      className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer"
+                      className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName, 'text-red-500 dark:text-red-400')}
                       title="Eliminar usuario"
                       onClick={() => onDelete(user.id)}
                     >
-                      <Trash2 className="w-4 h-4 cursor-pointer" />
+                      <Trash2 className={dataTableActionIconClassName} />
                     </button>
                   </div>
                 </td>
@@ -171,6 +185,7 @@ export function UsersTable({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { type FileMetadata } from '@/services/file.service';
 import { cn } from '@/lib/utils';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { dataTableFooterClassName, dataTableHeadClassName, dataTableHeaderRowClassName, dataTableRowClassName } from '@/components/shared/dataTableStyles';
 
 interface StatusInfo {
   label: string;
@@ -31,20 +32,20 @@ export function ReportsTable({
   safeParseDate
 }: ReportsTableProps) {
   return (
-    <Card className="hidden md:block bg-card border-border overflow-hidden shadow-none rounded-xl">
+    <Card className="hidden md:block bg-card border-border/80 overflow-hidden shadow-sm rounded-2xl">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-muted/30 border-b border-border">
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px]">Archivo</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px]">Generación</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px]">Expiración</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px]">Tamaño</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px]">Estado</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground/70 uppercase tracking-wider text-[10px] text-right">Acciones</th>
+            <tr className={dataTableHeaderRowClassName}>
+              <th className={`${dataTableHeadClassName} px-5 py-3`}>Archivo</th>
+              <th className={`${dataTableHeadClassName} px-5 py-3`}>Generación</th>
+              <th className={`${dataTableHeadClassName} px-5 py-3`}>Expiración</th>
+              <th className={`${dataTableHeadClassName} px-5 py-3`}>Tamaño</th>
+              <th className={`${dataTableHeadClassName} px-5 py-3`}>Estado</th>
+              <th className={`${dataTableHeadClassName} px-5 py-3 text-right`}>Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/70">
             {reports.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
@@ -62,7 +63,7 @@ export function ReportsTable({
                 const expDate = report.expiresAt;
 
                 return (
-                  <tr key={report.id} className="hover:bg-muted/10 transition-colors group">
+                  <tr key={report.id} className={dataTableRowClassName}>
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className={cn("w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 border border-border transition-all", isExpired && "opacity-30")}>
@@ -142,7 +143,7 @@ export function ReportsTable({
       </div>
 
       {/* Pagination Footer */}
-      <div className="px-5 py-3 bg-muted/20 border-t border-border flex items-center justify-between">
+      <div className={dataTableFooterClassName}>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-tight leading-none">
           Mostrando <span className="text-foreground font-bold">{reports.length}</span> de <span className="text-foreground font-bold">{total}</span> reportes
         </p>

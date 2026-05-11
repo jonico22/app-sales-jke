@@ -39,12 +39,12 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Eliminar usuario" size="sm" hideHeader>
-            <div className="flex flex-col items-center text-center p-2">
+            <div className="flex flex-col items-center text-center p-1 sm:p-2">
                 <div className="p-3.5 rounded-full bg-danger/10 text-danger mb-4">
                     <AlertTriangle className="w-7 h-7" />
                 </div>
 
-                <h3 className="text-base font-bold text-foreground mb-2 uppercase tracking-tight">
+                <h3 className="text-sm sm:text-base font-semibold text-foreground mb-2 uppercase tracking-tight">
                     ¿Confirmar eliminación?
                 </h3>
 
@@ -56,7 +56,7 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
                     <Button
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="w-full bg-danger hover:bg-danger/90 text-white h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm shadow-danger/10 transition-all active:scale-95"
+                        className="w-full bg-danger hover:bg-danger/90 text-white h-8 sm:h-9 text-[10px] font-semibold uppercase tracking-wider rounded-lg shadow-sm shadow-danger/10 transition-all active:scale-95"
                     >
                         {isDeleting ? (
                             <>
@@ -72,7 +72,7 @@ export function DeleteUserModal({ isOpen, onClose, userId, onSuccess }: DeleteUs
                         onClick={onClose}
                         disabled={isDeleting}
                         variant="ghost"
-                        className="w-full text-muted-foreground hover:text-foreground h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all active:scale-95"
+                        className="w-full text-muted-foreground hover:text-foreground h-8 sm:h-9 text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-all active:scale-95"
                     >
                         Cancelar y volver
                     </Button>

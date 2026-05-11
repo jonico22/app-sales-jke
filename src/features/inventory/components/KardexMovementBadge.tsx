@@ -31,7 +31,7 @@ export function KardexMovementBadge({ type }: KardexMovementBadgeProps) {
     const Icon = config.icon;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${config.bg} ${config.text}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] ${config.bg} ${config.text}`}>
             <Icon size={12} className="shrink-0" />
             {config.label}
         </span>

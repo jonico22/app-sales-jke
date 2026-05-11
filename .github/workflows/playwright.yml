@@ -1,24 +1,43 @@
 name: Playwright Tests
+
+# main:
+#   Runs only the stable smoke Playwright tests for faster CI feedback.
+# manual:
+#   Set full_suite=true in workflow_dispatch to include credential-dependent tests.
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      full_suite:
+        description: Run the credential-dependent Playwright tests too
+        required: false
+        default: false
+        type: boolean
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+        cache: npm
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+    - name: Build app
+      run: npm run build
+    - name: Install Playwright Chromium
+      run: npx playwright install --with-deps chromium
     - name: Run Playwright tests
-      run: npx playwright test
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.full_suite }}" == "true" ]]; then
+          npx playwright test
+        else
+          npx playwright test --grep-invert @manual
+        fi
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:

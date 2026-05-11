@@ -15,6 +15,7 @@ import { AuthHeader } from './components/AuthHeader';
 import { PasswordInput } from './components/PasswordInput';
 import { AuthTurnstile } from './components/AuthTurnstile';
 import { parseZodErrors } from './auth.utils';
+import { sessionRedirect } from '@/utils/session-redirect';
 
 async function validateLogin(data: Record<string, FormDataEntryValue>) {
   const { z } = await import('zod');
@@ -100,13 +101,12 @@ export default function LoginPage() {
       toast.success('¡Bienvenido! Has iniciado sesión correctamente.');
 
       // Navigation Logic
-      const savedUrl = localStorage.getItem('redirectUrl');
+      const savedUrl = sessionRedirect.consume();
 
       if (response.data.user.mustChangePassword) {
         window.location.assign('/security');
       } else {
         if (savedUrl) {
-          localStorage.removeItem('redirectUrl');
           window.location.assign(savedUrl);
         } else {
           window.location.assign('/');

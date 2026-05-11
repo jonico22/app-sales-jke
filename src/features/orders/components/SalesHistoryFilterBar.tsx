@@ -1,5 +1,6 @@
 import { Search, Banknote, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
+import { compactNativeSelectClassName } from '@/components/shared/formFieldStyles';
 import { OrderStatus } from '@/services/order.service';
 
 interface SalesHistoryFilterBarProps {
@@ -47,14 +48,14 @@ export function SalesHistoryFilterBar({
           <select
             value={statusFilter}
             onChange={(e) => onStatusChange(e.target.value as any)}
-            className="w-full appearance-none pl-10 pr-10 py-2 bg-muted/50 hover:bg-muted border border-border rounded-xl text-xs text-foreground focus:outline-none cursor-pointer font-medium transition-colors"
+            className={`${compactNativeSelectClassName} pl-10 pr-12`}
           >
             <option value="ALL">Todos los Estados</option>
             <option value={OrderStatus.COMPLETED}>Completados</option>
             <option value={OrderStatus.CANCELLED}>Cancelados</option>
           </select>
           <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={14} />
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
+          <ChevronDown className="absolute right-4.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" size={12} />
         </div>
 
         <button

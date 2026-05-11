@@ -3,7 +3,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Loader2, Building2, MapPin, Phone as PhoneIcon, Mail } from 'lucide-react';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
+import {
+    dataTableActionButtonClassName,
+    dataTableActionDestructiveClassName,
+    dataTableActionIconClassName,
+    dataTableActionPrimaryClassName,
+    dataTableCellCodeClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHead,
+    dataTableHeaderRowClassName,
+    dataTableRow
+} from '@/components/shared/dataTableStyles';
 import { type BranchOffice } from '@/services/branch-office.service';
+import { cn } from '@/lib/utils';
 
 interface BranchOfficesTableProps {
     branchOffices: BranchOffice[];
@@ -27,14 +40,14 @@ export function BranchOfficesTable({
     return (
         <div className="hidden md:block">
             <Table>
-                <TableHeader className="bg-muted/50 border-b border-border">
+                <TableHeader className={dataTableHeaderRowClassName}>
                     <TableRow className="hover:bg-transparent border-none">
                         <SortableTableHead
                             field="code"
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[100px] h-10')}
                         >
                             Código
                         </SortableTableHead>
@@ -43,7 +56,7 @@ export function BranchOfficesTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[250px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[250px] h-10')}
                         >
                             Nombre
                         </SortableTableHead>
@@ -52,21 +65,21 @@ export function BranchOfficesTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[300px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+                            className={dataTableHead('w-[300px] h-10')}
                         >
                             Dirección
                         </SortableTableHead>
-                        <th className="w-[150px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 px-4">Contacto</th>
+                        <th className={dataTableHead('w-[150px] h-10 px-4')}>Contacto</th>
                         <SortableTableHead
                             field="isActive"
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="w-[100px] h-10 font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 text-center"
+                            className={dataTableHead('w-[100px] h-10 text-center')}
                         >
                             Estado
                         </SortableTableHead>
-                        <th className="w-[100px] text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 px-4">Acciones</th>
+                        <th className={dataTableHead('w-[100px] text-right px-4')}>Acciones</th>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -81,18 +94,18 @@ export function BranchOfficesTable({
                         </TableRow>
                     ) : branchOffices.length > 0 ? (
                         branchOffices.map((branch) => (
-                            <TableRow key={branch.id} className="hover:bg-muted/30 border-border transition-colors group">
-                                <TableCell className="font-mono text-[10px] text-muted-foreground">{branch.code}</TableCell>
+                            <TableRow key={branch.id} className={dataTableRow()}>
+                                <TableCell className={dataTableCellCodeClassName}>{branch.code}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                            <Building2 className="h-4 w-4 text-primary" />
+                                            <Building2 className={cn(dataTableActionIconClassName, 'text-primary')} />
                                         </div>
-                                        <div className="text-[11px] font-bold text-foreground">{branch.name}</div>
+                                        <div className={dataTableCellPrimaryClassName}>{branch.name}</div>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                    <div className={cn('flex items-center gap-2', dataTableCellSecondaryClassName)}>
                                         <MapPin className="h-3.5 w-3.5 shrink-0 opacity-50" />
                                         <span className="text-[11px] line-clamp-1">{branch.address || '—'}</span>
                                     </div>
@@ -100,13 +113,13 @@ export function BranchOfficesTable({
                                 <TableCell>
                                     <div className="space-y-1">
                                         {branch.phone && (
-                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                            <div className={cn('flex items-center gap-2', dataTableCellSecondaryClassName)}>
                                                 <PhoneIcon className="h-3 w-3 opacity-50" />
                                                 {branch.phone}
                                             </div>
                                         )}
                                         {branch.email && (
-                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                            <div className={cn('flex items-center gap-2', dataTableCellSecondaryClassName)}>
                                                 <Mail className="h-3 w-3 opacity-50" />
                                                 {branch.email}
                                             </div>
@@ -115,7 +128,7 @@ export function BranchOfficesTable({
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <Badge variant={branch.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-black tracking-tight px-2 py-0.5 rounded-md ${!branch.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
+                                    <Badge variant={branch.isActive ? 'success' : 'outline'} className={`uppercase text-[9px] font-semibold tracking-[0.08em] px-2 py-0.5 rounded-md ${!branch.isActive && 'bg-muted/50 border-border text-muted-foreground'}`}>
                                         {branch.isActive ? 'Activa' : 'Inactiva'}
                                     </Badge>
                                 </TableCell>
@@ -124,19 +137,19 @@ export function BranchOfficesTable({
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                            className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                                             onClick={() => onEdit(branch.id)}
                                         >
-                                            <Pencil className="h-4 w-4" />
+                                            <Pencil className={dataTableActionIconClassName} />
                                         </Button>
                                         {branch.code !== 'ALM-PRINCIPAL' && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName)}
                                                 onClick={() => onDelete(branch.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className={dataTableActionIconClassName} />
                                             </Button>
                                         )}
                                     </div>

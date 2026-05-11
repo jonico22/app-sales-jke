@@ -4,24 +4,29 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
+const isCI = !!process.env.CI;
+const port = 4173;
+const previewServerCommand = `npm run build:e2e && npm run test:e2e:serve`;
+
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: true,
-  reporter: 'html',
+  fullyParallel: !isCI,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
+  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
-    // La URL de tu servidor de desarrollo de Vite
-    baseURL: 'http://localhost:5173', 
+    baseURL: `http://127.0.0.1:${port}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-  // Levanta tu app automáticamente antes de los tests
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+    command: previewServerCommand,
+    url: `http://127.0.0.1:${port}`,
+    reuseExistingServer: false,
+    timeout: isCI ? 180_000 : 120_000,
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    // Puedes añadir Firefox o Webkit si lo necesitas
   ],
 });

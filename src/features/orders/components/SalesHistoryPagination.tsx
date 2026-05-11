@@ -31,9 +31,9 @@ export function SalesHistoryPagination({
     <div className="px-6 py-5 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/10">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
         <div className="flex flex-col items-center sm:items-start order-2 sm:order-1">
-          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">Resultados</span>
-          <span className="text-[11px] font-bold text-foreground whitespace-nowrap">
-            <span className="text-primary">{ordersLength > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-bold">{totalOrders}</span> registros
+          <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-[0.08em] leading-none mb-1">Resultados</span>
+          <span className="text-[11px] font-medium text-foreground whitespace-nowrap">
+            <span className="text-primary font-semibold">{ordersLength > 0 ? ((currentPage - 1) * pageSize) + 1 : 0}-{Math.min(currentPage * pageSize, totalOrders)}</span> de <span className="font-semibold">{totalOrders}</span> registros
           </span>
         </div>
         <div className="relative w-full sm:w-auto order-1 sm:order-2">
@@ -43,7 +43,7 @@ export function SalesHistoryPagination({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="w-full sm:w-auto pl-8 pr-8 py-2 bg-card border border-border/50 text-foreground text-[10px] rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block font-black outline-none transition-all uppercase tracking-wider appearance-none shadow-sm"
+            className="w-full sm:w-auto pl-8 pr-8 py-2 bg-card border border-border/50 text-foreground text-[10px] rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block font-semibold outline-none transition-all uppercase tracking-[0.08em] appearance-none shadow-sm"
           >
             <option value="10">10 / pág</option>
             <option value="20">20 / pág</option>
@@ -62,8 +62,8 @@ export function SalesHistoryPagination({
           <ChevronLeft size={16} />
         </button>
         <div className="px-4 py-2 bg-muted/50 border border-border/50 rounded-xl min-w-[100px] text-center shadow-inner">
-          <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none mb-0.5">Página</p>
-          <p className="text-[11px] font-black text-foreground">{currentPage} / {totalPages}</p>
+          <p className="text-[8px] font-semibold text-muted-foreground/60 uppercase tracking-[0.08em] leading-none mb-0.5">Página</p>
+          <p className="text-[11px] font-semibold text-foreground">{currentPage} / {totalPages}</p>
         </div>
         <button
           disabled={!hasNextPage || isLoading}

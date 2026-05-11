@@ -6,6 +6,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { useAuthStore } from '@/store/auth.store';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { lazyRetry } from '@/utils/lazyRetry';
+import { useSessionBootstrap } from '@/hooks/useSessionBootstrap';
+import { sessionRedirect } from '@/utils/session-redirect';
 
 const AppRouter = lazy(() => lazyRetry(() => import('./AppRouter')));
 const ForgotPasswordPage = lazy(() => lazyRetry(() => import('./features/auth/ForgotPasswordPage')));
@@ -69,13 +71,14 @@ function AuthApp() {
 }
 
 function App() {
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, isAuthResolved, logout } = useAuthStore();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const isAuthRoute = window.location.pathname.startsWith('/auth');
+  const { isBootstrapping } = useSessionBootstrap();
 
   const handleOnIdle = () => {
     if (isAuthenticated) {
-      localStorage.setItem('redirectUrl', window.location.pathname + window.location.search);
+      sessionRedirect.saveCurrentPath();
       logout();
       setIsSessionExpired(true);
     }
@@ -91,6 +94,15 @@ function App() {
     setIsSessionExpired(false);
     window.location.href = '/auth/login';
   };
+
+  if (!isAuthResolved || isBootstrapping) {
+    return (
+      <ThemeProvider>
+        <PageLoader />
+        <Toaster />
+      </ThemeProvider>
+    );
+  }
 
   if (!isAuthenticated && !isAuthRoute) {
     window.history.replaceState(null, '', '/auth/login');

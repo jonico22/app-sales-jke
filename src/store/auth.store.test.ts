@@ -15,6 +15,7 @@ describe('authStore', () => {
             subscription: null,
             modulePermissions: null,
             isAuthenticated: false,
+            isAuthResolved: false,
         });
 
         // Initialize spies on real store actions
@@ -32,6 +33,7 @@ describe('authStore', () => {
         const state = useAuthStore.getState();
         expect(state.token).toBeNull();
         expect(state.isAuthenticated).toBe(false);
+        expect(state.isAuthResolved).toBe(false);
     });
 
     it('should update state on login', () => {
@@ -50,7 +52,24 @@ describe('authStore', () => {
         expect(state.token).toBe('mock-token');
         expect(state.user?.name).toBe('Test User');
         expect(state.isAuthenticated).toBe(true);
+        expect(state.isAuthResolved).toBe(true);
         expect(state.subscription?.planId).toBe('plan-1');
+    });
+
+    it('should hydrate session from backend data', () => {
+        useAuthStore.getState().hydrateSession({
+            token: 'hydrated-token',
+            expiresAt: '2026-12-31',
+            user: { id: '1', name: 'Hydrated User' } as any,
+            role: { id: '1', name: 'Admin' } as any,
+            subscription: { planId: 'plan-1', status: 'ACTIVE', endDate: '2026-12-31' },
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.token).toBe('hydrated-token');
+        expect(state.user?.name).toBe('Hydrated User');
+        expect(state.isAuthenticated).toBe(true);
+        expect(state.isAuthResolved).toBe(true);
     });
 
     it('should clear all data on logout', () => {
@@ -61,6 +80,7 @@ describe('authStore', () => {
         const state = useAuthStore.getState();
         expect(state.token).toBeNull();
         expect(state.isAuthenticated).toBe(false);
+        expect(state.isAuthResolved).toBe(true);
         
         // Verify other stores and cache are cleared via spies
         expect(useSocietyStore.getState().clearSociety).toHaveBeenCalled();

@@ -38,17 +38,21 @@ describe('useAuthQuery hook', () => {
   });
 
   it('should not fetch when not authenticated', () => {
-    (useAuthStore as any).mockReturnValue({ isAuthenticated: false, token: null });
+    (useAuthStore as any).mockImplementation((selector: any) =>
+      selector({ isAuthenticated: false, token: null })
+    );
     
     const { result } = renderHook(() => useAuthQuery(), { wrapper });
     
     expect(result.current.isLoading).toBe(false);
-    expect(result.current.isPending).toBe(true); // Since it was never enabled
+    expect(result.current.fetchStatus).toBe('idle');
     expect(authService.getMe).not.toHaveBeenCalled();
   });
 
   it('should fetch user data when authenticated', async () => {
-    (useAuthStore as any).mockReturnValue({ isAuthenticated: true, token: 'mock-token' });
+    (useAuthStore as any).mockImplementation((selector: any) =>
+      selector({ isAuthenticated: true, token: 'mock-token' })
+    );
     (authService.getMe as any).mockResolvedValue(mockUser);
 
     const { result } = renderHook(() => useAuthQuery(), { wrapper });
@@ -59,7 +63,9 @@ describe('useAuthQuery hook', () => {
   });
 
   it('should handle fetch errors', async () => {
-    (useAuthStore as any).mockReturnValue({ isAuthenticated: true, token: 'mock-token' });
+    (useAuthStore as any).mockImplementation((selector: any) =>
+      selector({ isAuthenticated: true, token: 'mock-token' })
+    );
     (authService.getMe as any).mockRejectedValue(new Error('Auth failed'));
 
     const { result } = renderHook(() => useAuthQuery(), { wrapper });

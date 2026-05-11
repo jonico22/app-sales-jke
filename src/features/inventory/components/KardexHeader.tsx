@@ -1,4 +1,5 @@
 import { Download, PlusCircle, RefreshCw } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 
 interface KardexHeaderProps {
@@ -9,13 +10,13 @@ interface KardexHeaderProps {
 }
 
 export function KardexHeader({ onExport, onAdjustment, onSync, isLoading }: KardexHeaderProps) {
-    return (
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-                <h1 className="text-xl font-black text-foreground tracking-tight uppercase">Kardex / Historial de Stock</h1>
-                <p className="text-muted-foreground text-[10px] mt-0.5 font-bold uppercase tracking-widest opacity-60">Seguimiento detallado de entradas y salidas de inventario</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+  return (
+    <PageHeader
+      title="Kardex / Historial de Stock"
+      subtitle="Seguimiento detallado de entradas y salidas de inventario."
+      subtitleClassName="text-xs sm:text-sm font-medium normal-case tracking-normal opacity-100"
+      actions={(
+        <>
                 <Button
                     variant="outline"
                     onClick={onExport}
@@ -38,7 +39,8 @@ export function KardexHeader({ onExport, onAdjustment, onSync, isLoading }: Kard
                     <RefreshCw className={`w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                     Sincronizar
                 </Button>
-            </div>
-        </div>
-    );
+        </>
+      )}
+    />
+  );
 }

@@ -5,7 +5,8 @@ import { useAuthStore } from '@/store/auth.store';
 export const USER_PROFILE_QUERY_KEY = ['user', 'profile'];
 
 export function useUserProfileQuery() {
-  const { isAuthenticated, token } = useAuthStore();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const token = useAuthStore(state => state.token);
 
   return useQuery<UserMeResponse>({
     queryKey: USER_PROFILE_QUERY_KEY,

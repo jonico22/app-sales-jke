@@ -3,6 +3,14 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { Order } from '@/services/order.service';
 import { formatCurrency, getStatusBadge, getPaymentBadge } from './SalesHistoryUtils';
+import { cn } from '@/lib/utils';
+import {
+  dataTableActionIconClassName,
+  dataTableCellCodeClassName,
+  dataTableCellNumericClassName,
+  dataTableCellPrimaryClassName,
+  dataTableCellSecondaryClassName
+} from '@/components/shared/dataTableStyles';
 
 interface SalesHistoryMobileListProps {
   orders: Order[];
@@ -22,10 +30,10 @@ export function SalesHistoryMobileList({
       {isLoading ? (
         <div className="p-8 text-center bg-card rounded-2xl border border-border/40">
           <RefreshCw className="w-8 h-8 animate-spin text-primary/20 mx-auto mb-3" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Sincronizando ventas...</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50">Sincronizando ventas...</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="p-16 text-center bg-card rounded-2xl border border-border/40 text-muted-foreground/40 font-black uppercase tracking-widest text-[10px]">
+        <div className="p-16 text-center bg-card rounded-2xl border border-border/40 text-muted-foreground/40 font-semibold uppercase tracking-[0.08em] text-[10px]">
           No se encontraron ventas recientes
         </div>
       ) : (
@@ -43,10 +51,10 @@ export function SalesHistoryMobileList({
               {/* 1. Header: Venta ID + Date */}
               <div className="p-4 border-b border-border/30 flex items-center justify-between bg-muted/5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest">Venta</span>
-                  <span className="font-mono text-[11px] font-black text-foreground">#{order.orderCode}</span>
+                  <span className="text-[9px] font-semibold text-primary/60 uppercase tracking-[0.08em]">Venta</span>
+                  <span className={cn(dataTableCellCodeClassName, 'text-slate-800 dark:text-slate-100')}>#{order.orderCode}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground/70">
+                <div className={cn('flex items-center gap-1.5 text-muted-foreground/70', dataTableCellSecondaryClassName)}>
                   <Clock size={10} className="opacity-50" />
                   <span>{order.updatedAt ? format(new Date(order.updatedAt), 'dd MMM, hh:mm a', { locale: es }) : '-'}</span>
                 </div>
@@ -54,24 +62,24 @@ export function SalesHistoryMobileList({
 
               {/* 2. Client Info */}
               <div className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black border border-primary/10 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-[10px] font-semibold border border-primary/10 shrink-0">
                   {initials}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest mb-0.5 leading-none">Cliente</p>
-                  <h3 className="text-[13px] font-black text-foreground uppercase tracking-tight truncate leading-tight">{clientName}</h3>
+                  <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-[0.08em] mb-0.5 leading-none">Cliente</p>
+                  <h3 className={cn(dataTableCellPrimaryClassName, 'text-[13px] truncate leading-tight')}>{clientName}</h3>
                 </div>
               </div>
 
               {/* 3. Status & Payment Row */}
               <div className="px-4 pb-3 flex items-center gap-4">
                 <div className="space-y-1">
-                  <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-none mb-1.5">Estado</p>
+                  <p className="text-[8px] font-semibold text-muted-foreground/40 uppercase tracking-[0.08em] leading-none mb-1.5">Estado</p>
                   {getStatusBadge(order.status)}
                 </div>
                 <div className="w-px h-8 bg-border/40" />
                 <div className="space-y-1">
-                  <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] leading-none mb-1.5">Método</p>
+                  <p className="text-[8px] font-semibold text-muted-foreground/40 uppercase tracking-[0.08em] leading-none mb-1.5">Método</p>
                   {getPaymentBadge(payment)}
                 </div>
               </div>
@@ -79,11 +87,11 @@ export function SalesHistoryMobileList({
               {/* 4. Total highlight section (Prominent & Full Width) */}
               <div className="mx-4 mb-4 p-3 bg-primary/5 rounded-xl border border-primary/10 flex items-center justify-between">
                 <div className="flex flex-col">
-                  <p className="text-[9px] font-black text-primary/50 uppercase tracking-widest leading-none mb-1">Monto Cobrado</p>
+                  <p className="text-[9px] font-semibold text-primary/50 uppercase tracking-[0.08em] leading-none mb-1">Monto Cobrado</p>
                   <span className="text-[10px] font-bold text-muted-foreground/60 leading-none">Total Final</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-black text-foreground tracking-tighter leading-none">
+                  <span className={cn(dataTableCellNumericClassName, 'text-xl leading-none')}>
                     {formatCurrency(order.totalAmount, order.currency?.symbol || 'S/')}
                   </span>
                 </div>
@@ -98,8 +106,8 @@ export function SalesHistoryMobileList({
                     onViewDetail(order.id);
                   }}
                 >
-                  <FileText size={14} className="opacity-50" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Ver Detalle</span>
+                  <FileText className={cn(dataTableActionIconClassName, 'opacity-50')} />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em]">Ver Detalle</span>
                 </button>
                 {onCancel && order.status === 'COMPLETED' && (
                   <button

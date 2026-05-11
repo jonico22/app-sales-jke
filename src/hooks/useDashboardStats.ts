@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { dashboardService, type DashboardStats } from '@/services/dashboard.service';
+import { dashboardService, type DashboardFilters, type DashboardStats } from '@/services/dashboard.service';
 
 export const DASHBOARD_STATS_QUERY_KEY = ['dashboard-stats'];
 
-export function useDashboardStats() {
+export function useDashboardStats(params?: DashboardFilters) {
     return useQuery<DashboardStats, Error>({
-        queryKey: DASHBOARD_STATS_QUERY_KEY,
+        queryKey: [...DASHBOARD_STATS_QUERY_KEY, params],
         queryFn: async () => {
-            const res = await dashboardService.getStats();
+            const res = await dashboardService.getStats(params);
             if (!res.success) throw new Error(res.message || 'Failed to fetch dashboard stats');
             return res.data;
         },

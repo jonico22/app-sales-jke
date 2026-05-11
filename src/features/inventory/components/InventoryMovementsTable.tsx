@@ -7,6 +7,20 @@ import { es } from 'date-fns/locale';
 import { Loader2, History, ArrowRightLeft, Edit2, Trash2 } from 'lucide-react';
 import { type BranchMovement, type MovementStatus } from '@/services/branch-movement.service';
 import type { ReactNode } from 'react';
+import {
+    dataTableActionButtonClassName,
+    dataTableActionDestructiveClassName,
+    dataTableActionIconClassName,
+    dataTableActionPrimaryClassName,
+    dataTableCellCodeClassName,
+    dataTableCellNumericClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHead,
+    dataTableHeaderRowClassName,
+    dataTableRow
+} from '@/components/shared/dataTableStyles';
+import { cn } from '@/lib/utils';
 
 interface InventoryMovementsTableProps {
     movements: BranchMovement[];
@@ -57,14 +71,14 @@ export function InventoryMovementsTable({
     return (
         <div className="hidden md:block">
             <Table>
-                <TableHeader className="bg-muted/30 border-b border-border">
+                <TableHeader className={dataTableHeaderRowClassName}>
                     <TableRow className="hover:bg-transparent border-none">
                         <SortableTableHead
                             field="referenceCode"
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6"
+                            className={dataTableHead('py-4 px-6')}
                         >
                             Referencia
                         </SortableTableHead>
@@ -73,7 +87,7 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                            className={dataTableHead('py-4 text-center')}
                         >
                             Fecha
                         </SortableTableHead>
@@ -82,7 +96,7 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                            className={dataTableHead('py-4')}
                         >
                             Producto
                         </SortableTableHead>
@@ -91,7 +105,7 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                            className={dataTableHead('py-4')}
                         >
                             Ruta (Origen → Destino)
                         </SortableTableHead>
@@ -100,7 +114,7 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                            className={dataTableHead('py-4 text-center')}
                         >
                             Cant.
                         </SortableTableHead>
@@ -109,7 +123,7 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4"
+                            className={dataTableHead('py-4')}
                         >
                             Observación / Motivo
                         </SortableTableHead>
@@ -118,11 +132,11 @@ export function InventoryMovementsTable({
                             currentSortBy={sortBy}
                             currentSortOrder={sortOrder}
                             onSort={onSort}
-                            className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 text-center"
+                            className={dataTableHead('py-4 text-center')}
                         >
                             Estado
                         </SortableTableHead>
-                        <TableHead className="font-black text-[9px] uppercase tracking-[0.15em] text-muted-foreground/70 py-4 px-6 text-right">Acciones</TableHead>
+                        <TableHead className={dataTableHead('py-4 px-6 text-right')}>Acciones</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -151,50 +165,50 @@ export function InventoryMovementsTable({
                         </TableRow>
                     ) : (
                         movements.map((movement) => (
-                            <TableRow key={movement.id} className="group hover:bg-muted/30 transition-colors border-border/40 last:border-none">
+                            <TableRow key={movement.id} className={dataTableRow('last:border-none')}>
                                 <TableCell className="px-6">
                                     <div className="inline-flex items-center gap-1.5 py-1 px-2.5 bg-primary/5 rounded-lg border border-primary/10">
-                                        <span className="font-black text-primary text-[10px] uppercase tracking-tighter">
+                                        <span className={cn(dataTableCellCodeClassName, 'text-primary')}>
                                             {movement.referenceCode || `TR-${movement.id.slice(0, 5).toUpperCase()}`}
                                         </span>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <div className="flex flex-col items-center">
-                                        <span className="text-foreground font-extrabold text-[11px] mb-0.5">{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
-                                        <span className="text-muted-foreground text-[9px] uppercase font-bold tracking-tighter opacity-60">{formatDateSafe(movement.createdAt, 'HH:mm:ss')}</span>
+                                        <span className={cn(dataTableCellPrimaryClassName, 'mb-0.5')}>{formatDateSafe(movement.createdAt, 'dd/MM/yyyy')}</span>
+                                        <span className={cn(dataTableCellSecondaryClassName, 'text-[9px] tracking-[0.08em]')}>{formatDateSafe(movement.createdAt, 'HH:mm:ss')}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-col">
-                                        <span className="text-foreground font-black text-[11px] uppercase tracking-tight">{movement.product?.name || 'Producto'}</span>
-                                        <span className="text-muted-foreground text-[9px] font-bold opacity-60">SKU-{movement.product?.code || '---'}</span>
+                                        <span className={cn(dataTableCellPrimaryClassName, 'line-clamp-1')}>{movement.product?.name || 'Producto'}</span>
+                                        <span className={cn(dataTableCellSecondaryClassName, 'text-[9px]')}>SKU-{movement.product?.code || '---'}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                        <span className={cn(dataTableCellSecondaryClassName, 'truncate max-w-[100px]')}>
                                             {movement.originBranch?.name || 'Origen'}
                                         </span>
                                         <ArrowRightLeft className="w-2.5 h-2.5 text-muted-foreground/30" />
-                                        <span className="text-foreground/80 truncate max-w-[100px] text-[10px] font-bold uppercase tracking-tight">
+                                        <span className={cn(dataTableCellSecondaryClassName, 'truncate max-w-[100px]')}>
                                             {movement.destinationBranch?.name || 'Destino'}
                                         </span>
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <div className="inline-flex items-center justify-center font-black text-foreground text-[11px] h-7 w-7 bg-muted/40 rounded-full border border-border/30">
+                                    <div className={cn(dataTableCellNumericClassName, 'inline-flex h-7 w-7 items-center justify-center rounded-full border border-border/30 bg-muted/40')}>
                                         {movement.quantityMoved}
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-col max-w-[200px]">
                                         {movement.status === 'CANCELLED' ? (
-                                            <span className="text-rose-500 text-[10px] font-bold uppercase tracking-tight leading-tight italic">
+                                            <span className="text-[10px] font-semibold leading-tight italic text-rose-500">
                                                 {movement.cancellationReason || 'Sin motivo de cancelación'}
                                             </span>
                                         ) : (
-                                            <span className="text-muted-foreground/60 text-[10px] font-medium truncate italic">
+                                            <span className={cn(dataTableCellSecondaryClassName, 'truncate italic')}>
                                                 {movement.notes || '---'}
                                             </span>
                                         )}
@@ -209,19 +223,19 @@ export function InventoryMovementsTable({
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors border-border hover:border-primary/10"
+                                                className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName, 'border-border')}
                                                 onClick={() => onEdit(movement)}
                                             >
-                                                <Edit2 className="w-3.5 h-3.5" />
+                                                <Edit2 className={dataTableActionIconClassName} />
                                             </Button>
                                         )}
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border-border hover:border-rose-500/10"
+                                            className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName, 'border-border')}
                                             onClick={() => onDelete(movement.id, movement.referenceCode || movement.id)}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <Trash2 className={dataTableActionIconClassName} />
                                         </Button>
                                     </div>
                                 </TableCell>

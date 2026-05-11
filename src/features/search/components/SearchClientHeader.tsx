@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { User } from 'lucide-react';
 import type { ClientSelectOption } from '@/services/client.service';
 
@@ -6,7 +7,7 @@ interface SearchClientHeaderProps {
     onChangeClient: () => void;
 }
 
-export function SearchClientHeader({ selectedClient, onChangeClient }: SearchClientHeaderProps) {
+export const SearchClientHeader = memo(function SearchClientHeader({ selectedClient, onChangeClient }: SearchClientHeaderProps) {
     return (
         <div className="px-4 md:px-6 py-1">
             <div className="flex items-center justify-between gap-2 bg-card/50 px-4 py-2 rounded-xl border border-border/50 transition-colors">
@@ -28,4 +29,4 @@ export function SearchClientHeader({ selectedClient, onChangeClient }: SearchCli
             </div>
         </div>
     );
-}
+});

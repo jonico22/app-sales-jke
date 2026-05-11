@@ -38,16 +38,20 @@ describe('useUserProfileQuery hook', () => {
     });
 
     it('should not fetch when not authenticated', () => {
-        (useAuthStore as any).mockReturnValue({ isAuthenticated: false, token: null });
+        (useAuthStore as any).mockImplementation((selector: any) =>
+            selector({ isAuthenticated: false, token: null })
+        );
         
         const { result } = renderHook(() => useUserProfileQuery(), { wrapper });
         
-        expect(result.current.isPending).toBe(true);
+        expect(result.current.fetchStatus).toBe('idle');
         expect(userService.getMe).not.toHaveBeenCalled();
     });
 
     it('should fetch user profile when authenticated', async () => {
-        (useAuthStore as any).mockReturnValue({ isAuthenticated: true, token: 'mock-token' });
+        (useAuthStore as any).mockImplementation((selector: any) =>
+            selector({ isAuthenticated: true, token: 'mock-token' })
+        );
         (userService.getMe as any).mockResolvedValue(mockUser);
 
         const { result } = renderHook(() => useUserProfileQuery(), { wrapper });

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
 import { useUserProfileQuery } from '@/hooks/useUserProfileQuery';
 import { useAuthStore } from '@/store/auth.store';
@@ -39,13 +40,10 @@ export default function ProfilePage() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
-            {/* Page Header */}
-            <div className="px-1">
-                <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">Mi Perfil</h1>
-                <p className="text-muted-foreground text-xs mt-1">
-                    Administra tu información personal y cómo otros usuarios te ven en la plataforma.
-                </p>
-            </div>
+            <PageHeader
+                title="Mi Perfil"
+                subtitle="Administra tu información personal y cómo otros usuarios te ven en la plataforma."
+            />
 
             <Card className="border-border shadow-sm overflow-hidden rounded-2xl">
                 <div className="p-8 space-y-8">

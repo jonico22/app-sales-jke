@@ -4,11 +4,16 @@ import { orderService, type CreateOrderRequest, type OrderResponse } from '@/ser
 import { searchKeys } from './useSearchQueries';
 import { orderKeys } from '@/features/orders/hooks/useOrderQueries';
 import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
+import { invalidateDashboardQueries } from '@/hooks/dashboardQueryKeys';
 import { toast } from 'sonner';
 import type { AxiosError } from 'axios';
 
 interface ToggleFavoriteContext {
   previousFavorites?: FavoritesResponse;
+}
+
+interface MutationToastOptions {
+  suppressSuccessToast?: boolean;
 }
 
 export function useToggleFavoriteMutation() {
@@ -50,7 +55,7 @@ export function useToggleFavoriteMutation() {
   });
 }
 
-export function useCreateSearchOrderMutation() {
+export function useCreateSearchOrderMutation(options?: MutationToastOptions) {
   const queryClient = useQueryClient();
 
   return useMutation<OrderResponse, AxiosError<{ message?: string }>, CreateOrderRequest>({
@@ -58,7 +63,10 @@ export function useCreateSearchOrderMutation() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       invalidateProductRelatedCaches(queryClient);
-      toast.success(response.message || 'Pedido creado exitosamente');
+      invalidateDashboardQueries(queryClient);
+      if (!options?.suppressSuccessToast) {
+        toast.success(response.message || 'Pedido creado exitosamente');
+      }
     },
     onError: (error) => {
       const msg = error.response?.data?.message || 'Error al crear el pedido';

@@ -104,7 +104,7 @@ export default function UsersAndAccessPage() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto px-4 md:px-0 space-y-4 md:space-y-6 animate-in fade-in duration-500 pb-20 md:pb-0">
+        <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20 md:pb-0">
             <UsersHeader onNewUser={() => setIsCreateModalOpen(true)} />
 
             <Card className="border-border shadow-sm overflow-hidden bg-card rounded-xl">

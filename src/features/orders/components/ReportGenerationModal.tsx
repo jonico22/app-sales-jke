@@ -15,8 +15,8 @@ export function ReportGenerationModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm flex flex-col items-center overflow-hidden p-6 text-center relative animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm flex flex-col items-center overflow-hidden p-5 sm:p-6 text-center relative animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
 
                 {/* Icon Container using exact styling from BulkUploadSuccessModal for consistency */}
                 <div className="relative mb-4">
@@ -29,17 +29,17 @@ export function ReportGenerationModal({
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-slate-800 mb-2">Reporte Generado</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-slate-800 mb-2 tracking-tight">Reporte Generado</h3>
 
                 {/* Message */}
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed px-2">
+                <p className="text-xs sm:text-sm text-slate-500 mb-5 sm:mb-6 leading-relaxed px-2">
                     {message}
                 </p>
 
                 {/* Action Button */}
                 <Button
                     onClick={onClose}
-                    className="w-full bg-[#0ea5e9] hover:bg-sky-600 text-white font-bold h-11 text-sm rounded-xl shadow-lg shadow-sky-100 transition-all hover:shadow-sky-200 active:scale-[0.98]"
+                    className="w-full bg-[#0ea5e9] hover:bg-sky-600 text-white font-semibold h-10 sm:h-11 text-sm rounded-xl shadow-lg shadow-sky-100 transition-all hover:shadow-sky-200 active:scale-[0.98]"
                 >
                     Entendido
                 </Button>

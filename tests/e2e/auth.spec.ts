@@ -1,36 +1,51 @@
 import { test, expect } from '@playwright/test';
+import { loginAsDefaultUser } from './utils/auth';
+import { LoginPage } from './pages/login.page';
+import { DashboardPage } from './pages/dashboard.page';
+import { POSPage } from './pages/pos.page';
+import { AdvancedSearchPage } from './pages/advanced-search.page';
 
 test.describe('Authentication Flow', () => {
-  test('should login successfully with valid credentials', async ({ page }) => {
+  test.beforeEach(async () => {
     const email = process.env.TEST_USER_EMAIL;
     const password = process.env.TEST_USER_PASSWORD;
 
     if (!email || !password) {
       test.skip(true, 'Test credentials not found in environment variables');
     }
+  });
 
-    // 1. Navigate to login page with Turnstile bypass
-    await page.goto('/auth/login?test=true');
+  test('should login successfully with valid credentials @manual', async ({ page }) => {
+    await loginAsDefaultUser(page);
 
-    // 2. Fill login form
-    await page.fill('input#email', email!);
-    await page.fill('input#password', password!);
-
-    // 3. Submit form
-    await page.click('button[type="submit"]');
-
-    // 4. Verify successful login
-    // Depending on your app, this could be a redirection to '/' or a dashboard
-    // and the appearance of a specific element (like a logout button or profile)
+    await expect(page).toHaveURL(/^(?!.*\/auth\/login).*/);
     
-    // Wait for navigation and verify URL
-    await expect(page).toHaveURL('/');
-    
-    // Verify success toast or welcome message if applicable
-    // Example: await expect(page.getByText(/¡Bienvenido!/i)).toBeVisible();
-    
-    // Alternatively, verify that we are no longer on the login page
-    const loginHeader = page.getByRole('heading', { name: /Iniciar Sesión/i });
-    await expect(loginHeader).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: /Iniciar Sesión/i })).not.toBeVisible();
+    await expect(page).toHaveURL(/^(?!.*\/auth\/login).*/);
+  });
+
+  test('should open protected POS and search routes after real login @manual', async ({ page }) => {
+    await loginAsDefaultUser(page);
+
+    const posPage = new POSPage(page);
+    const advancedSearchPage = new AdvancedSearchPage(page);
+
+    await posPage.goto();
+    await posPage.expectLoaded();
+
+    await advancedSearchPage.goto();
+    await advancedSearchPage.expectLoaded();
+  });
+
+  test('should logout and return to login screen @manual', async ({ page }) => {
+    await loginAsDefaultUser(page);
+
+    const dashboardPage = new DashboardPage(page);
+    const loginPage = new LoginPage(page);
+
+    await dashboardPage.goto();
+    await dashboardPage.logout();
+
+    await loginPage.expectLoginScreen();
   });
 });

@@ -96,7 +96,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                 {/* Shift selector */}
                 {!fixedShiftId && (
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                        <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                             Caja / Turno Abierto
                         </Label>
                         <div className="relative">
@@ -104,7 +104,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                                 value={selectedShiftId}
                                 onChange={(e) => setSelectedShiftId(e.target.value)}
                                 disabled={shiftsLoading}
-                                className="w-full appearance-none pl-3 pr-10 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary disabled:opacity-60 transition-all cursor-pointer"
+                                className="w-full appearance-none pl-3 pr-12 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary disabled:opacity-60 transition-all cursor-pointer"
                             >
                                 <option value="">
                                     {shiftsLoading ? 'Cargando turnos...' : 'Seleccionar caja abierta...'}
@@ -115,7 +115,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                                     </option>
                                 ))}
                             </select>
-                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
                         </div>
                     </div>
                 )}
@@ -123,14 +123,14 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                 {/* Type + Currency row */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                        <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                             Tipo de Movimiento
                         </Label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
                                 onClick={() => setMovementType('INCOME')}
-                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[10px] font-semibold uppercase tracking-[0.12em] transition-all ${
                                     movementType === 'INCOME'
                                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/5'
                                     : 'bg-muted/40 border-border text-muted-foreground/50 hover:bg-muted'
@@ -142,7 +142,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                             <button
                                 type="button"
                                 onClick={() => setMovementType('EXPENSE')}
-                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[10px] font-semibold uppercase tracking-[0.12em] transition-all ${
                                     movementType === 'EXPENSE'
                                     ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/5'
                                     : 'bg-muted/40 border-border text-muted-foreground/50 hover:bg-muted'
@@ -155,7 +155,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                        <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                             Moneda
                         </Label>
                         <div className="w-full pl-3 pr-4 py-2.5 bg-muted/20 border border-border rounded-xl text-sm font-medium text-muted-foreground opacity-70">
@@ -168,7 +168,7 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
 
                 {/* Amount */}
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                        <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                         Monto
                     </Label>
                     <div className="relative">
@@ -184,33 +184,33 @@ export function AddMovementModal({ isOpen, onClose, onSuccess, shiftId: fixedShi
                                 const n = parseFloat(amount);
                                 if (!isNaN(n)) setAmount(n.toFixed(2));
                             }}
-                            className="w-full pl-9 pr-4 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                            className="w-full pl-9 pr-4 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
                         />
                     </div>
                 </div>
 
                 {/* Payment method */}
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                    <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                         Método de Pago
                     </Label>
                     <div className="relative">
                         <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
-                            className="w-full appearance-none pl-3 pr-10 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary cursor-pointer transition-colors"
+                            className="w-full appearance-none pl-3 pr-12 py-2.5 bg-muted/40 border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary cursor-pointer transition-colors"
                         >
                             {PAYMENT_METHODS.map((pm) => (
                                 <option key={pm.value} value={pm.value}>{pm.label}</option>
                             ))}
                         </select>
-                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
+                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
                     </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-[0.05em] text-muted-foreground/60">
+                    <Label className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                         Descripción / Motivo
                     </Label>
                     <textarea

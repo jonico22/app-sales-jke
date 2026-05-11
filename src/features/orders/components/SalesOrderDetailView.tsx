@@ -5,6 +5,14 @@ import type { Order } from '@/services/order.service';
 import { useSocietyStore } from '@/store/society.store';
 import { Badge } from '@/components/ui/badge';
 import { useOrderDetailsQuery, useOrderItemsQuery } from '../hooks/useOrderQueries';
+import {
+    dataTableCellCodeClassName,
+    dataTableCellMutedNumericClassName,
+    dataTableCellNumericClassName,
+    dataTableCellPrimaryClassName,
+    dataTableCellSecondaryClassName,
+    dataTableHeadClassName,
+} from '@/components/shared/dataTableStyles';
 
 interface SalesOrderDetailViewProps {
     orderId: string;
@@ -72,16 +80,16 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                     className="flex items-center gap-2 px-3 sm:px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
                 >
                     <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
-                    <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">Volver</span>
+                    <span className="font-semibold text-xs sm:text-sm uppercase tracking-[0.12em]">Volver</span>
                 </button>
                 <div className="flex gap-2">
                     <button className="flex items-center justify-center h-10 w-10 sm:w-auto sm:px-4 bg-card border border-border text-foreground rounded-xl hover:bg-muted transition-colors shadow-sm">
                         <Printer size={16} />
-                        <span className="hidden sm:inline sm:ml-2 font-bold text-xs uppercase tracking-wider">Imprimir</span>
+                        <span className="hidden sm:inline sm:ml-2 font-semibold text-xs uppercase tracking-[0.12em]">Imprimir</span>
                     </button>
                     <button className="flex items-center justify-center h-10 w-10 sm:w-auto sm:px-4 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-600/20">
                         <ShoppingBag size={16} />
-                        <span className="hidden sm:inline sm:ml-2 font-bold text-xs uppercase tracking-wider">WhatsApp</span>
+                        <span className="hidden sm:inline sm:ml-2 font-semibold text-xs uppercase tracking-[0.12em]">WhatsApp</span>
                     </button>
                 </div>
             </div>
@@ -90,20 +98,20 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
             <div className="bg-card rounded-2xl sm:rounded-3xl shadow-sm border border-border overflow-hidden mx-2 sm:mx-0">
                 {/* Order Status Banner */}
                 <div className="bg-muted/30 border-b border-border px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4 font-black">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <div className="h-11 w-11 sm:h-12 sm:w-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 shrink-0">
                             <FileText size={22} className="sm:w-6 sm:h-6" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg sm:text-xl font-black text-foreground uppercase tracking-tight truncate">Venta #{order.orderCode}</h1>
-                            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
+                            <h1 className="text-lg sm:text-xl font-semibold text-foreground tracking-tight truncate">Venta #{order.orderCode}</h1>
+                            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-[0.12em] mt-0.5">
                                 <Clock size={12} className="sm:w-4 sm:h-4 shrink-0" />
                                 <span className="truncate">{order.createdAt ? format(new Date(order.createdAt), 'dd MMMM yyyy, hh:mm a', { locale: es }) : '-'}</span>
                             </div>
                         </div>
                     </div>
 
-                    <Badge variant={order.status === 'COMPLETED' ? 'success' : order.status === 'CANCELLED' ? 'destructive' : 'warning'} className="w-fit h-7 sm:h-8 px-4 text-[10px] sm:text-xs font-black uppercase tracking-widest border border-current/20">
+                    <Badge variant={order.status === 'COMPLETED' ? 'success' : order.status === 'CANCELLED' ? 'destructive' : 'warning'} className="w-fit h-7 sm:h-8 px-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.12em] border border-current/20">
                         {order.status === 'COMPLETED' ? 'Completado' : order.status === 'CANCELLED' ? 'Anulado' : order.status}
                     </Badge>
                 </div>
@@ -114,7 +122,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
 
                         {/* Items Section */}
                         <div className="space-y-4">
-                            <h3 className="font-black text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
+                            <h3 className="font-semibold text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-[0.12em]">
                                 <Package size={15} className="text-primary/40" />
                                 Detalle de Productos
                             </h3>
@@ -123,7 +131,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                             <div className="hidden md:block border border-border/60 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
                                 <table className="w-full text-sm">
                                     <thead className="bg-muted/50 border-b border-border/60">
-                                        <tr className="h-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                                        <tr className={`h-10 ${dataTableHeadClassName}`}>
                                             <th className="px-6 py-3 text-left">Descripción</th>
                                             <th className="px-4 py-3 text-center">Cant.</th>
                                             <th className="px-4 py-3 text-right">P. Unit</th>
@@ -135,17 +143,17 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                         {items.map((item, index) => (
                                             <tr key={index} className="hover:bg-muted/10 transition-colors h-14">
                                                 <td className="px-6 py-3">
-                                                    <div className="font-bold text-foreground text-xs">{item.product?.name || `Producto #${item.productId}`}</div>
-                                                    <div className="text-[9px] text-muted-foreground font-bold tracking-wider mt-0.5">CODE: {item.product?.code}</div>
+                                                    <div className={dataTableCellPrimaryClassName}>{item.product?.name || `Producto #${item.productId}`}</div>
+                                                    <div className={`mt-0.5 ${dataTableCellCodeClassName}`}>CODE: {item.product?.code}</div>
                                                 </td>
-                                                <td className="px-4 py-3 text-center text-foreground font-black text-xs">{item.quantity}</td>
-                                                <td className="px-4 py-3 text-right text-muted-foreground font-bold text-[11px]">
+                                                <td className={`px-4 py-3 text-center ${dataTableCellNumericClassName}`}>{item.quantity}</td>
+                                                <td className={`px-4 py-3 text-right ${dataTableCellMutedNumericClassName}`}>
                                                     {currencySymbol} {formatCurrency(Number(item.unitPrice))}
                                                 </td>
-                                                <td className="px-4 py-3 text-right text-emerald-600 font-bold text-[11px]">
+                                                <td className="px-4 py-3 text-right text-emerald-600 font-semibold text-[11px] tabular-nums">
                                                     {Number(item.discount) > 0 ? `- ${currencySymbol} ${formatCurrency(Number(item.discount))}` : '-'}
                                                 </td>
-                                                <td className="px-6 py-3 text-right font-black text-foreground text-xs">
+                                                <td className={`px-6 py-3 text-right ${dataTableCellNumericClassName}`}>
                                                     {currencySymbol} {formatCurrency(Number(item.total))}
                                                 </td>
                                             </tr>
@@ -160,27 +168,27 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                     <div key={index} className="bg-muted/20 p-4 rounded-xl border border-border/80 relative overflow-hidden group">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="flex-1 pr-4">
-                                                <h4 className="font-black text-[11px] sm:text-xs text-foreground uppercase tracking-tight">{item.product?.name || `Producto #${item.productId}`}</h4>
-                                                <p className="text-[9px] font-bold text-muted-foreground tracking-widest mt-0.5">{item.product?.code}</p>
+                                                <h4 className="font-semibold text-[11px] sm:text-xs text-foreground tracking-tight">{item.product?.name || `Producto #${item.productId}`}</h4>
+                                                <p className={`mt-0.5 ${dataTableCellCodeClassName}`}>{item.product?.code}</p>
                                             </div>
                                             <div className="bg-primary/5 border border-primary/20 px-2 py-1 rounded-lg">
-                                                <span className="text-[10px] font-black text-primary">x{item.quantity}</span>
+                                                <span className="text-[10px] font-semibold text-primary">x{item.quantity}</span>
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-end pt-3 border-t border-border/40">
                                             <div className="flex-1">
-                                                <p className="text-[8px] font-black text-muted-foreground uppercase opacity-60">Precio Unitario</p>
-                                                <p className="text-[11px] font-bold text-foreground">{currencySymbol} {formatCurrency(Number(item.unitPrice))}</p>
+                                                <p className="text-[8px] font-semibold text-muted-foreground uppercase opacity-60 tracking-[0.12em]">Precio Unitario</p>
+                                                <p className={dataTableCellNumericClassName}>{currencySymbol} {formatCurrency(Number(item.unitPrice))}</p>
                                             </div>
                                             {Number(item.discount) > 0 && (
                                                 <div className="flex-1 text-center">
-                                                    <p className="text-[8px] font-black text-emerald-600 uppercase">Descuento</p>
-                                                    <p className="text-[11px] font-bold text-emerald-600">-{currencySymbol} {formatCurrency(Number(item.discount))}</p>
+                                                    <p className="text-[8px] font-semibold text-emerald-600 uppercase tracking-[0.12em]">Descuento</p>
+                                                    <p className="text-[11px] font-semibold text-emerald-600 tabular-nums">-{currencySymbol} {formatCurrency(Number(item.discount))}</p>
                                                 </div>
                                             )}
                                             <div className="text-right flex-1">
-                                                <p className="text-[8px] font-black text-primary uppercase">Subtotal</p>
-                                                <p className="text-xs font-black text-foreground">{currencySymbol} {formatCurrency(Number(item.total))}</p>
+                                                <p className="text-[8px] font-semibold text-primary uppercase tracking-[0.12em]">Subtotal</p>
+                                                <p className="text-xs font-semibold text-foreground tabular-nums">{currencySymbol} {formatCurrency(Number(item.total))}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -191,7 +199,7 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                         {/* Payment Info */}
                         {order.OrderPayment && order.OrderPayment.length > 0 && (
                             <div className="space-y-4">
-                                <h3 className="font-black text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
+                                <h3 className="font-semibold text-foreground flex items-center gap-2 text-xs sm:text-sm uppercase tracking-[0.12em]">
                                     <FileText size={15} className="text-primary/40" />
                                     Historial de Pagos
                                 </h3>
@@ -199,17 +207,17 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                                     {order.OrderPayment.map((payment, idx) => (
                                         <div key={idx} className="bg-muted/10 p-4 rounded-2xl border border-border group hover:border-primary/20 transition-all">
                                             <div className="flex justify-between items-start mb-3">
-                                                <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
+                                                <span className="text-[9px] font-semibold text-primary uppercase tracking-[0.12em] bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
                                                     {payment.paymentMethod}
                                                 </span>
-                                                <span className="text-[9px] font-bold text-muted-foreground/60">{payment.createdAt ? format(new Date(payment.createdAt), 'dd/MM/yy HH:mm') : '-'}</span>
+                                                <span className={dataTableCellSecondaryClassName}>{payment.createdAt ? format(new Date(payment.createdAt), 'dd/MM/yy HH:mm') : '-'}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[10px] font-bold text-muted-foreground uppercase">Monto</span>
-                                                <p className="font-black text-foreground text-sm">{currencySymbol} {formatCurrency(Number(payment.amount))}</p>
+                                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.12em]">Monto</span>
+                                                <p className="font-semibold text-foreground text-sm tabular-nums">{currencySymbol} {formatCurrency(Number(payment.amount))}</p>
                                             </div>
                                             {payment.referenceCode && (
-                                                <div className="mt-2 pt-2 border-t border-border/50 text-[10px] font-bold text-muted-foreground tracking-tight">
+                                                <div className={`mt-2 pt-2 border-t border-border/50 ${dataTableCellCodeClassName}`}>
                                                     REF: {payment.referenceCode}
                                                 </div>
                                             )}
@@ -224,23 +232,23 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
                     <div className="space-y-6 sm:space-y-8">
                         {/* Client Card */}
                         <div className="bg-muted/10 p-5 sm:p-6 rounded-2xl border border-border">
-                            <h3 className="font-black text-foreground mb-4 flex items-center gap-2 text-xs sm:text-[13px] uppercase tracking-widest">
+                            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-xs sm:text-[13px] uppercase tracking-[0.12em]">
                                 <User size={15} className="text-primary/30" />
                                 Ficha del Cliente
                             </h3>
                             <div className="space-y-3">
                                 <div className="bg-background p-3 rounded-xl border border-border/60">
-                                    <p className="font-black text-foreground text-xs uppercase tracking-tight leading-tight">{clientName}</p>
+                                    <p className="font-semibold text-foreground text-xs tracking-tight leading-tight">{clientName}</p>
                                     {order.partner?.documentNumber && (
                                         <div className="flex items-center gap-2 mt-1.5 opacity-60">
-                                            <Badge variant="secondary" className="text-[8px] h-4 font-black px-1.5 uppercase">{order.partner.documentType}</Badge>
-                                            <span className="text-[10px] text-foreground font-mono font-bold tracking-tighter">{order.partner.documentNumber}</span>
+                                            <Badge variant="secondary" className="text-[8px] h-4 font-semibold px-1.5 uppercase tracking-[0.08em]">{order.partner.documentType}</Badge>
+                                            <span className={dataTableCellCodeClassName}>{order.partner.documentNumber}</span>
                                         </div>
                                     )}
                                 </div>
 
                                 {order.partner?.email && (
-                                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-bold px-1 truncate">
+                                    <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-medium px-1 truncate">
                                         <Mail size={13} className="text-primary/40" />
                                         <span className="truncate">{order.partner.email}</span>
                                     </div>
@@ -250,18 +258,18 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
 
                         {/* Order Summary */}
                         <div className="bg-card p-6 sm:p-7 rounded-2xl border border-primary/20 shadow-lg shadow-slate-200/50">
-                            <h3 className="font-black text-foreground mb-6 text-xs sm:text-[13px] uppercase tracking-widest text-center border-b border-border pb-3">Resumen de Venta</h3>
+                            <h3 className="font-semibold text-foreground mb-6 text-xs sm:text-[13px] uppercase tracking-[0.12em] text-center border-b border-border pb-3">Resumen de Venta</h3>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                                <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
                                     <span>Base Imponible</span>
-                                    <span className="text-foreground">{currencySymbol} {formatCurrency(subtotal)}</span>
+                                    <span className="text-foreground font-semibold tabular-nums">{currencySymbol} {formatCurrency(subtotal)}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                                <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
                                     <span>IGV (18%)</span>
-                                    <span className="text-foreground">{currencySymbol} {formatCurrency(tax)}</span>
+                                    <span className="text-foreground font-semibold tabular-nums">{currencySymbol} {formatCurrency(tax)}</span>
                                 </div>
                                 {discount > 0 && (
-                                    <div className="flex justify-between items-center text-[11px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                                    <div className="flex justify-between items-center text-[11px] text-emerald-600 font-semibold uppercase tracking-[0.12em] bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
                                         <span>Descuento</span>
                                         <span>- {currencySymbol} {formatCurrency(discount)}</span>
                                     </div>
@@ -269,10 +277,10 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
 
                                 <div className="pt-5 mt-5 border-t-2 border-dashed border-border">
                                     <div className="flex flex-col items-center">
-                                        <span className="font-black text-primary text-[10px] uppercase tracking-[0.2em] mb-1">Total a Pagar</span>
+                                        <span className="font-semibold text-primary text-[10px] uppercase tracking-[0.16em] mb-1">Total a Pagar</span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-sm font-bold text-foreground/40">{currencySymbol}</span>
-                                            <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">{formatCurrency(total)}</span>
+                                            <span className="text-sm font-semibold text-foreground/40">{currencySymbol}</span>
+                                            <span className="text-3xl font-semibold text-foreground tabular-nums tracking-tight">{formatCurrency(total)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -281,8 +289,8 @@ export function SalesOrderDetailView({ orderId, initialOrder, onBack }: SalesOrd
 
                         {order.notes && (
                             <div className="bg-amber-50/60 p-5 rounded-2xl border border-amber-200 text-amber-900 shadow-sm shadow-amber-100">
-                                <p className="font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                <p className="font-semibold text-[10px] uppercase tracking-[0.12em] mb-2 flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                                     Notas de Venta
                                 </p>
                                 <p className="text-xs font-medium leading-relaxed italic">{order.notes}</p>

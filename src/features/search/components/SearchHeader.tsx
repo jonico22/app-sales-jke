@@ -1,9 +1,21 @@
-import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode } from 'lucide-react';
+import { memo, useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode, Mic, LoaderCircle } from 'lucide-react';
 import type { Color } from '@/services/product.service';
-import { useState, useRef, useEffect } from 'react';
 import { Portal } from '@/components/shared/Portal';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+
+type VoiceSearchStatus = 'idle' | 'unsupported' | 'listening' | 'processing' | 'error';
+
+interface VoiceSearchUiState {
+    isSupported: boolean;
+    isListening: boolean;
+    transcript: string;
+    error?: string | null;
+    status: VoiceSearchStatus;
+    startListening: () => void;
+    stopListening: () => void;
+}
 
 interface SearchHeaderProps {
     searchQuery: string;
@@ -15,9 +27,10 @@ interface SearchHeaderProps {
     onColorSelect: (color: string) => void;
     onClearFilters?: () => void;
     onOpenFilters?: () => void;
+    voiceSearch?: VoiceSearchUiState;
 }
 
-function ColorList({ 
+const ColorList = memo(function ColorList({ 
     colors, 
     selectedColor, 
     onColorSelect 
@@ -59,9 +72,9 @@ function ColorList({
             ))}
         </>
     );
-}
+});
 
-export function SearchHeader({
+export const SearchHeader = memo(function SearchHeader({
     searchQuery,
     onSearchChange,
     activeQuickFilters,
@@ -70,11 +83,47 @@ export function SearchHeader({
     selectedColor,
     onColorSelect,
     onClearFilters,
-    onOpenFilters
+    onOpenFilters,
+    voiceSearch
 }: SearchHeaderProps) {
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
     const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const selectedColorLabel = useMemo(
+        () => colors.find(c => c.id === selectedColor)?.color,
+        [colors, selectedColor]
+    );
+
+    const handleClearSearch = useCallback(() => onSearchChange(''), [onSearchChange]);
+    const handleFavoritesToggle = useCallback(() => onToggleQuickFilter('favorites'), [onToggleQuickFilter]);
+    const handleBestSellersToggle = useCallback(() => onToggleQuickFilter('bestSellers'), [onToggleQuickFilter]);
+    const handleColorDropdownToggle = useCallback(
+        () => setIsColorDropdownOpen(prev => !prev),
+        []
+    );
+    const handleColorSelect = useCallback((id: string) => {
+        onColorSelect(id);
+        setIsColorDropdownOpen(false);
+    }, [onColorSelect]);
+
+    const handleVoiceSearchToggle = useCallback(() => {
+        if (!voiceSearch?.isSupported) return;
+
+        if (voiceSearch.isListening) {
+            voiceSearch.stopListening();
+            return;
+        }
+
+        voiceSearch.startListening();
+    }, [voiceSearch]);
+
+    const voiceHelperText = useMemo(() => {
+        if (!voiceSearch?.isSupported) return null;
+        if (voiceSearch.status === 'listening') return voiceSearch.transcript || 'Habla ahora...';
+        if (voiceSearch.status === 'processing') return 'Esperando tu voz... toca de nuevo para cancelar.';
+        if (voiceSearch.status === 'error') return voiceSearch.error || 'No pudimos completar la busqueda por voz.';
+        return null;
+    }, [voiceSearch]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -93,30 +142,62 @@ export function SearchHeader({
         <div className="w-full space-y-3 sm:space-y-5">
 
             {/* Search Input */}
-            <div className="relative w-full max-w-5xl">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+            <div className="w-full max-w-5xl space-y-2">
+                <div className="relative">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
                 
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 opacity-40">
-                        <span className="hidden sm:inline-block px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
-                        <ScanBarcode className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {voiceSearch?.isSupported ? (
+                            <button
+                                type="button"
+                                onClick={handleVoiceSearchToggle}
+                                aria-label={voiceSearch.isListening ? 'Detener busqueda por voz' : 'Iniciar busqueda por voz'}
+                                aria-pressed={voiceSearch.isListening}
+                                className={cn(
+                                    'p-2 rounded-full border transition-all',
+                                    voiceSearch.isListening
+                                        ? 'bg-sky-50 text-sky-700 border-sky-200 shadow-sm shadow-sky-100'
+                                        : 'bg-card text-muted-foreground border-transparent hover:text-foreground hover:bg-muted hover:border-border'
+                                )}
+                            >
+                                {voiceSearch.status === 'processing' ? (
+                                    <LoaderCircle className="w-[18px] h-[18px] animate-spin" />
+                                ) : (
+                                    <Mic className={cn('w-[18px] h-[18px]', voiceSearch.isListening && 'animate-pulse')} />
+                                )}
+                            </button>
+                        ) : null}
+
+                        <div className="flex items-center gap-1.5 opacity-40">
+                            <span className="hidden sm:inline-block px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
+                            <ScanBarcode className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
+                        </div>
+                        {searchQuery && (
+                            <button
+                                onClick={handleClearSearch}
+                                aria-label="Limpiar busqueda"
+                                className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
+                            >
+                                <X className="w-[18px] h-[18px]" />
+                            </button>
+                        )}
                     </div>
-                    {searchQuery && (
-                        <button
-                            onClick={() => onSearchChange('')}
-                            className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
-                        >
-                            <X className="w-[18px] h-[18px]" />
-                        </button>
-                    )}
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        placeholder="Buscar productos por nombre, SKU o codigo de barras..."
+                        className="w-full pl-12 pr-44 sm:pr-48 py-2.5 sm:py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
+                    />
                 </div>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Buscar productos por nombre, SKU o código de barras..."
-                    className="w-full pl-12 pr-32 py-2.5 sm:py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
-                />
+                {voiceHelperText ? (
+                    <p className={cn(
+                        'text-xs sm:text-sm font-medium pl-1',
+                        voiceSearch?.status === 'error' ? 'text-rose-600' : 'text-muted-foreground'
+                    )}>
+                        {voiceHelperText}
+                    </p>
+                ) : null}
             </div>
 
             {/* Quick Filters */}
@@ -141,7 +222,7 @@ export function SearchHeader({
                 <div className="lg:hidden w-[1px] h-6 bg-slate-200 shrink-0 mx-1" />
 
                 <button
-                    onClick={() => onToggleQuickFilter('favorites')}
+                    onClick={handleFavoritesToggle}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 ${activeQuickFilters.includes('favorites') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <Heart className={`w-[14px] h-[14px] ${activeQuickFilters.includes('favorites') ? 'fill-current' : ''}`} />
@@ -149,7 +230,7 @@ export function SearchHeader({
                 </button>
 
                 <button
-                    onClick={() => onToggleQuickFilter('bestSellers')}
+                    onClick={handleBestSellersToggle}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${activeQuickFilters.includes('bestSellers') ? 'bg-[#4096d8] text-white border-[#4096d8] shadow-md shadow-blue-500/20' : 'bg-card text-muted-foreground border-border hover:bg-accent'}`}
                 >
                     <TrendingUp className="w-[14px] h-[14px]" />
@@ -159,14 +240,14 @@ export function SearchHeader({
                 {/* Color Dropdown */}
                 <div className="relative shrink-0" ref={dropdownRef}>
                     <button
-                        onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+                        onClick={handleColorDropdownToggle}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-[20px] text-[13px] font-bold transition-all border shrink-0 whitespace-nowrap ${selectedColor ? 'bg-primary/5 text-primary border-primary/20' : 'bg-card border-border text-muted-foreground hover:bg-accent'}`}
                     >
                         {/* Paint palette icon */}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                         </svg>
-                        <span>{selectedColor ? `Color: ${colors.find(c => c.id === selectedColor)?.color}` : 'Color'}</span>
+                        <span>{selectedColor ? `Color: ${selectedColorLabel}` : 'Color'}</span>
                     </button>
 
                     {/* Color Dropdown Content */}
@@ -192,10 +273,7 @@ export function SearchHeader({
                                             <ColorList 
                                                 colors={colors} 
                                                 selectedColor={selectedColor} 
-                                                onColorSelect={(id) => {
-                                                    onColorSelect(id);
-                                                    setIsColorDropdownOpen(false);
-                                                }} 
+                                                onColorSelect={handleColorSelect} 
                                             />
                                         </div>
                                     </div>
@@ -206,10 +284,7 @@ export function SearchHeader({
                                         <ColorList 
                                             colors={colors} 
                                             selectedColor={selectedColor} 
-                                            onColorSelect={(id) => {
-                                                onColorSelect(id);
-                                                setIsColorDropdownOpen(false);
-                                            }} 
+                                            onColorSelect={handleColorSelect} 
                                         />
                                     </div>
                                 </div>
@@ -229,4 +304,4 @@ export function SearchHeader({
             </div>
         </div>
     );
-}
+});

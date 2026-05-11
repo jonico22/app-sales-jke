@@ -12,6 +12,7 @@ import {
 import { orderItemService, type OrderItemsResponse } from '@/services/order-item.service';
 import { orderPaymentService, type CreateOrderPaymentRequest, type OrderPaymentResponse } from '@/services/order-payment.service';
 import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
+import { invalidateDashboardQueries } from '@/hooks/dashboardQueryKeys';
 import { toast } from 'sonner';
 import type { AxiosError } from 'axios';
 
@@ -24,6 +25,10 @@ export const orderKeys = {
   items: (id: string) => [...orderKeys.detail(id), 'items'] as const,
   users: () => [...orderKeys.all, 'users'] as const,
 };
+
+interface MutationToastOptions {
+  suppressSuccessToast?: boolean;
+}
 
 export function useOrdersQuery(params: {
   page?: number;
@@ -78,6 +83,7 @@ export function useCreateOrderMutation() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       invalidateProductRelatedCaches(queryClient);
+      invalidateDashboardQueries(queryClient);
       toast.success(response.message || 'Pedido creado exitosamente');
     },
     onError: (error) => {
@@ -87,7 +93,7 @@ export function useCreateOrderMutation() {
   });
 }
 
-export function useUpdateOrderMutation() {
+export function useUpdateOrderMutation(options?: MutationToastOptions) {
   const queryClient = useQueryClient();
 
   return useMutation<OrderResponse, AxiosError<{ message?: string }>, { id: string; data: UpdateOrderRequest }>({
@@ -95,7 +101,10 @@ export function useUpdateOrderMutation() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       invalidateProductRelatedCaches(queryClient);
-      toast.success(response.message || 'Pedido actualizado exitosamente');
+      invalidateDashboardQueries(queryClient);
+      if (!options?.suppressSuccessToast) {
+        toast.success(response.message || 'Pedido actualizado exitosamente');
+      }
     },
     onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al actualizar el pedido';
@@ -112,6 +121,7 @@ export function useDeleteOrderMutation() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       invalidateProductRelatedCaches(queryClient);
+      invalidateDashboardQueries(queryClient);
       toast.success(response.message || 'Pedido eliminado exitosamente');
     },
     onError: (error) => {
@@ -121,7 +131,7 @@ export function useDeleteOrderMutation() {
   });
 }
 
-export function useCreatePaymentMutation() {
+export function useCreatePaymentMutation(options?: MutationToastOptions) {
   const queryClient = useQueryClient();
 
   return useMutation<OrderPaymentResponse, AxiosError<{ message?: string }>, CreateOrderPaymentRequest>({
@@ -129,7 +139,10 @@ export function useCreatePaymentMutation() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       invalidateProductRelatedCaches(queryClient);
-      toast.success(response.message || 'Pago registrado exitosamente');
+      invalidateDashboardQueries(queryClient);
+      if (!options?.suppressSuccessToast) {
+        toast.success(response.message || 'Pago registrado exitosamente');
+      }
     },
     onError: (error) => {
       const errorMessage = error.response?.data?.message || 'Error al registrar el pago';

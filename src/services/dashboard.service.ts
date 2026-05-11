@@ -1,10 +1,26 @@
 import api from './api.client';
 
 export interface DashboardStats {
-    totalStockValue: number;
-    lowStockItems: number;
-    netSales: number;
-    newProducts: number;
+    salesToday: number;
+    salesThisWeek: number;
+    salesThisMonth: number;
+    completedOrdersToday: number;
+    completedOrdersThisWeek: number;
+    completedOrdersThisMonth: number;
+    averageTicketToday: number;
+    averageTicketThisWeek: number;
+    averageTicketThisMonth: number;
+}
+
+export interface DashboardFilters {
+    branchId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+}
+
+export interface DashboardOverviewFilters extends DashboardFilters {
+    granularity?: 'day' | 'week' | 'month';
+    limit?: number;
 }
 
 export interface DashboardStatsResponse {
@@ -19,57 +35,102 @@ export interface ApiResponse<T> {
     data: T;
 }
 
-export interface SalesPerformanceData {
-    name: string;
-    total: number;
-}
-
-export interface RevenueByCategoryData {
-    category: string;
-    revenue: number;
-    percentage: number;
-}
-
-export interface TopProductData {
-    id: string;
-    name: string;
-    soldUnits: number;
-    stockRemaining: number;
-}
-
-export interface PaymentMethodData {
-    method: string;
+export interface DashboardSalesTrendPoint {
+    label: string;
     value: number;
 }
 
+export interface DashboardPaymentMethodSummary {
+    method: string;
+    amount: number;
+    percentage: number;
+    transactions: number;
+}
+
+export interface DashboardCashFlowMiniPoint {
+    label: string;
+    income: number;
+    expense: number;
+    net: number;
+}
+
+export interface DashboardTopProduct {
+    productId: string;
+    productName: string;
+    category: string;
+    soldUnits: number;
+    revenue: number;
+    stockRemaining: number;
+}
+
+export interface DashboardTopBranch {
+    branchId: string;
+    branch: string;
+    revenue: number;
+    orders: number;
+    averageTicket: number;
+}
+
+export interface DashboardOverviewResponse {
+    success: boolean;
+    message: string;
+    data: {
+        salesTrend: DashboardSalesTrendPoint[];
+        paymentMethods: DashboardPaymentMethodSummary[];
+        cashFlowMini: DashboardCashFlowMiniPoint[];
+        topProducts: DashboardTopProduct[];
+        topBranches: DashboardTopBranch[];
+    };
+}
+
+export interface LowStockAlertItem {
+    productId: string;
+    productName: string;
+    branchId: string;
+    branchName: string;
+    availableStock: number;
+    minStock: number;
+    status: string;
+}
+
+export interface LowStockAlertsResponse {
+    success: boolean;
+    message: string;
+    data: {
+        count: number;
+        items: LowStockAlertItem[];
+    };
+}
+
+export interface CatalogSummaryResponse {
+    success: boolean;
+    message: string;
+    data: {
+        totalStockValue: number;
+        lowStockItems: number;
+        newProductsThisMonth: number;
+        activeProducts: number;
+    };
+}
+
 export const dashboardService = {
-    // Get general dashboard statistics
-    getStats: async (): Promise<DashboardStatsResponse> => {
-        const response = await api.get<DashboardStatsResponse>('/sales/dashboard/stats');
+    getStats: async (params?: DashboardFilters): Promise<DashboardStatsResponse> => {
+        const response = await api.get<DashboardStatsResponse>('/sales/dashboard/stats', { params });
         return response.data;
     },
 
-    // Sales Performance (Tendencia de ventas por mes)
-    getSalesPerformance: async (): Promise<SalesPerformanceData[]> => {
-        const response = await api.get<ApiResponse<SalesPerformanceData[]>>('/sales/dashboard/charts/sales-performance');
-        return response.data.data;
+    getOverview: async (params?: DashboardOverviewFilters): Promise<DashboardOverviewResponse> => {
+        const response = await api.get<DashboardOverviewResponse>('/sales/dashboard/overview', { params });
+        return response.data;
     },
 
-    // Revenue Report (Ingresos por categoría)
-    getRevenueByCategory: async (): Promise<RevenueByCategoryData[]> => {
-        const response = await api.get<ApiResponse<RevenueByCategoryData[]>>('/sales/dashboard/charts/revenue-by-category');
-        return response.data.data;
+    getLowStockAlerts: async (params?: DashboardFilters & { limit?: number }): Promise<LowStockAlertsResponse> => {
+        const response = await api.get<LowStockAlertsResponse>('/sales/dashboard/alerts/low-stock', { params });
+        return response.data;
     },
 
-    // Best Sellers (Top 5 productos más vendidos)
-    getTopProducts: async (): Promise<TopProductData[]> => {
-        const response = await api.get<ApiResponse<TopProductData[]>>('/sales/dashboard/charts/top-products');
-        return response.data.data;
-    },
-
-    // Payment Methods (Métodos de pago preferidos)
-    getPaymentMethods: async (): Promise<PaymentMethodData[]> => {
-        const response = await api.get<ApiResponse<PaymentMethodData[]>>('/sales/dashboard/charts/payment-methods');
-        return response.data.data;
+    getCatalogSummary: async (params?: DashboardFilters): Promise<CatalogSummaryResponse> => {
+        const response = await api.get<CatalogSummaryResponse>('/sales/dashboard/catalog-summary', { params });
+        return response.data;
     },
 };

@@ -1,4 +1,5 @@
 import { RefreshCw } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 
 interface CashShiftHistoryHeaderProps {
     isLoading: boolean;
@@ -7,17 +8,13 @@ interface CashShiftHistoryHeaderProps {
 }
 
 export function CashShiftHistoryHeader({ isLoading, onRefresh, onOpenMovement }: CashShiftHistoryHeaderProps) {
-    return (
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-                <h1 className="text-lg font-bold text-foreground tracking-tight uppercase">
-                    Historial de Turnos de Caja
-                </h1>
-                <p className="text-muted-foreground text-[10px] mt-0.5 font-medium">
-                    Consulte y gestione todos los turnos de apertura y cierre de caja.
-                </p>
-            </div>
-            <div className="flex items-center gap-2">
+  return (
+    <PageHeader
+      title="Historial de Turnos de Caja"
+      subtitle="Consulte y gestione todos los turnos de apertura y cierre de caja."
+      actionsClassName="flex items-center gap-2"
+      actions={(
+        <>
                 <button
                     onClick={onRefresh}
                     disabled={isLoading}
@@ -33,7 +30,8 @@ export function CashShiftHistoryHeader({ isLoading, onRefresh, onOpenMovement }:
                     <span className="text-base leading-none">+</span>
                     Registrar Movimiento
                 </button>
-            </div>
-        </div>
-    );
+        </>
+      )}
+    />
+  );
 }

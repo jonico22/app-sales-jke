@@ -62,11 +62,11 @@ export function CategoryFilterPanel({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full bg-card border-l border-border shadow-2xl">
-        <SheetHeader className="p-5 border-b border-border bg-card">
-          <SheetTitle className="text-lg font-bold text-foreground uppercase tracking-tight">Filtros Avanzados</SheetTitle>
+        <SheetHeader className="p-4 sm:p-5 border-b border-border bg-card">
+          <SheetTitle className="text-sm sm:text-base font-semibold text-foreground uppercase tracking-tight">Filtros Avanzados</SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 sm:space-y-6">
 
           {/* Created By */}
           <div className="space-y-2">
@@ -125,9 +125,9 @@ export function CategoryFilterPanel({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 border-t border-border bg-muted/20 space-y-3">
+        <div className="p-4 sm:p-5 border-t border-border bg-muted/20 space-y-2 sm:space-y-3">
           <Button
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 transition-all active:scale-95"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-10 sm:h-11 rounded-lg text-xs font-semibold uppercase tracking-wider shadow-lg shadow-primary/20 transition-all active:scale-95"
             onClick={() => {
               onApplyFilters(filters);
               onOpenChange(false);
@@ -138,7 +138,7 @@ export function CategoryFilterPanel({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-muted-foreground hover:text-foreground hover:bg-muted font-bold text-[10px] uppercase tracking-wider h-9"
+            className="w-full text-muted-foreground hover:text-foreground hover:bg-muted font-semibold text-[10px] uppercase tracking-wider h-8 sm:h-9"
             onClick={handleClear}
           >
             Limpiar Filtros

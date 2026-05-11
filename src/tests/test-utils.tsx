@@ -3,11 +3,12 @@ import type { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import type { RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 
 /**
  * Crea un QueryClient fresco para cada test para asegurar el aislamiento.
  */
-const createTestQueryClient = () =>
+export const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
@@ -40,6 +41,23 @@ const renderWithProviders = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
+
+interface RouterOptions extends Omit<RenderOptions, 'wrapper'> {
+  route?: string;
+}
+
+export const renderWithRouter = (
+  ui: ReactElement,
+  { route = '/', ...options }: RouterOptions = {}
+) =>
+  render(ui, {
+    wrapper: ({ children }) => (
+      <MemoryRouter initialEntries={[route]}>
+        <AllTheProviders>{children}</AllTheProviders>
+      </MemoryRouter>
+    ),
+    ...options,
+  });
 
 // Re-exportar todo de testing-library
 export * from '@testing-library/react';

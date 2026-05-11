@@ -52,10 +52,11 @@ export function useSearchProductsInfiniteQuery(filters: {
   });
 }
 
-export function useSearchFavoritesQuery() {
+export function useSearchFavoritesQuery(enabled: boolean = true) {
   return useQuery<FavoritesResponse>({
     queryKey: searchKeys.favorites(),
     queryFn: () => favoritesService.getAll(),
+    enabled,
   });
 }
 

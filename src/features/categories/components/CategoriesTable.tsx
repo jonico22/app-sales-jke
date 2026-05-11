@@ -3,7 +3,20 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SortableTableHead } from '@/components/shared/SortableTableHead';
+import {
+  dataTableActionButtonClassName,
+  dataTableActionDestructiveClassName,
+  dataTableActionIconClassName,
+  dataTableActionPrimaryClassName,
+  dataTableCellCodeClassName,
+  dataTableCellPrimaryClassName,
+  dataTableCellSecondaryClassName,
+  dataTableHead,
+  dataTableHeaderRowClassName,
+  dataTableRow
+} from '@/components/shared/dataTableStyles';
 import type { Category } from '@/services/category.service';
+import { cn } from '@/lib/utils';
 
 // Rule css-content-visibility (Priority 2)
 const TABLE_BODY_STYLE = { contentVisibility: 'auto' } as React.CSSProperties;
@@ -30,14 +43,14 @@ export function CategoriesTable({
   return (
     <div className="hidden md:block">
       <Table>
-        <TableHeader className="bg-muted/30 border-b border-border">
-          <TableRow className="hover:bg-muted/40 border-none h-10">
+        <TableHeader className={dataTableHeaderRowClassName}>
+          <TableRow className="hover:bg-transparent border-none h-10">
             <SortableTableHead
               field="code"
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="w-[150px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              className={dataTableHead('w-[150px]')}
             >
               Código
             </SortableTableHead>
@@ -46,7 +59,7 @@ export function CategoriesTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="w-[300px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              className={dataTableHead('w-[300px]')}
             >
               Nombre de la Categoría
             </SortableTableHead>
@@ -55,7 +68,7 @@ export function CategoriesTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              className={dataTableHead()}
             >
               Descripción
             </SortableTableHead>
@@ -64,7 +77,7 @@ export function CategoriesTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="w-[130px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              className={dataTableHead('w-[130px]')}
             >
               Fecha Creación
             </SortableTableHead>
@@ -73,11 +86,11 @@ export function CategoriesTable({
               currentSortBy={sortBy}
               currentSortOrder={sortOrder}
               onSort={onSort}
-              className="w-[90px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70"
+              className={dataTableHead('w-[90px]')}
             >
               Estado
             </SortableTableHead>
-            <TableHead className="w-[90px] text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground/70">Acciones</TableHead>
+            <TableHead className={dataTableHead('w-[90px] text-right')}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody style={TABLE_BODY_STYLE}>
@@ -92,15 +105,15 @@ export function CategoriesTable({
             </TableRow>
           ) : categories.length > 0 ? (
             categories.map((category) => (
-              <TableRow key={category.id} className="hover:bg-muted/30 border-border transition-colors h-11">
-                <TableCell className="font-bold text-foreground text-[11px]">{category.code}</TableCell>
-                <TableCell className="font-bold text-foreground text-xs">{category.name}</TableCell>
-                <TableCell className="text-muted-foreground/80 text-[11px] max-w-[300px] truncate">{category.description || '-'}</TableCell>
-                <TableCell className="text-muted-foreground/80 text-[11px]">
+              <TableRow key={category.id} className={dataTableRow('h-11')}>
+                <TableCell className={dataTableCellCodeClassName}>{category.code}</TableCell>
+                <TableCell className={dataTableCellPrimaryClassName}>{category.name}</TableCell>
+                <TableCell className={cn(dataTableCellSecondaryClassName, 'max-w-[300px] truncate')}>{category.description || '-'}</TableCell>
+                <TableCell className={dataTableCellSecondaryClassName}>
                   {category.createdAt}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] tracking-wide px-2 py-0.5 border border-current/20">
+                  <Badge variant={category.isActive ? 'success' : 'destructive'} className="uppercase text-[9px] font-semibold tracking-[0.08em] px-2 py-0.5 border border-current/20">
                     {category.isActive ? 'Activo' : 'Inactivo'}
                   </Badge>
                 </TableCell>
@@ -109,18 +122,18 @@ export function CategoriesTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      className={cn(dataTableActionButtonClassName, dataTableActionPrimaryClassName)}
                       onClick={() => onEdit(category)}
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className={dataTableActionIconClassName} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      className={cn(dataTableActionButtonClassName, dataTableActionDestructiveClassName)}
                       onClick={() => onDelete(category.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className={dataTableActionIconClassName} />
                     </Button>
                   </div>
                 </TableCell>

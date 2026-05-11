@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { UserPlus, Mail, Phone, Info } from 'lucide-react';
+import { UserPlus, Mail, Phone, Info, ChevronDown } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { nativeSelectClassName } from '@/components/shared/formFieldStyles';
 import { roleService, type Role } from '@/services/role.service';
 import { userService } from '@/services/user.service';
 import { isAxiosError } from 'axios';
@@ -92,14 +93,14 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
             onClose={onClose}
             title="Agregar Nuevo Usuario"
         >
-            <div className="mb-5 -mt-2">
+            <div className="mb-4 -mt-1">
                 <p className="text-[11px] text-muted-foreground font-medium italic">Complete los datos del perfil para el nuevo integrante del equipo.</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <Label htmlFor="firstName" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Nombres</Label>
+                        <Label htmlFor="firstName" className="text-foreground text-[11px] font-semibold uppercase tracking-[0.12em]">Nombres</Label>
                         <Input
                             id="firstName"
                             placeholder="Ej. Juan"
@@ -108,12 +109,12 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                             className="h-9 border-border bg-muted/20 text-xs focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-lg"
                         />
                         {errors.firstName && (
-                            <p className="text-[10px] font-bold text-danger mt-1 uppercase tracking-tight">{errors.firstName.message}</p>
+                            <p className="text-[10px] font-semibold text-danger mt-1">{errors.firstName.message}</p>
                         )}
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="lastName" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Apellidos</Label>
+                        <Label htmlFor="lastName" className="text-foreground text-[11px] font-semibold uppercase tracking-[0.12em]">Apellidos</Label>
                         <Input
                             id="lastName"
                             placeholder="Ej. Pérez"
@@ -122,14 +123,14 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                             className="h-9 border-border bg-muted/20 text-xs focus-visible:ring-primary/20 placeholder:text-muted-foreground/40 rounded-lg"
                         />
                         {errors.lastName && (
-                            <p className="text-[10px] font-bold text-danger mt-1 uppercase tracking-tight">{errors.lastName.message}</p>
+                            <p className="text-[10px] font-semibold text-danger mt-1">{errors.lastName.message}</p>
                         )}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <Label htmlFor="email" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Email Corporativo</Label>
+                        <Label htmlFor="email" className="text-foreground text-[11px] font-semibold uppercase tracking-[0.12em]">Email Corporativo</Label>
                         <div className="relative">
                             <Input
                                 id="email"
@@ -142,12 +143,12 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
                         </div>
                         {errors.email && (
-                            <p className="text-[10px] font-bold text-danger mt-1 uppercase tracking-tight">{errors.email.message}</p>
+                            <p className="text-[10px] font-semibold text-danger mt-1">{errors.email.message}</p>
                         )}
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="phone" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Teléfono</Label>
+                        <Label htmlFor="phone" className="text-foreground text-[11px] font-semibold uppercase tracking-[0.12em]">Teléfono</Label>
                         <div className="relative">
                             <Input
                                 id="phone"
@@ -160,18 +161,18 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
                         </div>
                         {errors.phone && (
-                            <p className="text-[10px] font-bold text-danger mt-1 uppercase tracking-tight">{errors.phone.message}</p>
+                            <p className="text-[10px] font-semibold text-danger mt-1">{errors.phone.message}</p>
                         )}
                     </div>
                 </div>
 
                 <div className="space-y-1.5">
-                    <Label htmlFor="roleCode" className="text-foreground text-[11px] font-bold uppercase tracking-wider">Rol del Usuario</Label>
+                    <Label htmlFor="roleCode" className="text-foreground text-[11px] font-semibold uppercase tracking-[0.12em]">Rol del Usuario</Label>
                     <div className="relative">
                         <select
                             id="roleCode"
                             {...register('roleCode')}
-                            className="w-full h-9 px-3 bg-muted/20 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none disabled:opacity-50 font-medium"
+                            className={`${nativeSelectClassName} h-9 rounded-lg bg-muted/20 text-xs disabled:opacity-50 font-medium focus:ring-primary/20`}
                             disabled={isSaving || isLoadingRoles}
                         >
                             <option value="" className="text-muted-foreground/40">Seleccionar Rol</option>
@@ -181,31 +182,29 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                                 </option>
                             ))}
                         </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
-                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/60">
+                            <ChevronDown className="h-3.5 w-3.5" />
                         </div>
                     </div>
                     <p className="text-[10px] text-muted-foreground font-medium mt-1">Define el nivel de acceso y permisos dentro de la plataforma.</p>
                     {errors.roleCode && (
-                        <p className="text-[10px] font-bold text-danger mt-1 uppercase tracking-tight">{errors.roleCode.message}</p>
+                        <p className="text-[10px] font-semibold text-danger mt-1">{errors.roleCode.message}</p>
                     )}
                 </div>
 
                 <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 flex gap-3 text-[11px] text-muted-foreground font-medium mt-1">
                     <Info className="w-4 h-4 text-primary shrink-0" />
-                    <p>Se generará una <span className="font-bold text-primary">contraseña temporal</span> de forma segura y se enviará automáticamente al email corporativo ingresado.</p>
+                    <p>Se generará una <span className="font-semibold text-primary">contraseña temporal</span> de forma segura y se enviará automáticamente al email corporativo ingresado.</p>
                 </div>
 
-                <div className="pt-4 flex items-center justify-end gap-3 border-t border-border">
+                <div className="pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 border-t border-border">
                     <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={onClose}
                         disabled={isSaving}
-                        className="h-8 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                        className="w-full sm:w-auto h-8 px-4 rounded-lg font-semibold text-[10px] uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground"
                     >
                         Cancelar
                     </Button>
@@ -214,7 +213,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                         variant="primary"
                         size="sm"
                         disabled={isSaving || isLoadingRoles}
-                        className="h-8 px-5 rounded-lg font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center shadow-primary/20"
+                        className="w-full sm:w-auto h-8 px-5 rounded-lg font-semibold text-[10px] uppercase tracking-[0.12em] shadow-sm flex items-center shadow-primary/20"
                     >
                         {isSaving ? (
                             <>

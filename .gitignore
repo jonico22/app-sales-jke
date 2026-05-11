@@ -39,3 +39,4 @@ dist-ssr
 .lighthouseci/
 stats.html
 imagemin-testing/
+/coverage/

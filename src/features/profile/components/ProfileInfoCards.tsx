@@ -13,10 +13,10 @@ export function ProfileInfoCards({ user, role }: ProfileInfoCardsProps) {
             {/* Role Information */}
             <Card className="p-8 border-border shadow-sm rounded-2xl flex flex-col justify-between">
                 <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Rol del Usuario</h3>
+                    <h3 className="text-sm font-semibold text-foreground uppercase tracking-[0.08em]">Rol del Usuario</h3>
                     <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full w-fit border border-primary/20">
                         <Shield className="h-4 w-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">{role?.name || 'Usuario'}</span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.12em]">{role?.name || 'Usuario'}</span>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                         {role?.code === 'ADMIN'
@@ -28,7 +28,7 @@ export function ProfileInfoCards({ user, role }: ProfileInfoCardsProps) {
 
             {/* Last Connection */}
             <Card className="p-8 border-border shadow-sm rounded-2xl space-y-4">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2 uppercase tracking-tight">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 uppercase tracking-[0.08em]">
                     Última Conexión
                 </h3>
                 <div className="space-y-4">
@@ -36,7 +36,7 @@ export function ProfileInfoCards({ user, role }: ProfileInfoCardsProps) {
                         <>
                             <p className="text-xs text-muted-foreground">Sesión actual iniciada desde:</p>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-foreground">
+                                <p className="text-2xl font-semibold text-foreground tabular-nums">
                                     {new Date(user.sessions[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                                 <div className="flex flex-col gap-2 pt-2">

@@ -85,7 +85,7 @@ export function BulkUploadCard({
           <FileSpreadsheet className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-foreground text-lg">{title}</h3>
+          <h3 className="font-semibold text-foreground text-lg tracking-tight">{title}</h3>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export function BulkUploadCard({
             <div className="bg-card p-4 rounded-full shadow-sm mb-4">
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
-            <h4 className="font-bold text-foreground mb-1">Subiendo archivo...</h4>
+            <h4 className="font-semibold text-foreground mb-1">Subiendo archivo...</h4>
             <p className="text-xs text-muted-foreground">{uploadedFileName}</p>
           </>
         ) : uploadedFileName ? (
@@ -114,7 +114,7 @@ export function BulkUploadCard({
             <div className="bg-green-50 p-4 rounded-full shadow-sm mb-4">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
-            <h4 className="font-bold text-green-700 mb-1">¡Archivo procesado!</h4>
+            <h4 className="font-semibold text-green-700 mb-1">¡Archivo procesado!</h4>
             <p className="text-xs text-muted-foreground">{uploadedFileName}</p>
           </>
         ) : (
@@ -123,7 +123,7 @@ export function BulkUploadCard({
               }`}>
               <CloudUpload className={`h-8 w-8 ${isDragActive ? 'text-primary' : 'text-primary/70'}`} />
             </div>
-            <h4 className="font-bold text-foreground mb-1">
+            <h4 className="font-semibold text-foreground mb-1">
               {isDragActive ? '¡Suelta el archivo aquí!' : dragDropText}
             </h4>
             <p className="text-xs text-muted-foreground mb-6">{dragDropSubtext}</p>
@@ -151,7 +151,7 @@ export function BulkUploadCard({
         >
           <FileDown className="h-4 w-4" /> {downloadText}
         </button>
-        <p className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">{maxSizeText}</p>
+        <p className="text-[10px] font-semibold text-muted-foreground tracking-[0.12em] uppercase">{maxSizeText}</p>
       </div>
     </div>
   );

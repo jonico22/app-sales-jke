@@ -25,17 +25,17 @@ export function CancelSubscriptionModal({
 }: CancelSubscriptionModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-6 text-center border-0 shadow-2xl !rounded-xl [&>button]:hidden">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 mb-4 mt-2">
-          <AlertTriangle className="h-6 w-6 text-[#E5534B]" />
+      <DialogContent className="sm:max-w-md p-4 sm:p-6 text-center border-0 shadow-2xl !rounded-xl [&>button]:hidden">
+        <div className="mx-auto flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-50 mb-4 mt-1 sm:mt-2">
+          <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-[#E5534B]" />
         </div>
-        <h3 className="text-lg font-bold text-foreground mb-3">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3">
           ¿Estás seguro de que deseas cancelar?
         </h3>
-        <p className="text-xs text-muted-foreground mb-6 leading-relaxed px-2">
+        <p className="text-xs text-muted-foreground mb-5 sm:mb-6 leading-relaxed px-1 sm:px-2">
           Al cancelar, perderás el acceso a las funcionalidades del plan {planName} {isBeta && '(Public Preview)'} al finalizar tu ciclo actual. No te preocupes, tus datos de inventario se mantendrán guardados.
         </p>
-        <div className="text-left mb-6">
+        <div className="text-left mb-5 sm:mb-6">
           <label className="text-xs font-bold text-foreground mb-2 block lowercase first-letter:uppercase">
             Motivo de la cancelación (Opcional)
           </label>
@@ -61,7 +61,7 @@ export function CancelSubscriptionModal({
           <button
             onClick={() => onOpenChange(false)}
             disabled={isCancelling}
-            className="w-full border border-border text-muted-foreground font-bold py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50 text-xs uppercase"
+            className="w-full border border-border text-muted-foreground font-semibold py-2.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-50 text-xs"
           >
             Mantener mi plan
           </button>

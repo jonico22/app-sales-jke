@@ -1,93 +1,147 @@
-import { lazy, Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { StatsGrid } from './components/StatsGrid';
+import { useState } from 'react';
+import { format } from 'date-fns';
 import { BusinessHeader } from './components/BusinessHeader';
-import { dashboardService } from '@/services/dashboard.service';
+import { CatalogSummaryGrid } from './components/CatalogSummaryGrid';
+import { CashFlowOverviewCard } from './components/CashFlowOverviewCard';
+import { DashboardFiltersBar } from './components/DashboardFiltersBar';
+import { LowStockAlertsCard } from './components/LowStockAlertsCard';
+import { PaymentMethodsOverviewCard } from './components/PaymentMethodsOverviewCard';
+import { SalesTrendOverviewCard } from './components/SalesTrendOverviewCard';
+import { StatsGrid } from './components/StatsGrid';
+import { TopProductsListCard } from './components/TopProductsListCard';
+import { formatDashboardDateRange, type DashboardGranularity } from './components/dashboardFormatting';
+import { useDashboardCatalogSummary } from '@/hooks/useDashboardCatalogSummary';
+import { useDashboardLowStockAlerts } from '@/hooks/useDashboardLowStockAlerts';
+import { useDashboardOverview } from '@/hooks/useDashboardOverview';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useBranches } from '@/hooks/useBranches';
 import { useSocietyStore } from '@/store/society.store';
 
-// Lazy load heavy chart components
-const SalesPerformanceChart = lazy(() => import('./components/SalesPerformanceChart').then(m => ({ default: m.SalesPerformanceChart })));
-const RevenueByCategoryChart = lazy(() => import('./components/RevenueByCategoryChart').then(m => ({ default: m.RevenueByCategoryChart })));
-const TopProductsChart = lazy(() => import('./components/TopProductsChart').then(m => ({ default: m.TopProductsChart })));
-const PaymentMethodsChart = lazy(() => import('./components/PaymentMethodsChart').then(m => ({ default: m.PaymentMethodsChart })));
-
 export default function DashboardPage() {
-  const society = useSocietyStore(state => state.society);
+  const society = useSocietyStore((state) => state.society);
   const currencySymbol = society?.mainCurrency?.symbol || 'S/';
-  const {
-    data: salesPerformance = [],
-    isLoading: isLoadingSales
-  } = useQuery({
-    queryKey: ['salesPerformance'],
-    queryFn: () => dashboardService.getSalesPerformance().catch(() => [])
-  });
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const [trendGranularity, setTrendGranularity] = useState<DashboardGranularity>('month');
+  const [selectedMonth, setSelectedMonth] = useState(String(today.getMonth() + 1));
+  const [selectedYear, setSelectedYear] = useState(String(currentYear));
+  const [selectedDashboardBranchId, setSelectedDashboardBranchId] = useState<string>('all');
+  const dashboardGranularity: DashboardGranularity = 'month';
 
-  const {
-    data: revenueByCategory = [],
-    isLoading: isLoadingRevenue
-  } = useQuery({
-    queryKey: ['revenueByCategory'],
-    queryFn: () => dashboardService.getRevenueByCategory().catch(() => [])
-  });
+  const { data: branchesData = [] } = useBranches();
+  const branchId = selectedDashboardBranchId === 'all' ? undefined : selectedDashboardBranchId;
+  const selectedMonthDate = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+  const selectedMonthEndDate = new Date(Number(selectedYear), Number(selectedMonth), 0);
+  const dateFrom = format(selectedMonthDate, 'yyyy-MM-dd');
+  const dateTo = format(selectedMonthEndDate, 'yyyy-MM-dd');
+  const dashboardFilters = {
+    branchId,
+    dateFrom,
+    dateTo,
+  };
 
-  const {
-    data: topProducts = [],
-    isLoading: isLoadingProducts
-  } = useQuery({
-    queryKey: ['topProducts'],
-    queryFn: () => dashboardService.getTopProducts().catch(() => [])
+  const statsQuery = useDashboardStats(dashboardFilters);
+  const trendOverviewQuery = useDashboardOverview({
+    ...dashboardFilters,
+    granularity: trendGranularity,
   });
+  const dashboardOverviewQuery = useDashboardOverview({
+    ...dashboardFilters,
+    granularity: dashboardGranularity,
+  });
+  const lowStockQuery = useDashboardLowStockAlerts({
+    ...dashboardFilters,
+    limit: 6,
+  });
+  const catalogSummaryQuery = useDashboardCatalogSummary(dashboardFilters);
 
-  const {
-    data: paymentMethods = [],
-    isLoading: isLoadingPayments
-  } = useQuery({
-    queryKey: ['paymentMethods'],
-    queryFn: () => dashboardService.getPaymentMethods().catch(() => [])
-  });
+  const isInitialLoading =
+    !statsQuery.data ||
+    !trendOverviewQuery.data ||
+    !dashboardOverviewQuery.data ||
+    !lowStockQuery.data ||
+    !catalogSummaryQuery.data;
+
+  const handleBranchChange = (value: string) => {
+    setSelectedDashboardBranchId(value);
+  };
+
+  const handleMonthChange = (value: string) => {
+    setSelectedMonth(value);
+  };
+
+  const handleYearChange = (value: string) => {
+    setSelectedYear(value);
+  };
+
+  const paymentMethodsRange =
+    formatDashboardDateRange(dashboardOverviewQuery.data?.salesTrend.map((item) => item.label) || []) ||
+    `${format(selectedMonthDate, 'dd MMM yyyy')} - ${format(selectedMonthEndDate, 'dd MMM yyyy')}`;
 
   return (
     <div className="space-y-6">
-      {/* 0. Business Header */}
       <BusinessHeader />
 
-      {/* 1. Stats Grid */}
-      <StatsGrid />
+      <DashboardFiltersBar
+        branches={branchesData}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        selectedBranchId={selectedDashboardBranchId === 'all' ? undefined : selectedDashboardBranchId}
+        onBranchChange={handleBranchChange}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
+      />
 
-      {/* 3. Main Charts Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50 lg:col-span-2" />}>
-          <SalesPerformanceChart
-            data={salesPerformance as any}
-            isLoading={isLoadingSales}
-            currencySymbol={currencySymbol}
-          />
-        </Suspense>
-        <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50 col-span-1" />}>
-          <RevenueByCategoryChart
-            data={revenueByCategory}
-            isLoading={isLoadingRevenue}
-            currencySymbol={currencySymbol}
-          />
-        </Suspense>
+      <StatsGrid
+        stats={statsQuery.data}
+        overview={dashboardOverviewQuery.data}
+        currencySymbol={currencySymbol}
+        granularity={dashboardGranularity}
+        isLoading={isInitialLoading}
+      />
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <SalesTrendOverviewCard
+          currencySymbol={currencySymbol}
+          data={trendOverviewQuery.data?.salesTrend || []}
+          granularity={trendGranularity}
+          isLoading={trendOverviewQuery.isLoading}
+          onGranularityChange={setTrendGranularity}
+        />
+        <CashFlowOverviewCard
+          currencySymbol={currencySymbol}
+          data={dashboardOverviewQuery.data?.cashFlowMini || []}
+          granularity={dashboardGranularity}
+          isLoading={dashboardOverviewQuery.isLoading}
+        />
       </div>
 
-      {/* 4. Bottom Cards Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50" />}>
-          <TopProductsChart
-            data={topProducts as any}
-            isLoading={isLoadingProducts}
-          />
-        </Suspense>
-        <Suspense fallback={<div className="h-[400px] w-full bg-muted/20 animate-pulse rounded-2xl border border-border/50" />}>
-          <PaymentMethodsChart
-            data={paymentMethods as any}
-            isLoading={isLoadingPayments}
-            currencySymbol={currencySymbol}
-          />
-        </Suspense>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <PaymentMethodsOverviewCard
+          currencySymbol={currencySymbol}
+          data={dashboardOverviewQuery.data?.paymentMethods || []}
+          dateRangeLabel={paymentMethodsRange}
+          isLoading={dashboardOverviewQuery.isLoading}
+        />
+        <TopProductsListCard
+          currencySymbol={currencySymbol}
+          data={dashboardOverviewQuery.data?.topProducts || []}
+          dateRangeLabel={paymentMethodsRange}
+          isLoading={dashboardOverviewQuery.isLoading}
+        />
       </div>
+
+      <CatalogSummaryGrid
+        summary={catalogSummaryQuery.data}
+        currencySymbol={currencySymbol}
+        isLoading={catalogSummaryQuery.isLoading}
+      />
+
+      <LowStockAlertsCard
+        count={lowStockQuery.data?.count}
+        data={lowStockQuery.data?.items || []}
+        isLoading={lowStockQuery.isLoading}
+      />
     </div>
   );
 }

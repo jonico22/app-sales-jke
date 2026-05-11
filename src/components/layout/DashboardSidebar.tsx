@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, ChevronDown, ChevronRight, Building2, CreditCard } from 'lucide-react';
+import { LayoutGrid, ClipboardList, Users, ShoppingCart, FileText, Settings, LogOut, Package, Tags, ChevronDown, ChevronRight, Building2, CreditCard, type LucideIcon } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,12 +10,12 @@ import { cn } from '@/lib/utils';
 interface NavChild {
     name: string;
     href: string;
-    icon?: any;
+    icon?: LucideIcon;
 }
 
 interface NavItem {
     name: string;
-    icon: any;
+    icon: LucideIcon;
     href?: string;
     children?: NavChild[];
 }
@@ -33,6 +33,15 @@ const navItems: NavItem[] = [
             { name: 'Kardex / Historial', href: '/inventory/kardex' },
         ]
     },
+    /*{
+        name: 'Consignación', icon: Package,
+        children: [
+            { name: 'Acuerdos', href: '/consignment/agreements' },
+            { name: 'Entregas', href: '/consignment/deliveries' },
+            { name: 'Ventas', href: '/consignment/sales' },
+            { name: 'Liquidaciones', href: '/consignment/settlements' },
+        ]
+    },*/
     {
         name: 'Ventas',
         icon: ShoppingCart,
@@ -48,6 +57,7 @@ const navItems: NavItem[] = [
         name: 'Reportes', icon: FileText,
         children: [
             { name: 'Histórico de Ventas', href: '/orders/history' },
+            { name: 'Analytics', href: '/reports/analytics' },
             { name: 'Historial de Reportes', href: '/downloads' }
         ]
     },
@@ -73,6 +83,7 @@ const navItems: NavItem[] = [
 const moduleMap: Record<string, string> = {
     'Dashboard': 'DASHBOARD',
     'Inventario': 'INVENTARIO',
+    'Consignación': 'INVENTARIO',
     'Ventas': 'VENTAS',
     'Usuarios': 'USUARIOS',
     'Reportes': 'REPORTES',
@@ -156,6 +167,7 @@ export const DashboardSidebar = memo(({
     
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['Ventas']); 
     const [activePopover, setActivePopover] = useState<string | null>(null);
+    const [activePopoverPath, setActivePopoverPath] = useState<string | null>(null);
     const [popoverPosition, setPopoverPosition] = useState<{ top: number }>({ top: 0 });
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -163,18 +175,17 @@ export const DashboardSidebar = memo(({
         subscription?.status === 'EXPIRED' || subscription?.status === 'INACTIVE', 
     [subscription?.status]);
 
-    // Auto-expand menu when navigating directly to a child route
-    useEffect(() => {
+    const visibleExpandedMenus = useMemo(() => {
         const parentMenu = navItems.find((item) =>
             item.children?.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`))
         );
 
-        if (parentMenu) {
-            setExpandedMenus((prev) =>
-                prev.includes(parentMenu.name) ? prev : [...prev, parentMenu.name]
-            );
-        }
-    }, [pathname]);
+        if (!parentMenu) return expandedMenus;
+
+        return expandedMenus.includes(parentMenu.name)
+            ? expandedMenus
+            : [...expandedMenus, parentMenu.name];
+    }, [expandedMenus, pathname]);
 
     // Popover click outside
     useEffect(() => {
@@ -186,11 +197,6 @@ export const DashboardSidebar = memo(({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    // Close popover on navigation
-    useEffect(() => {
-        setActivePopover(null);
-    }, [pathname]);
 
     // Memoize final display items
     const displayNavItems = useMemo(() => {
@@ -221,12 +227,14 @@ export const DashboardSidebar = memo(({
         if (isCollapsed) {
             if (activePopover === name) {
                 setActivePopover(null);
+                setActivePopoverPath(null);
             } else {
                 const rect = event?.currentTarget.getBoundingClientRect();
                 if (rect) {
                     setPopoverPosition({ top: rect.top });
                 }
                 setActivePopover(name);
+                setActivePopoverPath(pathname);
             }
             return;
         };
@@ -235,7 +243,7 @@ export const DashboardSidebar = memo(({
                 ? prev.filter(item => item !== name)
                 : [...prev, name]
         );
-    }, [isCollapsed, activePopover]);
+    }, [isCollapsed, activePopover, pathname]);
 
     const handleLogout = useCallback(() => {
         queryClient.clear();
@@ -290,7 +298,7 @@ export const DashboardSidebar = memo(({
                     ) : (
                         displayNavItems.map((item) => {
                             const hasChildren = !!(item.children && item.children.length > 0);
-                            const isExpanded = expandedMenus.includes(item.name);
+                            const isExpanded = visibleExpandedMenus.includes(item.name);
                             const isActive = !!(pathname === item.href || (hasChildren && item.children?.some(child => pathname === child.href)));
 
                             if (hasChildren) {
@@ -328,7 +336,7 @@ export const DashboardSidebar = memo(({
                                             )}
 
                                             {/* Floating Popover for Collapsed State */}
-                                            {isCollapsed && activePopover === item.name && (
+                                            {isCollapsed && activePopover === item.name && activePopoverPath === pathname && (
                                                 <div
                                                     ref={popoverRef}
                                                     className="fixed left-[84px] z-[100] bg-card border border-border shadow-2xl rounded-xl py-2 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
