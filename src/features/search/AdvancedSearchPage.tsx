@@ -27,6 +27,8 @@ import { useToggleFavoriteMutation } from './hooks/useSearchMutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { invalidateProductRelatedCaches } from '@/features/inventory/hooks/useProductQueries';
 import { parseBackendError } from '@/utils/error.utils';
+import { useVoiceSearch } from './hooks/useVoiceSearch';
+import { toast } from 'sonner';
 
 export default function AdvancedSearchPage() {
     const { data: categories = [] } = useCategories();
@@ -45,6 +47,18 @@ export default function AdvancedSearchPage() {
         clearFilters,
         queryParams
     } = useSearchFilters();
+    const {
+        isSupported: isVoiceSearchSupported,
+        isListening: isVoiceSearchListening,
+        transcript: voiceTranscript,
+        error: voiceSearchError,
+        status: voiceSearchStatus,
+        startListening,
+        stopListening,
+    } = useVoiceSearch({
+        lang: 'es-PE',
+        onFinalTranscript: setSearchQuery,
+    });
 
     const {
         selectedClient,
@@ -162,6 +176,12 @@ export default function AdvancedSearchPage() {
         }
     }, [clientsData, isLoadingClients, selectedClient?.id, setSelectedClient]);
 
+    useEffect(() => {
+        if (!voiceSearchError) return;
+
+        toast.error(voiceSearchError);
+    }, [voiceSearchError]);
+
     // ── Handlers ────────────────────────────────────────────────────────────
     const handleClientSuccess = (client: Client) => {
         setSelectedClient({
@@ -216,6 +236,15 @@ export default function AdvancedSearchPage() {
                     onColorSelect={handleSelectColor}
                     onClearFilters={clearFilters}
                     onOpenFilters={handleOpenFilters}
+                    voiceSearch={{
+                        isSupported: isVoiceSearchSupported,
+                        isListening: isVoiceSearchListening,
+                        transcript: voiceTranscript,
+                        error: voiceSearchError,
+                        status: voiceSearchStatus,
+                        startListening,
+                        stopListening,
+                    }}
                 />
             </div>
 

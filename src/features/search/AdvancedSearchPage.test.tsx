@@ -2,6 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AdvancedSearchPage from './AdvancedSearchPage';
 
+const { toastErrorMock } = vi.hoisted(() => ({
+  toastErrorMock: vi.fn(),
+}));
+
 const mockUseBranchStore = vi.fn();
 const mockUseSocietyStore = vi.fn();
 const mockUseCashShift = vi.fn();
@@ -18,6 +22,7 @@ const mockUseToggleFavoriteMutation = vi.fn();
 const mockUseQueryClient = vi.fn();
 const mockInvalidateProductRelatedCaches = vi.fn();
 const mockParseBackendError = vi.fn();
+const mockUseVoiceSearch = vi.fn();
 
 vi.mock('@/store/branch.store', () => ({
   useBranchStore: () => mockUseBranchStore(),
@@ -80,6 +85,16 @@ vi.mock('@/features/inventory/hooks/useProductQueries', () => ({
 
 vi.mock('@/utils/error.utils', () => ({
   parseBackendError: (error: unknown) => mockParseBackendError(error),
+}));
+
+vi.mock('./hooks/useVoiceSearch', () => ({
+  useVoiceSearch: () => mockUseVoiceSearch(),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: toastErrorMock,
+  },
 }));
 
 vi.mock('./components/SearchCashBanners', () => ({
@@ -356,6 +371,18 @@ const createProductQueryState = (overrides = {}) => ({
   ...overrides,
 });
 
+const createVoiceSearchState = (overrides = {}) => ({
+  isSupported: true,
+  isListening: false,
+  transcript: '',
+  error: null,
+  status: 'idle',
+  startListening: vi.fn(),
+  stopListening: vi.fn(),
+  resetTranscript: vi.fn(),
+  ...overrides,
+});
+
 describe('AdvancedSearchPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -381,6 +408,7 @@ describe('AdvancedSearchPage', () => {
     mockUseQueryClient.mockReturnValue({ queryKey: 'client' });
     mockParseBackendError.mockReturnValue('Backend Error');
     mockCartStoreGetState.mockReturnValue({ currentOrderCode: 'PED-001', currentOrderTotal: 99 });
+    mockUseVoiceSearch.mockReturnValue(createVoiceSearchState());
   });
 
   it('auto-selects the real public client when clients are loaded', () => {
@@ -526,5 +554,18 @@ describe('AdvancedSearchPage', () => {
     expect(cartFlowState.clearCurrentOrder).toHaveBeenCalledTimes(1);
     expect(cartFlowState.resetOrderError).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Backend Error')).toBeInTheDocument();
+  });
+
+  it('shows a toast when voice search reports an error', () => {
+    mockUseVoiceSearch.mockReturnValue(
+      createVoiceSearchState({
+        error: 'No detectamos voz. Intenta nuevamente.',
+        status: 'error',
+      }),
+    );
+
+    render(<AdvancedSearchPage />);
+
+    expect(toastErrorMock).toHaveBeenCalledWith('No detectamos voz. Intenta nuevamente.');
   });
 });

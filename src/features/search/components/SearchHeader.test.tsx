@@ -40,11 +40,18 @@ describe('SearchHeader', () => {
         onColorSelect={vi.fn()}
         onClearFilters={onClearFilters}
         onOpenFilters={vi.fn()}
+        voiceSearch={{
+          isSupported: true,
+          isListening: false,
+          transcript: '',
+          status: 'idle',
+          startListening: vi.fn(),
+          stopListening: vi.fn(),
+        }}
       />,
     );
 
-    const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[0]);
+    fireEvent.click(screen.getByRole('button', { name: /limpiar busqueda/i }));
     fireEvent.click(screen.getByRole('button', { name: /favoritos/i }));
     fireEvent.click(screen.getByRole('button', { name: /más vendidos/i }));
     fireEvent.click(screen.getByRole('button', { name: /^limpiar$/i }));
@@ -124,5 +131,126 @@ describe('SearchHeader', () => {
     fireEvent.click(screen.getByRole('button', { name: /rojo/i }));
 
     expect(onColorSelect).toHaveBeenCalledWith('color-2');
+  });
+
+  it('shows and toggles voice search when supported', () => {
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const startListening = vi.fn();
+    const stopListening = vi.fn();
+
+    const { rerender } = render(
+      <SearchHeader
+        searchQuery=""
+        onSearchChange={vi.fn()}
+        activeQuickFilters={['all']}
+        onToggleQuickFilter={vi.fn()}
+        colors={colors}
+        selectedColor=""
+        onColorSelect={vi.fn()}
+        onClearFilters={vi.fn()}
+        onOpenFilters={vi.fn()}
+        voiceSearch={{
+          isSupported: true,
+          isListening: false,
+          transcript: '',
+          status: 'idle',
+          startListening,
+          stopListening,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /iniciar busqueda por voz/i }));
+    expect(startListening).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <SearchHeader
+        searchQuery=""
+        onSearchChange={vi.fn()}
+        activeQuickFilters={['all']}
+        onToggleQuickFilter={vi.fn()}
+        colors={colors}
+        selectedColor=""
+        onColorSelect={vi.fn()}
+        onClearFilters={vi.fn()}
+        onOpenFilters={vi.fn()}
+        voiceSearch={{
+          isSupported: true,
+          isListening: true,
+          transcript: 'lapiz azul',
+          status: 'listening',
+          startListening,
+          stopListening,
+        }}
+      />,
+    );
+
+    expect(screen.getByText('lapiz azul')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /detener busqueda por voz/i }));
+    expect(stopListening).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows cancelling voice search while the microphone is still preparing', () => {
+    mockUseMediaQuery.mockReturnValue(false);
+
+    const startListening = vi.fn();
+    const stopListening = vi.fn();
+
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchChange={vi.fn()}
+        activeQuickFilters={['all']}
+        onToggleQuickFilter={vi.fn()}
+        colors={colors}
+        selectedColor=""
+        onColorSelect={vi.fn()}
+        onClearFilters={vi.fn()}
+        onOpenFilters={vi.fn()}
+        voiceSearch={{
+          isSupported: true,
+          isListening: true,
+          transcript: '',
+          status: 'processing',
+          startListening,
+          stopListening,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /detener busqueda por voz/i }));
+
+    expect(stopListening).toHaveBeenCalledTimes(1);
+    expect(startListening).not.toHaveBeenCalled();
+  });
+
+  it('shows the specific voice search error returned by the hook', () => {
+    mockUseMediaQuery.mockReturnValue(false);
+
+    render(
+      <SearchHeader
+        searchQuery=""
+        onSearchChange={vi.fn()}
+        activeQuickFilters={['all']}
+        onToggleQuickFilter={vi.fn()}
+        colors={colors}
+        selectedColor=""
+        onColorSelect={vi.fn()}
+        onClearFilters={vi.fn()}
+        onOpenFilters={vi.fn()}
+        voiceSearch={{
+          isSupported: true,
+          isListening: false,
+          transcript: '',
+          error: 'No se concedio permiso para usar el microfono.',
+          status: 'error',
+          startListening: vi.fn(),
+          stopListening: vi.fn(),
+        }}
+      />,
+    );
+
+    expect(screen.getByText('No se concedio permiso para usar el microfono.')).toBeInTheDocument();
   });
 });

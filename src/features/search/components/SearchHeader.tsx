@@ -1,9 +1,21 @@
 import { memo, useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode } from 'lucide-react';
+import { Search, Heart, TrendingUp, Check, X, SlidersHorizontal, ScanBarcode, Mic, LoaderCircle } from 'lucide-react';
 import type { Color } from '@/services/product.service';
 import { Portal } from '@/components/shared/Portal';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+
+type VoiceSearchStatus = 'idle' | 'unsupported' | 'listening' | 'processing' | 'error';
+
+interface VoiceSearchUiState {
+    isSupported: boolean;
+    isListening: boolean;
+    transcript: string;
+    error?: string | null;
+    status: VoiceSearchStatus;
+    startListening: () => void;
+    stopListening: () => void;
+}
 
 interface SearchHeaderProps {
     searchQuery: string;
@@ -15,6 +27,7 @@ interface SearchHeaderProps {
     onColorSelect: (color: string) => void;
     onClearFilters?: () => void;
     onOpenFilters?: () => void;
+    voiceSearch?: VoiceSearchUiState;
 }
 
 const ColorList = memo(function ColorList({ 
@@ -70,7 +83,8 @@ export const SearchHeader = memo(function SearchHeader({
     selectedColor,
     onColorSelect,
     onClearFilters,
-    onOpenFilters
+    onOpenFilters,
+    voiceSearch
 }: SearchHeaderProps) {
     const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
     const isMobileOrTablet = useMediaQuery('(max-width: 1024px)');
@@ -92,6 +106,25 @@ export const SearchHeader = memo(function SearchHeader({
         setIsColorDropdownOpen(false);
     }, [onColorSelect]);
 
+    const handleVoiceSearchToggle = useCallback(() => {
+        if (!voiceSearch?.isSupported) return;
+
+        if (voiceSearch.isListening) {
+            voiceSearch.stopListening();
+            return;
+        }
+
+        voiceSearch.startListening();
+    }, [voiceSearch]);
+
+    const voiceHelperText = useMemo(() => {
+        if (!voiceSearch?.isSupported) return null;
+        if (voiceSearch.status === 'listening') return voiceSearch.transcript || 'Habla ahora...';
+        if (voiceSearch.status === 'processing') return 'Esperando tu voz... toca de nuevo para cancelar.';
+        if (voiceSearch.status === 'error') return voiceSearch.error || 'No pudimos completar la busqueda por voz.';
+        return null;
+    }, [voiceSearch]);
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             // For Desktop (non-portal), we use the standard ref check
@@ -109,30 +142,62 @@ export const SearchHeader = memo(function SearchHeader({
         <div className="w-full space-y-3 sm:space-y-5">
 
             {/* Search Input */}
-            <div className="relative w-full max-w-5xl">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+            <div className="w-full max-w-5xl space-y-2">
+                <div className="relative">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
                 
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 opacity-40">
-                        <span className="hidden sm:inline-block px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
-                        <ScanBarcode className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {voiceSearch?.isSupported ? (
+                            <button
+                                type="button"
+                                onClick={handleVoiceSearchToggle}
+                                aria-label={voiceSearch.isListening ? 'Detener busqueda por voz' : 'Iniciar busqueda por voz'}
+                                aria-pressed={voiceSearch.isListening}
+                                className={cn(
+                                    'p-2 rounded-full border transition-all',
+                                    voiceSearch.isListening
+                                        ? 'bg-sky-50 text-sky-700 border-sky-200 shadow-sm shadow-sky-100'
+                                        : 'bg-card text-muted-foreground border-transparent hover:text-foreground hover:bg-muted hover:border-border'
+                                )}
+                            >
+                                {voiceSearch.status === 'processing' ? (
+                                    <LoaderCircle className="w-[18px] h-[18px] animate-spin" />
+                                ) : (
+                                    <Mic className={cn('w-[18px] h-[18px]', voiceSearch.isListening && 'animate-pulse')} />
+                                )}
+                            </button>
+                        ) : null}
+
+                        <div className="flex items-center gap-1.5 opacity-40">
+                            <span className="hidden sm:inline-block px-1.5 py-0.5 bg-muted text-[10px] font-bold rounded border border-border">F3</span>
+                            <ScanBarcode className="w-5 h-5 flex-shrink-0 text-muted-foreground" />
+                        </div>
+                        {searchQuery && (
+                            <button
+                                onClick={handleClearSearch}
+                                aria-label="Limpiar busqueda"
+                                className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
+                            >
+                                <X className="w-[18px] h-[18px]" />
+                            </button>
+                        )}
                     </div>
-                    {searchQuery && (
-                        <button
-                            onClick={handleClearSearch}
-                            className="p-1.5 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
-                        >
-                            <X className="w-[18px] h-[18px]" />
-                        </button>
-                    )}
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        placeholder="Buscar productos por nombre, SKU o codigo de barras..."
+                        className="w-full pl-12 pr-44 sm:pr-48 py-2.5 sm:py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
+                    />
                 </div>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Buscar productos por nombre, SKU o código de barras..."
-                    className="w-full pl-12 pr-32 py-2.5 sm:py-3.5 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all text-[15px] shadow-sm"
-                />
+                {voiceHelperText ? (
+                    <p className={cn(
+                        'text-xs sm:text-sm font-medium pl-1',
+                        voiceSearch?.status === 'error' ? 'text-rose-600' : 'text-muted-foreground'
+                    )}>
+                        {voiceHelperText}
+                    </p>
+                ) : null}
             </div>
 
             {/* Quick Filters */}
