@@ -1,8 +1,21 @@
-import { memo, useState, useEffect, useRef, useMemo, useDeferredValue } from 'react';
-import { Search, X, Check } from 'lucide-react';
+import { memo, useState, useEffect, useRef, useMemo, useDeferredValue, useCallback } from 'react';
+import { Search, X, Check, Mic, LoaderCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { type Product } from '@/services/product.service';
 import { useProductsSelect } from '@/hooks/useProductsSelect';
+import { cn } from '@/lib/utils';
+
+type VoiceSearchStatus = 'idle' | 'unsupported' | 'listening' | 'processing' | 'error';
+
+interface VoiceSearchUiState {
+    isSupported: boolean;
+    isListening: boolean;
+    transcript: string;
+    error?: string | null;
+    status: VoiceSearchStatus;
+    startListening: () => void;
+    stopListening: () => void;
+}
 
 interface POSProductSearchProps {
     searchQuery: string;
@@ -10,6 +23,7 @@ interface POSProductSearchProps {
     onAdvancedSearch?: () => void;
     selectedProduct: Product | null;
     onSelectProduct?: (product: Product | null) => void;
+    voiceSearch?: VoiceSearchUiState;
 }
 
 export const POSProductSearch = memo(function POSProductSearch({
@@ -18,6 +32,7 @@ export const POSProductSearch = memo(function POSProductSearch({
     onAdvancedSearch,
     selectedProduct,
     onSelectProduct,
+    voiceSearch,
 }: POSProductSearchProps) {
     const { data: products = [] } = useProductsSelect();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -40,6 +55,25 @@ export const POSProductSearch = memo(function POSProductSearch({
             (product.code && product.code.toLowerCase().includes(normalizedQuery))
         ).slice(0, 5);
     }, [normalizedQuery, products]);
+
+    const handleVoiceSearchToggle = useCallback(() => {
+        if (!voiceSearch?.isSupported) return;
+
+        if (voiceSearch.isListening) {
+            voiceSearch.stopListening();
+            return;
+        }
+
+        voiceSearch.startListening();
+    }, [voiceSearch]);
+
+    const voiceHelperText = useMemo(() => {
+        if (!voiceSearch?.isSupported) return null;
+        if (voiceSearch.status === 'listening') return voiceSearch.transcript || 'Habla ahora...';
+        if (voiceSearch.status === 'processing') return 'Esperando tu voz... toca de nuevo para cancelar.';
+        if (voiceSearch.status === 'error') return voiceSearch.error || 'No pudimos completar la busqueda por voz.';
+        return null;
+    }, [voiceSearch]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -104,9 +138,29 @@ export const POSProductSearch = memo(function POSProductSearch({
                                 setShowDropdown(true);
                             }}
                             onFocus={() => setShowDropdown(true)}
-                            className="w-full h-14 pl-12 pr-20 text-base border-2 border-primary/20 bg-primary/5 rounded-xl focus:border-primary focus:bg-background transition-all"
+                            className="w-full h-14 pl-12 pr-28 text-base border-2 border-primary/20 bg-primary/5 rounded-xl focus:border-primary focus:bg-background transition-all"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {voiceSearch?.isSupported ? (
+                                <button
+                                    type="button"
+                                    onClick={handleVoiceSearchToggle}
+                                    aria-label={voiceSearch.isListening ? 'Detener busqueda por voz' : 'Iniciar busqueda por voz'}
+                                    aria-pressed={voiceSearch.isListening}
+                                    className={cn(
+                                        'p-2 rounded-full border transition-all',
+                                        voiceSearch.isListening
+                                            ? 'bg-sky-50 text-sky-700 border-sky-200 shadow-sm shadow-sky-100'
+                                            : 'bg-card text-muted-foreground border-transparent hover:text-foreground hover:bg-muted hover:border-border'
+                                    )}
+                                >
+                                    {voiceSearch.status === 'processing' ? (
+                                        <LoaderCircle className="w-[18px] h-[18px] animate-spin" />
+                                    ) : (
+                                        <Mic className={cn('w-[18px] h-[18px]', voiceSearch.isListening && 'animate-pulse')} />
+                                    )}
+                                </button>
+                            ) : null}
                             <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded">F3</span>
                             <button className="text-muted-foreground hover:text-foreground cursor-pointer" onClick={onAdvancedSearch}>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,6 +204,14 @@ export const POSProductSearch = memo(function POSProductSearch({
                     </>
                 )}
             </div>
+            {voiceHelperText ? (
+                <p className={cn(
+                    'mt-2 text-xs sm:text-sm font-medium pl-1',
+                    voiceSearch?.status === 'error' ? 'text-rose-600' : 'text-muted-foreground'
+                )}>
+                    {voiceHelperText}
+                </p>
+            ) : null}
         </div>
     );
 });

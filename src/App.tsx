@@ -30,6 +30,8 @@ const PageLoader = () => (
   </div>
 );
 
+const SESSION_IDLE_TIMEOUT_MS = 1000 * 60 * 60 * 8;
+
 function AuthApp() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const pathname = window.location.pathname;
@@ -85,7 +87,7 @@ function App() {
   };
 
   useIdleTimer({
-    timeout: 1000 * 60 * 60,
+    timeout: SESSION_IDLE_TIMEOUT_MS,
     onIdle: handleOnIdle,
     debounce: 500,
   });
