@@ -53,15 +53,20 @@ const getRecognitionConstructor = (): SpeechRecognitionConstructorLike | null =>
 const isLocalhost = (hostname: string): boolean =>
     hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
 
-const canUseVoiceSearch = (): boolean => {
-    if (typeof window === 'undefined') return false;
+const getVoiceSearchSupportIssue = (): string | null => {
+    if (typeof window === 'undefined') {
+        return 'La busqueda por voz no esta disponible en este entorno.';
+    }
 
-    const hasRecognition = Boolean(getRecognitionConstructor());
-    if (!hasRecognition) return false;
+    if (!getRecognitionConstructor()) {
+        return 'Este navegador no soporta busqueda por voz.';
+    }
 
-    if (window.isSecureContext) return true;
+    if (window.isSecureContext || isLocalhost(window.location.hostname)) {
+        return null;
+    }
 
-    return isLocalhost(window.location.hostname);
+    return 'La busqueda por voz requiere un sitio seguro (HTTPS o localhost).';
 };
 
 const mapRecognitionError = (error: string): string => {
@@ -76,7 +81,7 @@ const mapRecognitionError = (error: string): string => {
         case 'aborted':
             return 'La escucha fue cancelada.';
         case 'network':
-            return 'La busqueda por voz necesita una conexion valida y un sitio seguro (HTTPS o localhost).';
+            return 'No se pudo conectar con el servicio de reconocimiento de voz. Verifica tu conexion e intentalo de nuevo.';
         case 'language-not-supported':
             return 'El idioma configurado para la busqueda por voz no es compatible en este navegador.';
         case 'bad-grammar':
@@ -97,23 +102,38 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
     const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     const shouldEmitFinalRef = useRef(false);
     const finalTranscriptRef = useRef('');
+    const latestTranscriptRef = useRef('');
     const shouldResumeRef = useRef(false);
     const shouldRestartRef = useRef(false);
     const restartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const supportIssue = getVoiceSearchSupportIssue();
 
     const [transcript, setTranscript] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [status, setStatus] = useState<VoiceSearchStatus>(() =>
-        canUseVoiceSearch() ? 'idle' : 'unsupported'
+        supportIssue ? 'unsupported' : 'idle'
     );
 
     const isSupported = status !== 'unsupported';
     const isListening = status === 'listening' || status === 'processing';
 
+    const mergeTranscript = useCallback((current: string, next: string) => {
+        const normalizedCurrent = current.trim();
+        const normalizedNext = next.trim();
+
+        if (!normalizedNext) return normalizedCurrent;
+        if (!normalizedCurrent) return normalizedNext;
+
+        return `${normalizedCurrent} ${normalizedNext}`.trim();
+    }, []);
+
     useEffect(() => {
-        if (!canUseVoiceSearch()) {
+        const nextSupportIssue = getVoiceSearchSupportIssue();
+
+        if (nextSupportIssue) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setStatus('unsupported');
+            setError(current => current ?? nextSupportIssue);
             return;
         }
 
@@ -163,6 +183,7 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
             setError(null);
             setTranscript('');
             finalTranscriptRef.current = '';
+            latestTranscriptRef.current = '';
             shouldEmitFinalRef.current = true;
             shouldRestartRef.current = false;
             setStatus('listening');
@@ -178,13 +199,15 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
                 if (!chunk) continue;
 
                 if (result.isFinal) {
-                    finalTranscriptRef.current = chunk;
+                    finalTranscriptRef.current = mergeTranscript(finalTranscriptRef.current, chunk);
                 } else {
-                    interimTranscript = chunk;
+                    interimTranscript = mergeTranscript(interimTranscript, chunk);
                 }
             }
 
-            setTranscript(finalTranscriptRef.current || interimTranscript);
+            const nextTranscript = mergeTranscript(finalTranscriptRef.current, interimTranscript);
+            latestTranscriptRef.current = nextTranscript;
+            setTranscript(nextTranscript);
         };
 
         recognition.onerror = (event) => {
@@ -205,7 +228,7 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
         };
 
         recognition.onend = () => {
-            const finalTranscript = finalTranscriptRef.current.trim();
+            const finalTranscript = (finalTranscriptRef.current.trim() || latestTranscriptRef.current.trim());
 
             if (shouldEmitFinalRef.current && finalTranscript) {
                 shouldResumeRef.current = false;
@@ -244,9 +267,17 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
     }, [lang, onFinalTranscript]);
 
     const startListening = useCallback(() => {
+        const nextSupportIssue = getVoiceSearchSupportIssue();
+
+        if (nextSupportIssue) {
+            setStatus('unsupported');
+            setError(nextSupportIssue);
+            return;
+        }
+
         if (!recognitionRef.current) {
             setStatus('unsupported');
-            setError('La busqueda por voz requiere un navegador compatible y un sitio seguro (HTTPS o localhost).');
+            setError('No pudimos inicializar la busqueda por voz. Recarga la pagina e intentalo de nuevo.');
             return;
         }
 
@@ -266,7 +297,9 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
     }, []);
 
     const stopListening = useCallback(() => {
-        shouldEmitFinalRef.current = false;
+        shouldEmitFinalRef.current = Boolean(
+            finalTranscriptRef.current.trim() || latestTranscriptRef.current.trim()
+        );
         shouldResumeRef.current = false;
         shouldRestartRef.current = false;
         if (restartTimeoutRef.current) {
@@ -280,6 +313,7 @@ export function useVoiceSearch(options: UseVoiceSearchOptions = {}) {
     const resetTranscript = useCallback(() => {
         setTranscript('');
         finalTranscriptRef.current = '';
+        latestTranscriptRef.current = '';
     }, []);
 
     return {

@@ -90,6 +90,63 @@ describe('useVoiceSearch', () => {
         expect(speechRecognition?.stop).toHaveBeenCalledTimes(1);
     });
 
+    it('commits the recognized transcript when the user stops listening manually', () => {
+        const onFinalTranscript = vi.fn();
+        const { result } = renderHook(() => useVoiceSearch({ onFinalTranscript }));
+        const speechRecognition = speechRecognitionInstances[0];
+
+        act(() => {
+            result.current.startListening();
+            speechRecognition?.onstart?.(new Event('start'));
+            speechRecognition?.onresult?.(Object.assign(new Event('result'), {
+                resultIndex: 0,
+                results: [
+                    {
+                        isFinal: false,
+                        0: { transcript: 'lapiz azul' },
+                    },
+                ],
+            }));
+        });
+
+        act(() => {
+            result.current.stopListening();
+            speechRecognition?.onend?.(new Event('end'));
+        });
+
+        expect(onFinalTranscript).toHaveBeenCalledWith('lapiz azul');
+        expect(result.current.transcript).toBe('lapiz azul');
+        expect(result.current.status).toBe('idle');
+    });
+
+    it('preserves all final transcript chunks before completing', () => {
+        const onFinalTranscript = vi.fn();
+        const { result } = renderHook(() => useVoiceSearch({ onFinalTranscript }));
+        const speechRecognition = speechRecognitionInstances[0];
+
+        act(() => {
+            result.current.startListening();
+            speechRecognition?.onstart?.(new Event('start'));
+            speechRecognition?.onresult?.(Object.assign(new Event('result'), {
+                resultIndex: 0,
+                results: [
+                    {
+                        isFinal: true,
+                        0: { transcript: 'lapiz' },
+                    },
+                    {
+                        isFinal: true,
+                        0: { transcript: 'azul' },
+                    },
+                ],
+            }));
+            speechRecognition?.onend?.(new Event('end'));
+        });
+
+        expect(onFinalTranscript).toHaveBeenCalledWith('lapiz azul');
+        expect(result.current.transcript).toBe('lapiz azul');
+    });
+
     it('surfaces a friendly error when recognition start throws', () => {
         const { result } = renderHook(() => useVoiceSearch());
         const speechRecognition = speechRecognitionInstances[0];
@@ -117,7 +174,30 @@ describe('useVoiceSearch', () => {
 
         expect(result.current.status).toBe('error');
         expect(result.current.error).toBe(
-            'La busqueda por voz necesita una conexion valida y un sitio seguro (HTTPS o localhost).',
+            'No se pudo conectar con el servicio de reconocimiento de voz. Verifica tu conexion e intentalo de nuevo.',
         );
+    });
+
+    it('reports the secure-context requirement only when support checks fail before start', () => {
+        Object.defineProperty(window, 'isSecureContext', {
+            configurable: true,
+            value: false,
+        });
+
+        Object.defineProperty(window, 'location', {
+            configurable: true,
+            value: {
+                hostname: 'staging.example.com',
+            },
+        });
+
+        const { result } = renderHook(() => useVoiceSearch());
+
+        act(() => {
+            result.current.startListening();
+        });
+
+        expect(result.current.status).toBe('unsupported');
+        expect(result.current.error).toBe('La busqueda por voz requiere un sitio seguro (HTTPS o localhost).');
     });
 });
