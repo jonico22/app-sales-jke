@@ -3,8 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import POSPage from './POSPage';
 import { usePOS } from './hooks/usePOS';
 
+const { toastErrorMock } = vi.hoisted(() => ({
+  toastErrorMock: vi.fn(),
+}));
+
 vi.mock('./hooks/usePOS', () => ({
   usePOS: vi.fn(),
+}));
+
+const mockUseVoiceSearch = vi.fn();
+vi.mock('../search/hooks/useVoiceSearch', () => ({
+  useVoiceSearch: () => mockUseVoiceSearch(),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    error: toastErrorMock,
+  },
 }));
 
 vi.mock('./components/POSWelcomeHeader', () => ({
@@ -52,15 +67,22 @@ vi.mock('./components/POSProductSearch', () => ({
     searchQuery,
     setSearchQuery,
     onSelectProduct,
+    voiceSearch,
   }: {
     searchQuery: string;
     setSearchQuery: (value: string) => void;
     onSelectProduct: (product: { id: string; name: string }) => void;
+    voiceSearch?: {
+      startListening: () => void;
+      stopListening: () => void;
+    };
   }) => (
     <div>
       <span>{`Search: ${searchQuery}`}</span>
       <button onClick={() => setSearchQuery('teclado')}>change-search</button>
       <button onClick={() => onSelectProduct({ id: 'product-1', name: 'Producto POS' })}>select-product</button>
+      <button onClick={() => voiceSearch?.startListening()}>voice-start</button>
+      <button onClick={() => voiceSearch?.stopListening()}>voice-stop</button>
     </div>
   ),
 }));
@@ -174,9 +196,21 @@ const createUsePOSState = (overrides = {}) => ({
   ...overrides,
 });
 
+const createVoiceSearchState = (overrides = {}) => ({
+  isSupported: true,
+  isListening: false,
+  transcript: '',
+  error: null,
+  status: 'idle',
+  startListening: vi.fn(),
+  stopListening: vi.fn(),
+  ...overrides,
+});
+
 describe('POSPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseVoiceSearch.mockReturnValue(createVoiceSearchState());
   });
 
   it('shows the loading banner while the cash shift is loading', () => {
@@ -202,7 +236,9 @@ describe('POSPage', () => {
 
   it('wires main user actions through the hook handlers', () => {
     const state = createUsePOSState();
+    const voiceSearchState = createVoiceSearchState();
     (usePOS as unknown as ReturnType<typeof vi.fn>).mockReturnValue(state);
+    mockUseVoiceSearch.mockReturnValue(voiceSearchState);
 
     render(<POSPage />);
 
@@ -210,6 +246,8 @@ describe('POSPage', () => {
     fireEvent.click(screen.getByText('new-client'));
     fireEvent.click(screen.getByText('change-search'));
     fireEvent.click(screen.getByText('select-product'));
+    fireEvent.click(screen.getByText('voice-start'));
+    fireEvent.click(screen.getByText('voice-stop'));
     fireEvent.click(screen.getByText('open-catalog'));
     fireEvent.click(screen.getByText('open-cart'));
 
@@ -217,6 +255,8 @@ describe('POSPage', () => {
     expect(state.openAddClientModal).toHaveBeenCalledTimes(1);
     expect(state.setSearchQuery).toHaveBeenCalledWith('teclado');
     expect(state.handleProductSelect).toHaveBeenCalledWith({ id: 'product-1', name: 'Producto POS' });
+    expect(voiceSearchState.startListening).toHaveBeenCalledTimes(1);
+    expect(voiceSearchState.stopListening).toHaveBeenCalledTimes(1);
     expect(state.navigate).toHaveBeenCalledWith('/pos/search');
     expect(state.handleCartOpen).toHaveBeenCalledTimes(1);
   });
@@ -247,5 +287,19 @@ describe('POSPage', () => {
     expect(state.handleCloseSuccessModal).toHaveBeenCalledTimes(1);
     expect(state.setIsAddClientModalOpen).toHaveBeenCalledWith(false);
     expect(state.handleClientSuccess).toHaveBeenCalledWith({ id: 'client-3', name: 'Cliente Guardado' });
+  });
+
+  it('shows a toast when voice search reports an error', () => {
+    (usePOS as unknown as ReturnType<typeof vi.fn>).mockReturnValue(createUsePOSState());
+    mockUseVoiceSearch.mockReturnValue(
+      createVoiceSearchState({
+        error: 'No detectamos voz. Intenta nuevamente.',
+        status: 'error',
+      }),
+    );
+
+    render(<POSPage />);
+
+    expect(toastErrorMock).toHaveBeenCalledWith('No detectamos voz. Intenta nuevamente.');
   });
 });

@@ -12,6 +12,9 @@ import { POSMobileFooter } from './components/POSMobileFooter';
 import { POSPaymentModal } from './components/POSPaymentModal';
 import { POSSuccessModal } from './components/POSSuccessModal';
 import { ClientEditModal } from '../sales/clients/components/ClientEditModal';
+import { useVoiceSearch } from '../search/hooks/useVoiceSearch';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export default function POSPage() {
   const {
@@ -44,6 +47,24 @@ export default function POSPage() {
     closePaymentModal,
     navigate,
   } = usePOS();
+  const {
+    isSupported: isVoiceSearchSupported,
+    isListening: isVoiceSearchListening,
+    transcript: voiceTranscript,
+    error: voiceSearchError,
+    status: voiceSearchStatus,
+    startListening,
+    stopListening,
+  } = useVoiceSearch({
+    lang: 'es-PE',
+    onFinalTranscript: setSearchQuery,
+  });
+
+  useEffect(() => {
+    if (!voiceSearchError) return;
+
+    toast.error(voiceSearchError);
+  }, [voiceSearchError]);
 
   return (
     <div className=" bg-background pb-20 md:pb-6 md:pt-6 p-2 md:p-6 min-h-[calc(100vh-64px)]">
@@ -80,6 +101,15 @@ export default function POSPage() {
             onAdvancedSearch={() => { }}
             selectedProduct={selectedProduct}
             onSelectProduct={handleProductSelect}
+            voiceSearch={{
+              isSupported: isVoiceSearchSupported,
+              isListening: isVoiceSearchListening,
+              transcript: voiceTranscript,
+              error: voiceSearchError,
+              status: voiceSearchStatus,
+              startListening,
+              stopListening,
+            }}
           />
 
           {/* View Catalog Button */}
